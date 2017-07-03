@@ -1,0 +1,14 @@
+[package]
+name    = "phonenumber"
+version = "8.5.0"
+authors = ["meh. <meh@1aim.com>"]
+
+[profile.release]
+debug = true
+
+[dependencies]
+regex       = "0.2"
+lazy_static = "0.2"
+fnv         = "1.0"
+error-chain = "0.10"
+quick-xml   = "0.8"
