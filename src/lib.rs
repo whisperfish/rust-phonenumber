@@ -50,6 +50,9 @@ pub use extension::Extension;
 pub mod phone_number;
 pub use phone_number::PhoneNumber;
 
+pub mod parser;
+pub use parser::parse;
+
 pub fn init() -> error::Result<()> {
 	lazy_static::initialize(&metadata::DATABASE);
 
