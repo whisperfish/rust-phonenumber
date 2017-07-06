@@ -121,3 +121,13 @@ impl FromStr for PhoneNumber {
 		parser::parse(&*DATABASE, None, s)
 	}
 }
+
+impl fmt::Display for PhoneNumber {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		use std::str;
+		let mut result = Vec::new();
+		formatter::format(&*DATABASE, formatter::Type::E164, self, &mut result)
+			.map_err(|_| fmt::Error)?;
+		f.write_str(str::from_utf8(&result).unwrap())
+	}
+}

@@ -53,6 +53,8 @@ pub use phone_number::PhoneNumber;
 pub mod parser;
 pub use parser::parse;
 
+pub mod formatter;
+
 pub fn init() -> error::Result<()> {
 	lazy_static::initialize(&metadata::DATABASE);
 
