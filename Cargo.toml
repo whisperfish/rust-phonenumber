@@ -8,7 +8,22 @@ debug = true
 
 [dependencies]
 regex       = "0.2"
+regex-cache = "0.1"
 lazy_static = "0.2"
 fnv         = "1.0"
 error-chain = "0.10"
 quick-xml   = "0.8"
+itertools   = "0.6"
+nom         = { version = "3.0", git = "https://github.com/Geal/nom", features = ["nightly", "regexp", "regexp_macros"] }
+
+serde        = "1.0"
+serde_derive = "1.0"
+bincode      = "0.8"
+
+[build-dependencies]
+quick-xml    = "0.8"
+error-chain  = "0.10"
+regex        = "0.2"
+serde        = "1.0"
+serde_derive = "1.0"
+bincode      = "0.8"

@@ -21,5 +21,6 @@ pub use self::descriptor::Descriptor;
 mod metadata;
 pub use self::metadata::Metadata;
 
+mod loader;
 mod database;
 pub use self::database::{Database, DEFAULT as DATABASE};

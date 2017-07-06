@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use regex_cache::LazyRegex;
+
 use metadata::{Format, Descriptor};
 use country_code::CountryCode;
 
 #[derive(Clone, Debug)]
 pub struct Metadata {
-	pub(crate) general:          Option<Descriptor>,
+	pub(crate) general:          Descriptor,
 	pub(crate) fixed_line:       Option<Descriptor>,
 	pub(crate) mobile:           Option<Descriptor>,
 	pub(crate) toll_free:        Option<Descriptor>,
@@ -44,14 +46,14 @@ pub struct Metadata {
 	/// The country calling code that one would dial from overseas when trying to
 	/// dial a phone number in this country. For example, this would be "64" for
 	/// New Zealand.
-	pub(crate) country_code: Option<u32>,
+	pub(crate) country_code: u16,
 
 	/// The international_prefix of country A is the number that needs to be
 	/// dialled from country A to another country (country B). This is followed
 	/// by the country code for country B. Note that some countries may have more
 	/// than one international prefix, and for those cases, a regular expression
 	/// matching the international prefixes will be stored in this field.
-	pub(crate) international_prefix: Option<String>,
+	pub(crate) international_prefix: Option<LazyRegex>,
 
 	/// If more than one international prefix is present, a preferred prefix can
 	/// be specified here for out-of-country formatting purposes. If this field
@@ -86,7 +88,7 @@ pub struct Metadata {
 	///
 	/// When it is missing from the XML file, this field inherits the value of
 	/// national_prefix, if that is present.
-	pub(crate) national_prefix_for_parsing: Option<String>,
+	pub(crate) national_prefix_for_parsing: Option<LazyRegex>,
 
 	/// This field is only populated and used under very rare situations.  For
 	/// example, mobile numbers in Argentina are written in two completely

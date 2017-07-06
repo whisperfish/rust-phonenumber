@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex::Regex;
+use regex_cache::LazyRegex;
 
 #[derive(Clone, Debug)]
 pub struct Format {
@@ -22,7 +22,7 @@ pub struct Format {
 	///
 	/// Note the presence of the parentheses, which are capturing groups what
 	/// specifies the grouping of numbers.
-	pub(crate) pattern: Regex,
+	pub(crate) pattern: LazyRegex,
 
 	/// Specifies how the national (significant) number matched by pattern should
 	/// be formatted.
@@ -48,7 +48,7 @@ pub struct Format {
 	///
 	/// In the case when only one formatting pattern exists, no
 	/// leading_digits_pattern is needed.
-	pub(crate) leading_digits: Vec<Regex>,
+	pub(crate) leading_digits: Vec<LazyRegex>,
 
 	/// Specifies how the national prefix ($NP) together with the first group
 	/// ($FG) in the national significant number should be formatted in the

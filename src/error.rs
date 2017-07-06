@@ -18,6 +18,11 @@ error_chain! {
 			description("An error occurred while parsing the metadata.")
 			display("Metadata parsing error: `{:?}`", error)
 		}
+
+		Parse(error: Parse) {
+			description("An error occurred while parsing the phone number.")
+			display("PhoneNumber parsing error: `{:?}`", error)
+		}
 	}
 
 	foreign_links {
@@ -27,18 +32,6 @@ error_chain! {
 		ParseInt(::std::num::ParseIntError);
 		ParseBool(::std::str::ParseBoolError);
 		Regex(::regex::Error);
-	}
-}
-
-impl From<Metadata> for Error {
-	fn from(error: Metadata) -> Self {
-		ErrorKind::Metadata(error).into()
-	}
-}
-
-impl From<Metadata> for ErrorKind {
-	fn from(error: Metadata) -> Self {
-		ErrorKind::Metadata(error)
 	}
 }
 
@@ -58,4 +51,52 @@ pub enum Metadata {
 		name:  String,
 		value: String,
 	},
+}
+
+impl From<Metadata> for Error {
+	fn from(error: Metadata) -> Self {
+		ErrorKind::Metadata(error).into()
+	}
+}
+
+impl From<Metadata> for ErrorKind {
+	fn from(error: Metadata) -> Self {
+		ErrorKind::Metadata(error)
+	}
+}
+
+#[derive(Clone, Debug)]
+pub enum Parse {
+	/// This generally indicates the string passed in had less than 3 digits in
+	/// it.
+	NoNumber,
+
+	/// The country code supplied did not belong to a supported country or
+	/// non-geographical entity.
+	InvalidCountryCode,
+
+	/// This indicates the string started with an international dialing prefix,
+	/// but after this was stripped from the number, had less digits than any
+	/// valid phone number (including country code) could have.
+	TooShortAfterIdd,
+
+	/// This indicates the string, after any country code has been stripped, had
+	/// less digits than any valid phone number could have.
+	TooShortNsn,
+
+	/// This indicates the string had more digits than any valid phone number
+	/// could have.
+	TooLong,
+}
+
+impl From<Parse> for Error {
+	fn from(error: Parse) -> Self {
+		ErrorKind::Parse(error).into()
+	}
+}
+
+impl From<Parse> for ErrorKind {
+	fn from(error: Parse) -> Self {
+		ErrorKind::Parse(error)
+	}
 }

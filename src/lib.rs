@@ -12,14 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![recursion_limit = "1024"]
+
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate error_chain;
+#[macro_use]
+extern crate nom;
 
 extern crate regex;
+extern crate regex_cache;
 extern crate fnv;
 extern crate quick_xml as xml;
+extern crate itertools;
+
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate bincode;
 
 pub mod error;
 pub use error::{Error, ErrorKind, Result};
@@ -38,3 +49,9 @@ pub use extension::Extension;
 
 mod phone_number;
 pub use phone_number::PhoneNumber;
+
+pub fn init() -> error::Result<()> {
+	lazy_static::initialize(&metadata::DATABASE);
+
+	Ok(())
+}

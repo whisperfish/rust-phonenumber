@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex::Regex;
+use regex_cache::LazyRegex;
 
 #[derive(Clone, Debug)]
 pub struct Descriptor {
 	/// The national_number_pattern is the pattern that a valid national
 	/// significant number would match. This specifies information such as its
 	/// total length and leading digits.
-	pub(crate) national_number: Option<Regex>,
+	pub(crate) national_number: Option<LazyRegex>,
 
 	/// The possible_number_pattern represents what a potentially valid phone
 	/// number for this region may be written as. This is a superset of the
@@ -29,7 +29,7 @@ pub struct Descriptor {
 	/// This could be used to highlight tokens in a text that may be a phone
 	/// number, or to quickly prune numbers that could not possibly be a phone
 	/// number for this locale.
-	pub(crate) possible_number: Option<Regex>,
+	pub(crate) possible_number: Option<LazyRegex>,
 
 	/// These represent the lengths a phone number from this region can be. They
 	/// will be sorted from smallest to biggest. Note that these lengths are for
