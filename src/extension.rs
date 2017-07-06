@@ -14,8 +14,8 @@
 
 use std::ops::Deref;
 
-#[derive(Clone, Debug)]
-pub struct Extension(String);
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct Extension(pub(crate) String);
 
 impl Deref for Extension {
 	type Target = str;

@@ -12,21 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::io::Write;
+use std::fmt;
+use std::str::FromStr;
+
+use error::{Error, Result};
 use country_code::CountryCode;
 use national_number::NationalNumber;
 use extension::Extension;
+use metadata::DATABASE;
+use parser;
+use formatter;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct PhoneNumber {
-	/// This field is used to store the raw input string containing phone numbers
-	/// before it was canonicalized by the library. For example, it could be used
-	/// to store alphanumerical numbers such as "1-800-GOOG-411".
-	original: Option<String>,
-
 	/// The country calling code for this number, as defined by the International
 	/// Telecommunication Union (ITU). For example, this would be 1 for NANPA
 	/// countries, and 33 for France.
-	country_code: CountryCode,
+	pub(crate) country_code: CountryCode,
 
 	/// The National (significant) Number, as defined in International
 	/// Telecommunication Union (ITU) Recommendation E.164, without any leading
@@ -42,7 +45,7 @@ pub struct PhoneNumber {
 	/// (significant) Number does not contain the National (trunk) prefix.
 	/// Obviously, as a uint64, it will never contain any formatting (hyphens,
 	/// spaces, parentheses), nor any alphanumeric spellings.
-	national_number: NationalNumber,
+	pub(crate) national_number: NationalNumber,
 
 	/// Extension is not standardized in ITU recommendations, except for being
 	/// defined as a series of numbers with a maximum length of 40 digits. It is
@@ -50,7 +53,7 @@ pub struct PhoneNumber {
 	/// zero in the extension (organizations have complete freedom to do so, as
 	/// there is no standard defined). Other than digits, some other dialling
 	/// characters such as "," (indicating a wait) may be stored here.
-	extension: Option<Extension>,
+	pub(crate) extension: Option<Extension>,
 
 	/// The carrier selection code that is preferred when calling this phone
 	/// number domestically. This also includes codes that need to be dialed in
@@ -61,5 +64,52 @@ pub struct PhoneNumber {
 	///
 	/// Note this is the "preferred" code, which means other codes may work as
 	/// well.
-	domestic_carrier: Option<String>,
+	pub(crate) carrier: Option<String>,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum Type {
+	///
+	FixedLine,
+
+	///
+	Mobile,
+
+	/// In some regions (e.g. the USA), it is impossible to distinguish between
+	/// fixed-line and mobile numbers by looking at the phone number itself.
+	FixedLineOrMobile,
+
+	/// Freephone lines.
+	TollFree,
+
+	///
+	PremiumRate,
+
+	/// The cost of this call is shared between the caller and the recipient, and
+	/// is hence typically less than PREMIUM_RATE calls. See //
+	/// http://en.wikipedia.org/wiki/Shared_Cost_Service for more information.
+	SharedCost,
+
+	/// Voice over IP numbers. This includes TSoIP (Telephony Service over IP).
+	Voip,
+
+	/// A personal number is associated with a particular person, and may be
+	/// routed to either a MOBILE or FIXED_LINE number. Some more information can
+	/// be found here: http://en.wikipedia.org/wiki/Personal_Numbers
+	PersonalNumber,
+
+	///
+	Pager,
+
+	/// Used for "Universal Access Numbers" or "Company Numbers". They may be
+	/// further routed to specific offices, but allow one number to be used for a
+	/// company.
+	Uan,
+
+	/// Used for "Voice Mail Access Numbers".
+	Voicemail,
+
+	/// A phone number is of type UNKNOWN when it does not fit any of the known
+	/// patterns for a specific region.
+	Unknown,
 }

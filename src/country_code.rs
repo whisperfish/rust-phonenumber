@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct CountryCode {
 	/// The country code value.
-	value: u16,
+	pub(crate) value: u16,
 
 	/// The source from which the country_code is derived.
-	source: Source,
+	pub(crate) source: Source,
 }
 
 /// The source from which the country_code is derived. This is not set in the
@@ -48,7 +48,16 @@ pub enum Source {
 }
 
 impl Default for Source {
-	fn default() -> Source {
+	fn default() -> Self {
 		Source::Default
+	}
+}
+
+#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+pub struct Country<'a>(pub &'a str);
+
+impl<'a> AsRef<str> for Country<'a> {
+	fn as_ref(&self) -> &str {
+		self.0
 	}
 }

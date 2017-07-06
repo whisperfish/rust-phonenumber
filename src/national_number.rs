@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct NationalNumber {
-	value: u64,
+	pub(crate) value: u64,
 
 	/// In some countries, the national (significant) number starts with one or
 	/// more "0"s without this being a national prefix or trunk code of some kind.
@@ -32,5 +32,5 @@ pub struct NationalNumber {
 	///
 	/// Clients who use the parsing or conversion functionality of the i18n phone
 	/// number libraries will have these fields set if necessary automatically.
-	zeroes: Option<u32>,
+	pub(crate) zeroes: Option<u32>,
 }

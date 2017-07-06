@@ -47,7 +47,7 @@ pub use country_code::CountryCode;
 mod extension;
 pub use extension::Extension;
 
-mod phone_number;
+pub mod phone_number;
 pub use phone_number::PhoneNumber;
 
 pub fn init() -> error::Result<()> {
