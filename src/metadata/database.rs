@@ -23,7 +23,7 @@ use fnv::FnvHashMap;
 use regex_cache::{LazyRegexBuilder, LazyRegex};
 use bincode;
 
-use error::{self, ErrorKind, Result};
+use error::{self, Result};
 use metadata::loader;
 
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
@@ -107,8 +107,11 @@ impl Database {
 		}
 
 		fn descriptor(desc: loader::Descriptor) -> Result<super::Descriptor> {
+			desc.national_number.as_ref().unwrap();
+			desc.national_number.as_ref().unwrap();
+
 			Ok(super::Descriptor {
-				national_number: switch(desc.national_number.map(regex))?,
+				national_number: desc.national_number.ok_or(error::Metadata::MissingValue("format".into()).into()).and_then(regex)?,
 				possible_number: switch(desc.possible_number.map(regex))?,
 				possible_length: desc.possible_length,
 				possible_local_length: desc.possible_local_length,

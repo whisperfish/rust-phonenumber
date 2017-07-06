@@ -19,7 +19,7 @@ pub struct Descriptor {
 	/// The national_number_pattern is the pattern that a valid national
 	/// significant number would match. This specifies information such as its
 	/// total length and leading digits.
-	pub(crate) national_number: Option<LazyRegex>,
+	pub(crate) national_number: LazyRegex,
 
 	/// The possible_number_pattern represents what a potentially valid phone
 	/// number for this region may be written as. This is a superset of the

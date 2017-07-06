@@ -51,6 +51,11 @@ pub enum Metadata {
 		name:  String,
 		value: String,
 	},
+
+	UnhandledEvent {
+		phase: String,
+		event: String,
+	}
 }
 
 impl From<Metadata> for Error {

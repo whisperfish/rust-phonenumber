@@ -15,7 +15,6 @@
 use regex_cache::LazyRegex;
 
 use metadata::{Format, Descriptor};
-use country_code::CountryCode;
 
 #[derive(Clone, Debug)]
 pub struct Metadata {

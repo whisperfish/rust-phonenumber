@@ -97,8 +97,10 @@ pub fn metadata<'a, R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>>
 
 	loop {
 		match reader.read_event(&mut buffer)? {
-			Event::Eof =>
-				return Ok(result),
+			Event::Text(_) |
+			Event::Comment(_) |
+			Event::DocType(_) =>
+				(),
 
 			Event::Start(ref e) => {
 				match e.name() {
@@ -117,7 +119,14 @@ pub fn metadata<'a, R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>>
 				return Err(error::Metadata::MismatchedTag(
 					str::from_utf8(e.name())?.into()).into()),
 
-			_ => ()
+			Event::End(ref e) if e.name() == b"phoneNumberMetadata" =>
+				return Ok(result),
+
+			event =>
+				return Err(error::Metadata::UnhandledEvent {
+					phase: "metadata".into(),
+					event: format!("{:?}", event),
+				}.into())
 		}
 	}
 }
@@ -128,13 +137,17 @@ fn territories<'a, R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> 
 
 	loop {
 		match reader.read_event(&mut buffer)? {
+			Event::Text(_) |
+			Event::Comment(_) =>
+				(),
+
 			Event::Start(ref e) => {
 				match e.name() {
 					b"territory" =>
 						result.push(territory(reader, e)?),
 
 					name =>
-						ignore(reader, e.name())?,
+						ignore(reader, name)?,
 				}
 			}
 
@@ -148,8 +161,11 @@ fn territories<'a, R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> 
 			Event::Eof =>
 				return Err(error::Metadata::UnexpectedEof.into()),
 
-			_ =>
-				()
+			event =>
+				return Err(error::Metadata::UnhandledEvent {
+					phase: "territories".into(),
+					event: format!("{:?}", event),
+				}.into())
 		}
 	}
 }
@@ -215,6 +231,10 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 
 	loop {
 		match reader.read_event(&mut buffer)? {
+			Event::Text(_) |
+			Event::Comment(_) =>
+				(),
+
 			Event::Start(ref e) => {
 				match e.name() {
 					name @ b"references" =>
@@ -287,8 +307,11 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 			Event::Eof =>
 				return Err(error::Metadata::UnexpectedEof.into()),
 
-			_ =>
-				()
+			event =>
+				return Err(error::Metadata::UnhandledEvent {
+					phase: "territory".into(),
+					event: format!("{:?}", event),
+				}.into())
 		}
 	}
 }
@@ -297,8 +320,36 @@ fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) 
 	let mut buffer     = Vec::new();
 	let mut descriptor = meta.defaults.descriptor.clone();
 
+	fn lengths(value: &str) -> Result<Vec<u16>> {
+		let mut result = Vec::new();
+
+		for part in value.split(',').map(str::trim) {
+			if part.as_bytes()[0] == b'[' {
+				let mut parts = part.split('-');
+
+				if let (Some(start), Some(end)) = (parts.next(), parts.next()) {
+					let start = start[1 ..].parse::<u16>()?;
+					let end   = end[.. end.len() - 1].parse::<u16>()?;
+
+					for i in start .. end + 1 {
+						result.push(i);
+					}
+				}
+			}
+			else {
+				result.push(part.parse()?);
+			}
+		}
+
+		Ok(result)
+	}
+
 	loop {
 		match reader.read_event(&mut buffer)? {
+			Event::Text(_) |
+			Event::Comment(_) =>
+				(),
+
 			Event::Start(ref e) => {
 				match e.name() {
 					name @ b"nationalNumberPattern" =>
@@ -306,6 +357,38 @@ fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) 
 
 					name @ b"exampleNumber" =>
 						descriptor.example = Some(text(reader, name)?),
+
+					name =>
+						return Err(error::Metadata::UnhandledElement {
+							phase: "descriptor".into(),
+							name:  str::from_utf8(name)?.into(),
+						}.into())
+				}
+			}
+
+			Event::Empty(ref e) => {
+				match e.name() {
+					b"possibleLengths" => {
+						for attr in e.attributes() {
+							let Attribute {key, value } = attr?;
+
+							match (str::from_utf8(key)?, str::from_utf8(value)?) {
+								("national", value) =>
+									descriptor.possible_length = lengths(value)?,
+
+								("localOnly", value) =>
+									descriptor.possible_local_length = lengths(value)?,
+
+								(name, value) =>
+									return Err(error::Metadata::UnhandledAttribute {
+										phase: "descriptor::possibleLength".into(),
+										name:  name.into(),
+										value: value.into()
+									}.into())
+
+							}
+						}
+					}
 
 					name =>
 						return Err(error::Metadata::UnhandledElement {
@@ -325,8 +408,11 @@ fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) 
 			Event::Eof =>
 				return Err(error::Metadata::UnexpectedEof.into()),
 
-			_ =>
-				()
+			event =>
+				return Err(error::Metadata::UnhandledEvent {
+					phase: "descriptor".into(),
+					event: format!("{:?}", event),
+				}.into())
 		}
 	}
 }
@@ -338,6 +424,10 @@ fn formats<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> 
 
 	loop {
 		match reader.read_event(&mut buffer)? {
+			Event::Text(_) |
+			Event::Comment(_) =>
+				(),
+
 			Event::Start(ref e) => {
 				match e.name() {
 					name @ b"numberFormat" => {
@@ -368,8 +458,11 @@ fn formats<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> 
 			Event::Eof =>
 				return Err(error::Metadata::UnexpectedEof.into()),
 
-			_ =>
-				()
+			event =>
+				return Err(error::Metadata::UnhandledEvent {
+					phase: "formats".into(),
+					event: format!("{:?}", event),
+				}.into())
 		}
 	}
 }
@@ -407,6 +500,10 @@ fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], 
 
 	loop {
 		match reader.read_event(&mut buffer)? {
+			Event::Text(_) |
+			Event::Comment(_) =>
+				(),
+
 			Event::Start(ref e) => {
 				match e.name() {
 					name @ b"leadingDigits" =>
@@ -455,8 +552,11 @@ fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], 
 			Event::Eof =>
 				return Err(error::Metadata::UnexpectedEof.into()),
 
-			_ =>
-				()
+			event =>
+				return Err(error::Metadata::UnhandledEvent {
+					phase: "format".into(),
+					event: format!("{:?}", event),
+				}.into())
 		}
 	}
 }
@@ -466,6 +566,11 @@ fn ignore<'a, R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<()> {
 
 	loop {
 		match reader.read_event(&mut buffer)? {
+			Event::Text(_) |
+			Event::Comment(_) |
+			Event::Empty(_) =>
+				(),
+
 			Event::Start(ref e) => {
 				match e.name() {
 					name =>
@@ -483,8 +588,11 @@ fn ignore<'a, R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<()> {
 			Event::Eof =>
 				return Err(error::Metadata::UnexpectedEof.into()),
 
-			_ =>
-				()
+			event =>
+				return Err(error::Metadata::UnhandledEvent {
+					phase: "ignore".into(),
+					event: format!("{:?}", event),
+				}.into())
 		}
 	}
 }
@@ -508,8 +616,11 @@ fn text<'a, R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String> {
 			Event::Eof =>
 				return Err(error::Metadata::UnexpectedEof.into()),
 
-			_ =>
-				()
+			event =>
+				return Err(error::Metadata::UnhandledEvent {
+					phase: "text".into(),
+					event: format!("{:?}", event),
+				}.into())
 		}
 	}
 }
