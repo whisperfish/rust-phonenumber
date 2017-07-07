@@ -32,7 +32,7 @@ pub struct NationalNumber {
 	///
 	/// Clients who use the parsing or conversion functionality of the i18n phone
 	/// number libraries will have these fields set if necessary automatically.
-	pub(crate) zeroes: Option<u8>,
+	pub(crate) zeros: u8,
 }
 
 impl NationalNumber {
@@ -40,8 +40,8 @@ impl NationalNumber {
 		self.value
 	}
 
-	pub fn zeroes(&self) -> Option<u8> {
-		self.zeroes
+	pub fn zeros(&self) -> u8 {
+		self.zeros
 	}
 }
 
