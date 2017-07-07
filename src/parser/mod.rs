@@ -143,10 +143,9 @@ mod test {
 		number.country_code.source = Source::Plus;
 		assert_eq!(number, parser::parse(Some(Country("US")), "+64 3 331 6005").unwrap());
 
-		// TODO: Ignore plus because invalid country code, that should be done in `international_code`.
-		// assert_eq!(number, parser::parse(&*DATABASE, Some(Country("US")), "+01164 3 331 6005").unwrap());
-		// assert_eq!(number, parser::parse(&*DATABASE, Some(Country("NZ")), "+0064 3 331 6005").unwrap());
-		// assert_eq!(number, parser::parse(&*DATABASE, Some(Country("NZ")), "+ 00 64 3 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country("US")), "+01164 3 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country("NZ")), "+0064 3 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country("NZ")), "+ 00 64 3 331 6005").unwrap());
 
 		let mut number = PhoneNumber {
 			country_code: CountryCode {

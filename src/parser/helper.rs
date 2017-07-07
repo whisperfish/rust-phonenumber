@@ -16,7 +16,6 @@ use std::borrow::Cow;
 use nom::{self, AsChar, IResult};
 use fnv::FnvHashMap;
 use regex_cache::LazyRegex;
-use either::Either;
 
 use error::{self, Result};
 use parser::consts;
@@ -181,13 +180,16 @@ pub fn international_prefix<'a>(idd: Option<&LazyRegex>, mut number: Number<'a>)
 	if start != 0 {
 		number.country = Source::Plus;
 		number.value   = trim(number.value, start);
+		number         = normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
 
-		return normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
+		if !idd.and_then(|re| re.find(&number.value)).map(|m| m.start() == 0).unwrap_or(false) {
+			return number;
+		}
 	}
-
-	// Normalize the number.
-	number = normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
-	number.country = Source::Default;
+	else {
+		number.country = Source::Default;
+		number         = normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
+	}
 
 	// Check if the IDD pattern matches.
 	let index = idd.and_then(|re| re.find(&number.value))
@@ -198,8 +200,11 @@ pub fn international_prefix<'a>(idd: Option<&LazyRegex>, mut number: Number<'a>)
 		// Check it starts at the beginning and the next digit after the IDD is not
 		// a 0, since that's invalid.
 		if start == 0 && &number.value[end ..].chars().next() != &Some('0') {
-			number.country = Source::Idd;
-			number.value   = trim(number.value, end);
+			if number.country != Source::Plus {
+				number.country = Source::Idd;
+			}
+
+			number.value = trim(number.value, end);
 		}
 	}
 
