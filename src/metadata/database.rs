@@ -37,6 +37,7 @@ lazy_static! {
 pub struct Database {
 	by_id:   FnvHashMap<String, Arc<super::Metadata>>,
 	by_code: FnvHashMap<u16, Vec<Arc<super::Metadata>>>,
+	regions: FnvHashMap<u16, Vec<String>>,
 }
 
 impl Database {
@@ -131,31 +132,41 @@ impl Database {
 
 		let mut by_id   = FnvHashMap::default();
 		let mut by_code = FnvHashMap::default();
+		let mut regions = FnvHashMap::default();
 
 		for meta in meta {
 			let meta = Arc::new(metadata(meta)?);
 
 			by_id.insert(meta.id.clone(), meta.clone());
 			by_code.entry(meta.country_code).or_insert(Vec::new()).push(meta.clone());
+			regions.entry(meta.country_code).or_insert(Vec::new()).push(meta.id.clone());
 		}
 
 		Ok(Database {
 			by_id:   by_id,
 			by_code: by_code,
+			regions: regions,
 		})
 	}
 
 	pub fn by_id<Q>(&self, key: &Q) -> Option<&super::Metadata>
-		where Q: ?Sized + Hash + Eq,
+		where Q:      ?Sized + Hash + Eq,
 		      String: Borrow<Q>,
 	{
 		self.by_id.get(key).map(AsRef::as_ref)
 	}
 
 	pub fn by_code<Q>(&self, key: &Q) -> Option<Vec<&super::Metadata>>
-		where Q: ?Sized + Hash + Eq,
+		where Q:   ?Sized + Hash + Eq,
 		      u16: Borrow<Q>,
 	{
 		self.by_code.get(key).map(|m| m.iter().map(AsRef::as_ref).collect())
+	}
+
+	pub fn region<Q>(&self, code: &Q) -> Option<Vec<&str>>
+		where Q:   ?Sized + Hash + Eq,
+		      u16: Borrow<Q>
+	{
+		self.regions.get(code).map(|m| m.iter().map(AsRef::as_ref).collect())
 	}
 }
