@@ -62,3 +62,16 @@ pub struct Descriptor {
 	/// not contain any formatting information.
 	pub(crate) example: Option<String>,
 }
+
+impl Descriptor {
+	pub fn is_match(&self, value: &str) -> bool {
+		if !self.possible_length.is_empty() &&
+		   !self.possible_length.contains(&(value.len() as u16))
+		{
+			return false;
+		}
+
+		self.national_number.find(value).map(|m| m.start() == 0)
+			.unwrap_or(false)
+	}
+}

@@ -26,11 +26,15 @@ extern crate regex_cache;
 extern crate fnv;
 extern crate quick_xml as xml;
 extern crate itertools;
+extern crate either;
 
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate bincode;
+
+#[macro_use]
+mod helper;
 
 pub mod error;
 pub use error::{Error, ErrorKind, Result};
@@ -55,6 +59,9 @@ pub use parser::parse;
 
 pub mod formatter;
 pub use formatter::format;
+
+pub mod validator;
+pub use validator::{validate, validate_with};
 
 pub fn init() -> error::Result<()> {
 	lazy_static::initialize(&metadata::DATABASE);
