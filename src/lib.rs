@@ -55,10 +55,10 @@ pub mod phone_number;
 pub use phone_number::PhoneNumber;
 
 pub mod parser;
-pub use parser::parse;
+pub use parser::{parse, parse_with};
 
 pub mod formatter;
-pub use formatter::format;
+pub use formatter::{format, format_with};
 
 pub mod validator;
 pub use validator::{validate, validate_with};
