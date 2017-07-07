@@ -44,3 +44,9 @@ impl NationalNumber {
 		self.zeroes
 	}
 }
+
+impl Into<u64> for NationalNumber {
+	fn into(self) -> u64 {
+		self.value
+	}
+}
