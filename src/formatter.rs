@@ -14,7 +14,7 @@
 
 use std::io::{self, Write};
 
-use metadata::Database;
+use metadata::{DATABASE, Database};
 use phone_number::PhoneNumber;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -25,7 +25,11 @@ pub enum Type {
 	Rfc3966,
 }
 
-pub fn format<W: Write>(database: &Database, kind: Type, number: &PhoneNumber, mut out: W) -> io::Result<()> {
+pub fn format<W: Write>(kind: Type, number: &PhoneNumber, out: W) -> io::Result<()> {
+	format_with(&*DATABASE, kind, number, out)
+}
+
+pub fn format_with<W: Write>(database: &Database, kind: Type, number: &PhoneNumber, mut out: W) -> io::Result<()> {
 	write!(&mut out, "+{} ", number.country_code.value)?;
 
 	if let Some(zeroes) = number.national_number.zeroes {

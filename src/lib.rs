@@ -54,6 +54,7 @@ pub mod parser;
 pub use parser::parse;
 
 pub mod formatter;
+pub use formatter::format;
 
 pub fn init() -> error::Result<()> {
 	lazy_static::initialize(&metadata::DATABASE);
