@@ -118,7 +118,7 @@ impl FromStr for PhoneNumber {
 	type Err = Error;
 
 	fn from_str(s: &str) -> Result<Self> {
-		parser::parse(&*DATABASE, None, s)
+		parser::parse(None, s)
 	}
 }
 
