@@ -24,3 +24,9 @@ impl Deref for Extension {
 		&self.0
 	}
 }
+
+impl AsRef<str> for Extension {
+	fn as_ref(&self) -> &str {
+		&self.0
+	}
+}

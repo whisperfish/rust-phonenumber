@@ -53,6 +53,16 @@ impl Default for Source {
 	}
 }
 
+impl CountryCode {
+	pub fn value(&self) -> u16 {
+		self.value
+	}
+
+	pub fn source(&self) -> Source {
+		self.source
+	}
+}
+
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct Country<'a>(pub &'a str);
 

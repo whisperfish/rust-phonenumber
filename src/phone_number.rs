@@ -131,3 +131,21 @@ impl fmt::Display for PhoneNumber {
 		f.write_str(str::from_utf8(&result).unwrap())
 	}
 }
+
+impl PhoneNumber {
+	pub fn country_code(&self) -> &CountryCode {
+		&self.country_code
+	}
+
+	pub fn national_number(&self) -> &NationalNumber {
+		&self.national_number
+	}
+
+	pub fn extension(&self) -> Option<&Extension> {
+		self.extension.as_ref()
+	}
+
+	pub fn carrier(&self) -> Option<&str> {
+		self.carrier.as_ref().map(AsRef::as_ref)
+	}
+}
