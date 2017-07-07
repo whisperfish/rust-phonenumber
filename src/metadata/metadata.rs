@@ -156,7 +156,7 @@ pub struct Metadata {
 	/// It is used merely as a short-cut for working out which region a number
 	/// comes from in the case that there is only one, so leading_digit prefixes
 	/// should not overlap.
-	pub(crate) leading_digits: Option<String>,
+	pub(crate) leading_digits: Option<LazyRegex>,
 
 	/// This field is set when this country has implemented mobile number
 	/// portability. This means that transferring mobile numbers between carriers

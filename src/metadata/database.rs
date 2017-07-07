@@ -101,7 +101,7 @@ impl Database {
 				international_format: meta.international_format.into_iter().map(format).collect::<Result<_>>()?,
 
 				main_country_for_code: meta.main_country_for_code,
-				leading_digits: meta.leading_digits,
+				leading_digits: switch(meta.leading_digits.map(regex))?,
 				mobile_number_portable: meta.mobile_number_portable,
 			})
 		}
