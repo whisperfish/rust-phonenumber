@@ -42,7 +42,7 @@ mod national_number;
 pub use national_number::NationalNumber;
 
 pub mod country_code;
-pub use country_code::CountryCode;
+pub use country_code::{CountryCode, Country};
 
 mod extension;
 pub use extension::Extension;
