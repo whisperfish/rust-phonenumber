@@ -24,7 +24,7 @@ use metadata::DATABASE;
 use parser;
 use formatter;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct PhoneNumber {
 	/// The country calling code for this number, as defined by the International
 	/// Telecommunication Union (ITU). For example, this would be 1 for NANPA

@@ -14,7 +14,7 @@
 
 use std::ops::Deref;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct Extension(pub(crate) String);
 
 impl Deref for Extension {

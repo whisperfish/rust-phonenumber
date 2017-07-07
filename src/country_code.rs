@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct CountryCode {
 	/// The country code value.
 	pub(crate) value: u16,
@@ -23,7 +23,7 @@ pub struct CountryCode {
 
 /// The source from which the country_code is derived. This is not set in the
 /// general parsing method, but in the method that parses and keeps raw_input.
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum Source {
 	/// The country_code is derived based on a phone number with a leading "+",
 	/// e.g. the French number "+33 1 42 68 53 00".
