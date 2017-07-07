@@ -148,9 +148,7 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 				number.prefix = Some(code.into());
 				number        = national_number(meta, number);
 
-				if desc.find(&number.value).map(|m| m.start() == 0).unwrap_or(false) {
-					return Ok(number);
-				}
+				return Ok(number);
 			}
 		}
 	}
