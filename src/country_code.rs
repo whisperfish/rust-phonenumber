@@ -63,6 +63,12 @@ impl CountryCode {
 	}
 }
 
+impl Into<u16> for CountryCode {
+	fn into(self) -> u16 {
+		self.value
+	}
+}
+
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub struct Country<'a>(pub &'a str);
 
