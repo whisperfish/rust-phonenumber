@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::fmt;
+
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct NationalNumber {
 	pub(crate) value: u64,
@@ -48,5 +50,15 @@ impl NationalNumber {
 impl Into<u64> for NationalNumber {
 	fn into(self) -> u64 {
 		self.value
+	}
+}
+
+impl fmt::Display for NationalNumber {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		for _ in 0 .. self.zeros {
+			write!(f, "0")?;
+		}
+
+		write!(f, "{}", self.value)
 	}
 }
