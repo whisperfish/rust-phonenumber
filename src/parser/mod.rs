@@ -62,10 +62,19 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<Country>, 
 	named!(phone_number(&str) -> helper::Number,
 		alt_complete!(call!(rfc3966::phone_number) | call!(natural::phone_number)));
 
+	// Try to parse the number as RFC3966 or natural language.
 	let number = phone_number(string.as_ref()).to_full_result()
 		.or(Err(error::Parse::NoNumber))?;
 
-	let number = helper::country_code(database, country, number)?;
+	// Normalize the number and extract country code.
+	let mut number = helper::country_code(database, country, number)?;
+
+	// Strip national prefix if present.
+	if let Some(prefix) = country.and_then(|c| database.by_id(c.as_ref())).and_then(|m| m.national_prefix.as_ref()) {
+		if number.value.starts_with(prefix) {
+			number.value = helper::trim(number.value, prefix.len());
+		}
+	}
 
 	Ok(PhoneNumber {
 		country_code: CountryCode {
@@ -74,8 +83,8 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<Country>, 
 		},
 
 		national_number: NationalNumber {
-			value:  number.value.parse()?,
-			zeroes: None,
+			value: number.value.parse()?,
+			zeros: number.value.chars().take_while(|&c| c == '0').count() as u8,
 		},
 
 		extension: number.extension.map(|s| Extension(s.into_owned())),
@@ -112,8 +121,8 @@ mod test {
 			},
 
 			national_number: NationalNumber {
-				value:  33316005,
-				zeroes: None,
+				value: 33316005,
+				zeros: 0,
 			},
 
 			extension: None,
@@ -154,8 +163,8 @@ mod test {
 			},
 
 			national_number: NationalNumber {
-				value:  64123456,
-				zeroes: None,
+				value: 64123456,
+				zeros: 0,
 			},
 
 			extension: None,
@@ -171,8 +180,8 @@ mod test {
 			},
 
 			national_number: NationalNumber {
-				value:  30123456,
-				zeroes: None,
+				value: 30123456,
+				zeros: 0,
 			},
 
 			extension: None,
@@ -188,8 +197,8 @@ mod test {
 		// 	},
 		//
 		// 	national_number: NationalNumber {
-		// 		value:  1234567890,
-		// 		zeroes: None,
+		// 		value: 1234567890,
+		// 		zeros: 0,
 		// 	},
 		//
 		// 	extension: None,
@@ -203,28 +212,27 @@ mod test {
 			},
 
 			national_number: NationalNumber {
-				value:  2345,
-				zeroes: None,
+				value: 2345,
+				zeros: 0,
 			},
 
 			extension: None,
 			carrier:   None,
 		}, parser::parse(Some(Country::JP), "+81 *2345").unwrap());
 
-		// TODO: Make `country_code` more lax about short numbers.
-		// assert_eq!(PhoneNumber {
-		// 	country_code: CountryCode {
-		// 		value:  64,
-		// 		source: Source::Default,
-		// 	},
-		//
-		// 	national_number: NationalNumber {
-		// 		value:  12,
-		// 		zeroes: None,
-		// 	},
-		//
-		// 	extension: None,
-		// 	carrier:   None,
-		// }, parser::parse(Some(Country("NZ")), "12").unwrap());
+		assert_eq!(PhoneNumber {
+			country_code: CountryCode {
+				value:  64,
+				source: Source::Default,
+			},
+
+			national_number: NationalNumber {
+				value: 12,
+				zeros: 0,
+			},
+
+			extension: None,
+			carrier:   None,
+		}, parser::parse(Some(Country::NZ), "12").unwrap());
 	}
 }
