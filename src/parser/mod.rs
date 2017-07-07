@@ -121,31 +121,31 @@ mod test {
 		};
 
 		number.country_code.source = Source::Default;
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "033316005").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "33316005").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "03-331 6005").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "03 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "033316005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "33316005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "03-331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "03 331 6005").unwrap());
 
 		number.country_code.source = Source::Plus;
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "tel:03-331-6005;phone-context=+64").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "tel:03-331-6005;phone-context=+64").unwrap());
 		// TODO: What the fuck is this.
-		// assert_eq!(number, parser::parse(Some(Country("NZ")), "tel:331-6005;phone-context=+64-3").unwrap());
-		// assert_eq!(number, parser::parse(Some(Country("NZ")), "tel:331-6005;phone-context=+64-3").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "tel:03-331-6005;phone-context=+64;a=%A1").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "tel:03-331-6005;isub=12345;phone-context=+64").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "tel:+64-3-331-6005;isub=12345").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "03-331-6005;phone-context=+64").unwrap());
+		// assert_eq!(number, parser::parse(Some(Country::NZ), "tel:331-6005;phone-context=+64-3").unwrap());
+		// assert_eq!(number, parser::parse(Some(Country::NZ), "tel:331-6005;phone-context=+64-3").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "tel:03-331-6005;phone-context=+64;a=%A1").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "tel:03-331-6005;isub=12345;phone-context=+64").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "tel:+64-3-331-6005;isub=12345").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "03-331-6005;phone-context=+64").unwrap());
 
 		number.country_code.source = Source::Idd;
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "0064 3 331 6005").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("US")), "01164 3 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "0064 3 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::US), "01164 3 331 6005").unwrap());
 
 		number.country_code.source = Source::Plus;
-		assert_eq!(number, parser::parse(Some(Country("US")), "+64 3 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::US), "+64 3 331 6005").unwrap());
 
-		assert_eq!(number, parser::parse(Some(Country("US")), "+01164 3 331 6005").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "+0064 3 331 6005").unwrap());
-		assert_eq!(number, parser::parse(Some(Country("NZ")), "+ 00 64 3 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::US), "+01164 3 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "+0064 3 331 6005").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "+ 00 64 3 331 6005").unwrap());
 
 		let mut number = PhoneNumber {
 			country_code: CountryCode {
@@ -162,8 +162,7 @@ mod test {
 			carrier:   None,
 		};
 
-		// TODO: Figure out why the country code is not getting found.
-		// assert_eq!(number, parser::parse(Some(Country("NZ")), "64(0)64123456").unwrap());
+		assert_eq!(number, parser::parse(Some(Country::NZ), "64(0)64123456").unwrap());
 
 		assert_eq!(PhoneNumber {
 			country_code: CountryCode {
@@ -178,7 +177,7 @@ mod test {
 
 			extension: None,
 			carrier:   None,
-		}, parser::parse(Some(Country("DE")), "301/23456").unwrap());
+		}, parser::parse(Some(Country::DE), "301/23456").unwrap());
 
 		// TODO: figure out why their tests do not fail on this, US numbers cannot
 		// start with 1, or so the regex says.
@@ -195,7 +194,7 @@ mod test {
 		//
 		// 	extension: None,
 		// 	carrier:   None,
-		// }, parser::parse(Some(Country("US")), "123-456-7890").unwrap());
+		// }, parser::parse(Some(Country::US), "123-456-7890").unwrap());
 
 		assert_eq!(PhoneNumber {
 			country_code: CountryCode {
@@ -210,7 +209,7 @@ mod test {
 
 			extension: None,
 			carrier:   None,
-		}, parser::parse(Some(Country("JP")), "+81 *2345").unwrap());
+		}, parser::parse(Some(Country::JP), "+81 *2345").unwrap());
 
 		// TODO: Make `country_code` more lax about short numbers.
 		// assert_eq!(PhoneNumber {

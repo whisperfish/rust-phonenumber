@@ -565,7 +565,8 @@ mod test {
 //				.. Default::default()
 //			}).unwrap());
 
-		assert!(helper::country_code(&*DATABASE, Some(Country("US")),
+			.. Default::default()
+		}, helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
 				value: "0119991123456789".into(),
 
@@ -577,21 +578,21 @@ mod test {
 			prefix: Some("1".into()),
 
 			.. Default::default()
-		}, helper::country_code(&*DATABASE, Some(Country("US")),
+		}, helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
 				value: "(1 610) 619 4466".into(),
 
 				.. Default::default()
 			}).unwrap());
 
-		assert!(helper::country_code(&*DATABASE, Some(Country("US")),
+		assert!(helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
 				value: "(1 610) 619 446".into(),
 
 				.. Default::default()
 			}).is_err());
 
-		assert!(helper::country_code(&*DATABASE, Some(Country("US")),
+		assert!(helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
 				value: "(1 610) 619".into(),
 
