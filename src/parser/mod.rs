@@ -109,8 +109,6 @@ mod test {
 	use phone_number::PhoneNumber;
 	use national_number::NationalNumber;
 	use country_code::{CountryCode, Country, Source};
-	use extension::Extension;
-	use metadata::DATABASE;
 
 	#[test]
 	fn parse() {
@@ -137,7 +135,7 @@ mod test {
 
 		number.country_code.source = Source::Plus;
 		assert_eq!(number, parser::parse(Some(Country::NZ), "tel:03-331-6005;phone-context=+64").unwrap());
-		// TODO: What the fuck is this.
+		// FIXME: What the fuck is this.
 		// assert_eq!(number, parser::parse(Some(Country::NZ), "tel:331-6005;phone-context=+64-3").unwrap());
 		// assert_eq!(number, parser::parse(Some(Country::NZ), "tel:331-6005;phone-context=+64-3").unwrap());
 		assert_eq!(number, parser::parse(Some(Country::NZ), "tel:03-331-6005;phone-context=+64;a=%A1").unwrap());
@@ -156,7 +154,7 @@ mod test {
 		assert_eq!(number, parser::parse(Some(Country::NZ), "+0064 3 331 6005").unwrap());
 		assert_eq!(number, parser::parse(Some(Country::NZ), "+ 00 64 3 331 6005").unwrap());
 
-		let mut number = PhoneNumber {
+		let number = PhoneNumber {
 			country_code: CountryCode {
 				value:  64,
 				source: Source::Default,

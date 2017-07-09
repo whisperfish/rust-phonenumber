@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::io::Write;
 use std::fmt;
 use std::str::FromStr;
 
@@ -20,7 +19,6 @@ use error::{Error, Result};
 use country_code::CountryCode;
 use national_number::NationalNumber;
 use extension::Extension;
-use metadata::DATABASE;
 use parser;
 use formatter;
 
@@ -123,6 +121,9 @@ impl FromStr for PhoneNumber {
 }
 
 impl fmt::Display for PhoneNumber {
+	// FIXME: Make this not awful, there's some lacking interaction between
+	// `fmt::Write` and `io::Write`, or maybe `formatter::format` should
+	// implement things based on `fmt::Write`.
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		use std::str;
 		let mut result = Vec::new();

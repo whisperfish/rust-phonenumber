@@ -459,7 +459,7 @@ mod test {
 	use parser::helper::*;
 	use parser::consts;
 	use country_code::Source;
-	use metadata::{Metadata, Descriptor, DATABASE};
+	use metadata::{DATABASE};
 
 	#[test]
 	fn punctuation() {

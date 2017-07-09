@@ -116,7 +116,6 @@ fn mark(c: char) -> bool {
 mod test {
 	use parser::rfc3966;
 	use parser::helper::*;
-	use country_code::Source;
 
 	#[test]
 	fn phone_number() {
