@@ -137,11 +137,8 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 			if let Some(country) = country {
 				let meta = database.by_id(country.as_ref()).unwrap();
 				let code = meta.country_code.to_string();
-				let desc = &meta.general.national_number;
 
-				if number.value.starts_with(&code) &&
-				   !desc.find(&number.value).map(|m| m.start() == 0).unwrap_or(false)
-				{
+				if number.value.starts_with(&code) && !meta.general.is_match(&number.value) {
 					number.value = trim(number.value, code.len());
 				}
 
@@ -237,8 +234,41 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 		return number;
 	}
 
-	let desc   = &meta.general.national_number;
-	let viable = desc.find(&number.value).map(|m| m.start() == 0).unwrap_or(false);
+	let viable = meta.general.is_match(&number.value);
+	let groups = parsing.captures_len();
+
+	// Make this not awfully slow when non-lexical lifetimes are stabilized.
+	let mut captures = parsing.captures(&number.value).map(|captures| {
+		let mut result = Vec::new();
+
+		for i in 0 .. captures.len() {
+			result.push(captures.get(i).map(|m| m.as_str().to_owned()));
+		}
+
+		result
+	}).unwrap();
+
+	if transform.is_none() || captures[groups - 1].is_none() {
+		if viable && !meta.general.is_match(&number.value[start ..]) {
+			return number;
+		}
+
+		if groups > 0 && captures[groups - 1].is_some() {
+			number.carrier = Some(captures.remove(groups - 1).unwrap().into());
+		}
+
+		number.value = trim(number.value, end);
+	}
+	else {
+		let transformed = parsing.replace(&number.value, &**transform.unwrap()).into_owned();
+
+		if viable && !meta.general.is_match(&transformed) {
+			return number;
+		}
+
+		number.carrier = Some(captures.remove(1).unwrap().into());
+		number.value   = transformed.into();
+	}
 
 	number
 }
