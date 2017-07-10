@@ -1,11 +1,7 @@
-use std::sync::Arc;
-use std::str;
 use std::path::Path;
 use std::fs::File;
-use std::io::{self, Cursor, BufRead, BufReader, BufWriter, Write};
+use std::io::{BufReader, BufWriter};
 use std::env;
-use std::borrow::Borrow;
-use std::hash::Hash;
 
 #[macro_use]
 extern crate error_chain;

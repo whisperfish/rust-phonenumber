@@ -192,7 +192,7 @@ pub fn international_prefix<'a>(idd: Option<&LazyRegex>, mut number: Number<'a>)
 	if let Some((start, end)) = index {
 		// Check it starts at the beginning and the next digit after the IDD is not
 		// a 0, since that's invalid.
-		if start == 0 && &number.national[end ..].chars().next() != &Some('0') {
+		if start == 0 && !number.national[end ..].starts_with('0') {
 			if number.country != Source::Plus {
 				number.country = Source::Idd;
 			}
@@ -348,7 +348,7 @@ impl<T: AsChar> AsCharExt for T {
 	fn is_punctuation(self) -> bool {
 		let ch = self.as_char();
 		"-x\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2212}\u{30FC}\u{FF0D}-\u{FF0F} \u{00A0}\u{00AD}\u{200B}\u{2060}\u{3000}()\u{FF08}\u{FF09}\u{FF3B}\u{FF3D}[]/~\u{2053}\u{223C}\u{FF5E}"
-			.chars().find(|&c| c == ch).is_some()
+			.chars().any(|c| c == ch)
 	}
 
 	fn is_plus(self) -> bool {
