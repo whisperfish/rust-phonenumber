@@ -137,7 +137,6 @@ impl Database {
 						name:  "national_number".into(),
 					})).and_then(regex)?,
 
-				possible_number: switch(desc.possible_number.map(regex))?,
 				possible_length: desc.possible_length,
 				possible_local_length: desc.possible_local_length,
 				example: desc.example,

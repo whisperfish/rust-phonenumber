@@ -85,7 +85,6 @@ pub struct Format {
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct Descriptor {
 	pub national_number: Option<String>,
-	pub possible_number: Option<String>,
 	pub possible_length: Vec<u16>,
 	pub possible_local_length: Vec<u16>,
 	pub example: Option<String>,

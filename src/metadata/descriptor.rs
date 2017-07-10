@@ -18,7 +18,6 @@ use regex_cache::{Regex, LazyRegex};
 #[derive(Clone, Debug)]
 pub struct Descriptor {
 	pub(crate) national_number: LazyRegex,
-	pub(crate) possible_number: Option<LazyRegex>,
 
 	pub(crate) possible_length: Vec<u16>,
 	pub(crate) possible_local_length: Vec<u16>,
@@ -32,18 +31,6 @@ impl Descriptor {
 	/// total length and leading digits.
 	pub fn national_number(&self) -> &Regex {
 		self.national_number.as_ref()
-	}
-
-	/// The possible_number represents what a potentially valid phone number for
-	/// this region may be written as. This is a superset of the national_number
-	/// above and includes numbers that have the area code omitted. Typically the
-	/// only restrictions here are in the number of digits.
-	///
-	/// This could be used to highlight tokens in a text that may be a phone
-	/// number, or to quickly prune numbers that could not possibly be a phone
-	/// number for this locale.
-	pub fn possible_number(&self) -> Option<&Regex> {
-		self.possible_number.as_ref().map(AsRef::as_ref)
 	}
 
 	/// These represent the lengths a phone number from this region can be. They
