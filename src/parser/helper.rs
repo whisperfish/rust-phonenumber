@@ -235,24 +235,18 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 	let viable = meta.descriptors.general.is_match(&number.national);
 	let groups = parsing.captures_len();
 
-	// Make this not awfully slow when non-lexical lifetimes are stabilized.
-	let mut captures = parsing.captures(&number.national).map(|captures| {
-		let mut result = Vec::new();
-
-		for i in 0 .. captures.len() {
-			result.push(captures.get(i).map(|m| m.as_str().to_owned()));
-		}
-
-		result
+	let (first, last) = parsing.captures(&number.national).map(|c| {
+		(c.get(1).map(|m| m.as_str().to_owned()),
+		 c.get(c.len() - 1).map(|m| m.as_str().to_owned()))
 	}).unwrap();
 
-	if transform.is_none() || captures[groups - 1].is_none() {
+	if transform.is_none() || last.is_none() {
 		if viable && !meta.descriptors.general.is_match(&number.national[start ..]) {
 			return number;
 		}
 
-		if groups > 0 && captures[groups - 1].is_some() {
-			number.carrier = Some(captures.remove(groups - 1).unwrap().into());
+		if groups > 0 && last.is_some() {
+			number.carrier = Some(last.unwrap().into());
 		}
 
 		number.national = trim(number.national, end);
@@ -264,7 +258,7 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 			return number;
 		}
 
-		number.carrier  = Some(captures.remove(1).unwrap().into());
+		number.carrier  = Some(first.unwrap().into());
 		number.national = transformed.into();
 	}
 
