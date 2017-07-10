@@ -56,20 +56,14 @@ pub use extension::Extension;
 mod carrier;
 pub use carrier::Carrier;
 
-pub mod phone_number;
-pub use phone_number::PhoneNumber;
+mod phone_number;
+pub use phone_number::{PhoneNumber, Type};
 
-pub mod parser;
+mod parser;
 pub use parser::{parse, parse_with};
 
-pub mod formatter;
+mod formatter;
 pub use formatter::{format, format_with};
 
 mod validator;
 pub use validator::{Validation, is_viable, is_valid, is_valid_with};
-
-pub fn init() -> error::Result<()> {
-	lazy_static::initialize(&metadata::DATABASE);
-
-	Ok(())
-}
