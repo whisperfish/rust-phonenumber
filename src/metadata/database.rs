@@ -26,6 +26,7 @@ use bincode;
 use error::{self, Result};
 use metadata::loader;
 
+/// The Google provided metadata database, used as default.
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
 lazy_static! {
@@ -33,6 +34,7 @@ lazy_static! {
 		Database::from(bincode::deserialize(DATABASE).unwrap()).unwrap();
 }
 
+/// Representation of a database of metadata for phone number.
 #[derive(Clone, Debug)]
 pub struct Database {
 	by_id:   FnvHashMap<String, Arc<super::Metadata>>,
@@ -41,16 +43,18 @@ pub struct Database {
 }
 
 impl Database {
+	/// Load a database from the given file.
 	pub fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
 		Database::from(loader::load(BufReader::new(File::open(path)?))?)
 	}
 
+	/// Parse a database from the given string.
 	pub fn parse<S: AsRef<str>>(content: S) -> Result<Self> {
 		Database::from(loader::load(Cursor::new(content.as_ref()))?)
 	}
 
-	fn from(meta: Vec<loader::Metadata>) -> Result<Self> {
-		#[inline(always)]
+	/// Create a database from a loaded database.
+	pub fn from(meta: Vec<loader::Metadata>) -> Result<Self> {
 		fn switch<T>(value: Option<Result<T>>) -> Result<Option<T>> {
 			match value {
 				None =>
@@ -64,32 +68,33 @@ impl Database {
 			}
 		}
 
-		#[inline(always)]
 		fn regex(value: String) -> Result<LazyRegex> {
 			Ok(LazyRegexBuilder::new(&value).ignore_whitespace(true).build()?)
 		}
 
 		fn metadata(meta: loader::Metadata) -> Result<super::Metadata> {
 			Ok(super::Metadata {
-				general:          descriptor(meta.general.ok_or(error::Metadata::MissingValue("generalDesc".into()))?)?,
-				fixed_line:       switch(meta.fixed_line.map(descriptor))?,
-				mobile:           switch(meta.mobile.map(descriptor))?,
-				toll_free:        switch(meta.toll_free.map(descriptor))?,
-				premium_rate:     switch(meta.premium_rate.map(descriptor))?,
-				shared_cost:      switch(meta.shared_cost.map(descriptor))?,
-				personal:         switch(meta.personal.map(descriptor))?,
-				voip:             switch(meta.voip.map(descriptor))?,
-				pager:            switch(meta.pager.map(descriptor))?,
-				uan:              switch(meta.uan.map(descriptor))?,
-				emergency:        switch(meta.emergency.map(descriptor))?,
-				voicemail:        switch(meta.voicemail.map(descriptor))?,
-				short_code:       switch(meta.short_code.map(descriptor))?,
-				standard_rate:    switch(meta.standard_rate.map(descriptor))?,
-				carrier:          switch(meta.carrier.map(descriptor))?,
-				no_international: switch(meta.no_international.map(descriptor))?,
+				descriptors: super::Descriptors {
+					general:          descriptor(meta.general.ok_or_else(|| error::Metadata::MissingValue("generalDesc".into()))?)?,
+					fixed_line:       switch(meta.fixed_line.map(descriptor))?,
+					mobile:           switch(meta.mobile.map(descriptor))?,
+					toll_free:        switch(meta.toll_free.map(descriptor))?,
+					premium_rate:     switch(meta.premium_rate.map(descriptor))?,
+					shared_cost:      switch(meta.shared_cost.map(descriptor))?,
+					personal_number:  switch(meta.personal_number.map(descriptor))?,
+					voip:             switch(meta.voip.map(descriptor))?,
+					pager:            switch(meta.pager.map(descriptor))?,
+					uan:              switch(meta.uan.map(descriptor))?,
+					emergency:        switch(meta.emergency.map(descriptor))?,
+					voicemail:        switch(meta.voicemail.map(descriptor))?,
+					short_code:       switch(meta.short_code.map(descriptor))?,
+					standard_rate:    switch(meta.standard_rate.map(descriptor))?,
+					carrier:          switch(meta.carrier.map(descriptor))?,
+					no_international: switch(meta.no_international.map(descriptor))?,
+				},
 
-				id: meta.id.ok_or(error::Metadata::MissingValue("id".into()))?,
-				country_code: meta.country_code.ok_or(error::Metadata::MissingValue("countryCode".into()))?,
+				id: meta.id.ok_or_else(|| error::Metadata::MissingValue("id".into()))?,
+				country_code: meta.country_code.ok_or_else(|| error::Metadata::MissingValue("countryCode".into()))?,
 
 				international_prefix: switch(meta.international_prefix.map(regex))?,
 				preferred_international_prefix: meta.preferred_international_prefix,
@@ -112,7 +117,7 @@ impl Database {
 			desc.national_number.as_ref().unwrap();
 
 			Ok(super::Descriptor {
-				national_number: desc.national_number.ok_or(error::Metadata::MissingValue("format".into()).into()).and_then(regex)?,
+				national_number: desc.national_number.ok_or_else(|| error::Metadata::MissingValue("format".into()).into()).and_then(regex)?,
 				possible_number: switch(desc.possible_number.map(regex))?,
 				possible_length: desc.possible_length,
 				possible_local_length: desc.possible_local_length,
@@ -122,8 +127,8 @@ impl Database {
 
 		fn format(format: loader::Format) -> Result<super::Format> {
 			Ok(super::Format {
-				pattern: format.pattern.ok_or(error::Metadata::MissingValue("format".into()).into()).and_then(regex)?,
-				format: format.format.ok_or(error::Metadata::MissingValue("format".into()))?,
+				pattern: format.pattern.ok_or_else(|| error::Metadata::MissingValue("format".into()).into()).and_then(regex)?,
+				format: format.format.ok_or_else(|| error::Metadata::MissingValue("format".into()))?,
 				leading_digits: format.leading_digits.into_iter().map(regex).collect::<Result<_>>()?,
 				national_prefix: format.national_prefix,
 				domestic_carrier: format.domestic_carrier,
@@ -138,8 +143,8 @@ impl Database {
 			let meta = Arc::new(metadata(meta)?);
 
 			by_id.insert(meta.id.clone(), meta.clone());
-			by_code.entry(meta.country_code).or_insert(Vec::new()).push(meta.clone());
-			regions.entry(meta.country_code).or_insert(Vec::new()).push(meta.id.clone());
+			by_code.entry(meta.country_code).or_insert_with(Vec::new).push(meta.clone());
+			regions.entry(meta.country_code).or_insert_with(Vec::new).push(meta.id.clone());
 		}
 
 		Ok(Database {
@@ -149,6 +154,7 @@ impl Database {
 		})
 	}
 
+	/// Get a metadata entry by country ID.
 	pub fn by_id<Q>(&self, key: &Q) -> Option<&super::Metadata>
 		where Q:      ?Sized + Hash + Eq,
 		      String: Borrow<Q>,
@@ -156,6 +162,7 @@ impl Database {
 		self.by_id.get(key).map(AsRef::as_ref)
 	}
 
+	/// Get metadata entries by country code.
 	pub fn by_code<Q>(&self, key: &Q) -> Option<Vec<&super::Metadata>>
 		where Q:   ?Sized + Hash + Eq,
 		      u16: Borrow<Q>,
@@ -163,6 +170,7 @@ impl Database {
 		self.by_code.get(key).map(|m| m.iter().map(AsRef::as_ref).collect())
 	}
 
+	/// Get all country IDs corresponding to the given country code.
 	pub fn region<Q>(&self, code: &Q) -> Option<Vec<&str>>
 		where Q:   ?Sized + Hash + Eq,
 		      u16: Borrow<Q>

@@ -69,57 +69,57 @@ pub fn source_for(database: &Database, code: u16, national: &str) -> Option<Eith
 }
 
 pub fn number_type(meta: &Metadata, value: &str) -> Type {
-	if !meta.general.is_match(value) {
+	if !meta.descriptors.general.is_match(value) {
 		return Type::Unknown;
 	}
 
-	if meta.premium_rate.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+	if meta.descriptors.premium_rate.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 		return Type::PremiumRate;
 	}
 
-	if meta.toll_free.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+	if meta.descriptors.toll_free.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 		return Type::TollFree;
 	}
 
-	if meta.shared_cost.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+	if meta.descriptors.shared_cost.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 		return Type::SharedCost;
 	}
 
-	if meta.voip.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+	if meta.descriptors.voip.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 		return Type::Voip;
 	}
 
-	if meta.personal.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+	if meta.descriptors.personal_number.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 		return Type::PersonalNumber;
 	}
 
-	if meta.pager.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+	if meta.descriptors.pager.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 		return Type::Pager;
 	}
 
-	if meta.uan.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+	if meta.descriptors.uan.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 		return Type::Uan;
 	}
 
-	if meta.voicemail.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+	if meta.descriptors.voicemail.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 		return Type::Voicemail;
 	}
 
-	if meta.fixed_line.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
-		if meta.fixed_line.as_ref().map(|d| d.national_number.as_str()) ==
-		   meta.mobile.as_ref().map(|d| d.national_number.as_str())
+	if meta.descriptors.fixed_line.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+		if meta.descriptors.fixed_line.as_ref().map(|d| d.national_number.as_str()) ==
+		   meta.descriptors.mobile.as_ref().map(|d| d.national_number.as_str())
 		{
 			return Type::FixedLineOrMobile;
 		}
 
-		if meta.mobile.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+		if meta.descriptors.mobile.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 			return Type::FixedLineOrMobile;
 		}
 
 		return Type::FixedLine;
 	}
 
-	if meta.mobile.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
+	if meta.descriptors.mobile.as_ref().map(|d| d.is_match(value)).unwrap_or(false) {
 		return Type::Mobile;
 	}
 

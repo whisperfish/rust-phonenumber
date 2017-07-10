@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Phone number metadata, containing patterns, formatting and other useful
+//! data about countries and phone numbers.
+
 mod format;
 pub use self::format::Format;
 
@@ -19,8 +22,9 @@ mod descriptor;
 pub use self::descriptor::Descriptor;
 
 mod metadata;
-pub use self::metadata::Metadata;
+pub use self::metadata::{Metadata, Descriptors};
 
-mod loader;
 mod database;
 pub use self::database::{Database, DEFAULT as DATABASE};
+
+pub mod loader;

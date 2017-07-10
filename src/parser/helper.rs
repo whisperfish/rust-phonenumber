@@ -233,7 +233,7 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 		return number;
 	}
 
-	let viable = meta.general.is_match(&number.national);
+	let viable = meta.descriptors.general.is_match(&number.national);
 	let groups = parsing.captures_len();
 
 	// Make this not awfully slow when non-lexical lifetimes are stabilized.
@@ -248,7 +248,7 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 	}).unwrap();
 
 	if transform.is_none() || captures[groups - 1].is_none() {
-		if viable && !meta.general.is_match(&number.national[start ..]) {
+		if viable && !meta.descriptors.general.is_match(&number.national[start ..]) {
 			return number;
 		}
 
@@ -261,7 +261,7 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 	else {
 		let transformed = parsing.replace(&number.national, &**transform.unwrap()).into_owned();
 
-		if viable && !meta.general.is_match(&transformed) {
+		if viable && !meta.descriptors.general.is_match(&transformed) {
 			return number;
 		}
 

@@ -35,7 +35,7 @@ pub struct Metadata {
 	pub toll_free:        Option<Descriptor>,
 	pub premium_rate:     Option<Descriptor>,
 	pub shared_cost:      Option<Descriptor>,
-	pub personal:         Option<Descriptor>,
+	pub personal_number:  Option<Descriptor>,
 	pub voip:             Option<Descriptor>,
 	pub pager:            Option<Descriptor>,
 	pub uan:              Option<Descriptor>,
@@ -87,11 +87,12 @@ pub struct Descriptor {
 	pub example: Option<String>,
 }
 
+/// Load XML metadata from the given reader.
 pub fn load<R: BufRead>(reader: R) -> Result<Vec<Metadata>> {
 	metadata(&mut Reader::from_reader(reader))
 }
 
-pub fn metadata<'a, R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> {
+fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> {
 	let mut buffer = Vec::new();
 	let mut result = Vec::new();
 
@@ -131,7 +132,7 @@ pub fn metadata<'a, R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>>
 	}
 }
 
-fn territories<'a, R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> {
+fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> {
 	let mut buffer = Vec::new();
 	let mut result = Vec::new();
 
@@ -237,7 +238,8 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 
 			Event::Start(ref e) => {
 				match e.name() {
-					name @ b"references" =>
+					name @ b"references" |
+					name @ b"areaCodeOptional" =>
 						ignore(reader, name)?,
 
 					name @ b"generalDesc" =>
@@ -259,7 +261,7 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 						meta.shared_cost = Some(descriptor(reader, &meta, name)?),
 
 					name @ b"personalNumber" =>
-						meta.personal = Some(descriptor(reader, &meta, name)?),
+						meta.personal_number = Some(descriptor(reader, &meta, name)?),
 
 					name @ b"voip" =>
 						meta.voip = Some(descriptor(reader, &meta, name)?),
@@ -285,9 +287,6 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 						meta.format               = national;
 						meta.international_format = international;
 					}
-
-					name @ b"areaCodeOptional" =>
-						ignore(reader, name)?,
 
 					name =>
 						return Err(error::Metadata::UnhandledElement {
@@ -561,7 +560,7 @@ fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], 
 	}
 }
 
-fn ignore<'a, R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<()> {
+fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<()> {
 	let mut buffer = Vec::new();
 
 	loop {
@@ -597,7 +596,7 @@ fn ignore<'a, R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<()> {
 	}
 }
 
-fn text<'a, R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String> {
+fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String> {
 	let mut buffer = Vec::new();
 	let mut result = String::new();
 

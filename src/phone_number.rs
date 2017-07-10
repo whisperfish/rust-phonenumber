@@ -89,13 +89,13 @@ pub enum Type {
 	/// http://en.wikipedia.org/wiki/Shared_Cost_Service for more information.
 	SharedCost,
 
-	/// Voice over IP numbers. This includes TSoIP (Telephony Service over IP).
-	Voip,
-
 	/// A personal number is associated with a particular person, and may be
 	/// routed to either a MOBILE or FIXED_LINE number. Some more information can
 	/// be found here: http://en.wikipedia.org/wiki/Personal_Numbers
 	PersonalNumber,
+
+	/// Voice over IP numbers. This includes TSoIP (Telephony Service over IP).
+	Voip,
 
 	///
 	Pager,
@@ -105,8 +105,23 @@ pub enum Type {
 	/// company.
 	Uan,
 
+	///
+	Emergency,
+
 	/// Used for "Voice Mail Access Numbers".
 	Voicemail,
+
+	///
+	ShortCode,
+
+	///
+	StandardRate,
+
+	///
+	Carrier,
+
+	///
+	NoInternational,
 
 	/// A phone number is of type UNKNOWN when it does not fit any of the known
 	/// patterns for a specific region.

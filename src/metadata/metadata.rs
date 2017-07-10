@@ -12,19 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex_cache::LazyRegex;
+use regex_cache::{Regex, LazyRegex};
 
 use metadata::{Format, Descriptor};
+use phone_number::Type;
 
+/// Phone number metadata.
 #[derive(Clone, Debug)]
 pub struct Metadata {
+	pub(crate) descriptors: Descriptors,
+	pub(crate) id: String,
+	pub(crate) country_code: u16,
+
+	pub(crate) international_prefix: Option<LazyRegex>,
+	pub(crate) preferred_international_prefix: Option<String>,
+	pub(crate) national_prefix: Option<String>,
+	pub(crate) preferred_extension_prefix: Option<String>,
+	pub(crate) national_prefix_for_parsing: Option<LazyRegex>,
+	pub(crate) national_prefix_transform_rule: Option<String>,
+
+	pub(crate) format: Vec<Format>,
+	pub(crate) international_format: Vec<Format>,
+	pub(crate) main_country_for_code: bool,
+	pub(crate) leading_digits: Option<LazyRegex>,
+	pub(crate) mobile_number_portable: bool,
+}
+
+/// Descriptors for various types of phone number.
+#[derive(Clone, Debug)]
+pub struct Descriptors {
 	pub(crate) general:          Descriptor,
 	pub(crate) fixed_line:       Option<Descriptor>,
 	pub(crate) mobile:           Option<Descriptor>,
 	pub(crate) toll_free:        Option<Descriptor>,
 	pub(crate) premium_rate:     Option<Descriptor>,
 	pub(crate) shared_cost:      Option<Descriptor>,
-	pub(crate) personal:         Option<Descriptor>,
+	pub(crate) personal_number:  Option<Descriptor>,
 	pub(crate) voip:             Option<Descriptor>,
 	pub(crate) pager:            Option<Descriptor>,
 	pub(crate) uan:              Option<Descriptor>,
@@ -34,31 +57,46 @@ pub struct Metadata {
 	pub(crate) standard_rate:    Option<Descriptor>,
 	pub(crate) carrier:          Option<Descriptor>,
 	pub(crate) no_international: Option<Descriptor>,
+}
+
+impl Metadata {
+	/// Descriptors for the various types of phone number.
+	pub fn descriptors(&self) -> &Descriptors {
+		&self.descriptors
+	}
 
 	/// The CLDR 2-letter representation of a country/region, with the exception
 	/// of "country calling codes" used for non-geographical entities, such as
 	/// Universal International Toll Free Number (+800). These are all given the
 	/// ID "001", since this is the numeric region code for the world according
 	/// to UN M.49: http://en.wikipedia.org/wiki/UN_M.49
-	pub(crate) id: String,
+	pub fn id(&self) -> &str {
+		&self.id
+	}
 
 	/// The country calling code that one would dial from overseas when trying to
 	/// dial a phone number in this country. For example, this would be "64" for
 	/// New Zealand.
-	pub(crate) country_code: u16,
+	pub fn country_code(&self) -> u16 {
+		self.country_code
+	}
 
 	/// The international_prefix of country A is the number that needs to be
 	/// dialled from country A to another country (country B). This is followed
 	/// by the country code for country B. Note that some countries may have more
 	/// than one international prefix, and for those cases, a regular expression
 	/// matching the international prefixes will be stored in this field.
-	pub(crate) international_prefix: Option<LazyRegex>,
+	pub fn international_prefix(&self) -> Option<&Regex> {
+		self.international_prefix.as_ref().map(AsRef::as_ref)
+	}
 
 	/// If more than one international prefix is present, a preferred prefix can
 	/// be specified here for out-of-country formatting purposes. If this field
 	/// is not present, and multiple international prefixes are present, then "+"
 	/// will be used instead.
-	pub(crate) preferred_international_prefix: Option<String>,
+	pub fn preferred_international_prefix(&self) -> Option<&str> {
+		self.preferred_extension_prefix.as_ref().map(AsRef::as_ref)
+	}
 
 	/// The national prefix of country A is the number that needs to be dialled
 	/// before the national significant number when dialling internally. This
@@ -66,7 +104,9 @@ pub struct Metadata {
 	/// Zealand, the number that would be locally dialled as 09 345 3456 would be
 	/// dialled from overseas as +64 9 345 3456. In this case, 0 is the national
 	/// prefix.
-	pub(crate) national_prefix: Option<String>,
+	pub fn national_prefix(&self) -> Option<&str> {
+		self.national_prefix.as_ref().map(AsRef::as_ref)
+	}
 
 	/// The preferred prefix when specifying an extension in this country. This
 	/// is used for formatting only, and if this is not specified, a suitable
@@ -75,7 +115,9 @@ pub struct Metadata {
 	///
 	/// 1 (365) 345 445 ext. 2345
 	/// " ext. "  should be the preferred extension prefix.
-	pub(crate) preferred_extension_prefix: Option<String>,
+	pub fn preferred_extension_prefix(&self) -> Option<&str> {
+		self.preferred_extension_prefix.as_ref().map(AsRef::as_ref)
+	}
 
 	/// This field is used for cases where the national prefix of a country
 	/// contains a carrier selection code, and is written in the form of a
@@ -87,7 +129,9 @@ pub struct Metadata {
 	///
 	/// When it is missing from the XML file, this field inherits the value of
 	/// national_prefix, if that is present.
-	pub(crate) national_prefix_for_parsing: Option<LazyRegex>,
+	pub fn national_prefix_for_parsing(&self) -> Option<&Regex> {
+		self.national_prefix_for_parsing.as_ref().map(AsRef::as_ref)
+	}
 
 	/// This field is only populated and used under very rare situations.  For
 	/// example, mobile numbers in Argentina are written in two completely
@@ -97,7 +141,9 @@ pub struct Metadata {
 	/// This field is used together with national_prefix_for_parsing to transform
 	/// the number into a particular representation for storing in the
 	/// phonenumber proto buffer in those rare cases.
-	pub(crate) national_prefix_transform_rule: Option<String>,
+	pub fn national_prefix_transform_rule(&self) -> Option<&str> {
+		self.national_prefix_transform_rule.as_ref().map(AsRef::as_ref)
+	}
 
 	/// Note that the number format here is used for formatting only, not
 	/// parsing.  Hence all the varied ways a user *may* write a number need not
@@ -105,7 +151,9 @@ pub struct Metadata {
 	///
 	/// When this element is absent, the national significant number will be
 	/// formatted as a whole without any formatting applied.
-	pub(crate) format: Vec<Format>,
+	pub fn format(&self) -> &[Format] {
+		&self.format
+	}
 
 	/// This field is populated only when the national significant number is
 	/// formatted differently when it forms part of the INTERNATIONAL format and
@@ -133,7 +181,9 @@ pub struct Metadata {
 	///       <format>$1 $2 $3</format>
 	///       <intlFormat>NA</intlFormat>
 	///     </numberFormat>
-	pub(crate) international_format: Vec<Format>,
+	pub fn international_format(&self) -> &[Format] {
+		&self.international_format
+	}
 
 	/// This field is set when this country is considered to be the main country
 	/// for a calling code. It may not be set by more than one country with the
@@ -141,7 +191,9 @@ pub struct Metadata {
 	/// calling code. This can be used to indicate that "GB" is the main country
 	/// for the calling code "44" for example, rather than Jersey or the Isle of
 	/// Man.
-	pub(crate) main_country_for_code: bool,
+	pub fn is_main_country_for_code(&self) -> bool {
+		self.main_country_for_code
+	}
 
 	/// This field is populated only for countries or regions that share a
 	/// country calling code. If a number matches this pattern, it could belong
@@ -156,11 +208,135 @@ pub struct Metadata {
 	/// It is used merely as a short-cut for working out which region a number
 	/// comes from in the case that there is only one, so leading_digit prefixes
 	/// should not overlap.
-	pub(crate) leading_digits: Option<LazyRegex>,
+	pub fn leading_digits(&self) -> Option<&Regex> {
+		self.leading_digits.as_ref().map(AsRef::as_ref)
+	}
 
 	/// This field is set when this country has implemented mobile number
 	/// portability. This means that transferring mobile numbers between carriers
 	/// is allowed. A consequence of this is that phone prefix to carrier mapping
 	/// is less reliable.
-	pub(crate) mobile_number_portable: bool,
+	pub fn is_mobile_number_portable(&self) -> bool {
+		self.mobile_number_portable
+	}
+}
+
+impl Descriptors {
+	/// Get the proper descriptor for the given phone number type, if any.
+	pub fn get(&self, kind: Type) -> Option<&Descriptor> {
+		match kind {
+			Type::Unknown =>
+				Some(&self.general),
+
+			Type::FixedLine |
+			Type::FixedLineOrMobile =>
+				self.fixed_line.as_ref(),
+
+			Type::Mobile =>
+				self.mobile.as_ref(),
+
+			Type::TollFree =>
+				self.toll_free.as_ref(),
+
+			Type::PremiumRate =>
+				self.premium_rate.as_ref(),
+
+			Type::SharedCost =>
+				self.shared_cost.as_ref(),
+
+			Type::PersonalNumber =>
+				self.personal_number.as_ref(),
+
+			Type::Voip =>
+				self.voip.as_ref(),
+
+			Type::Pager =>
+				self.pager.as_ref(),
+
+			Type::Uan =>
+				self.uan.as_ref(),
+
+			Type::Emergency =>
+				self.emergency.as_ref(),
+
+			Type::Voicemail =>
+				self.voicemail.as_ref(),
+
+			Type::ShortCode =>
+				self.short_code.as_ref(),
+
+			Type::StandardRate =>
+				self.standard_rate.as_ref(),
+
+			Type::Carrier =>
+				self.carrier.as_ref(),
+
+			Type::NoInternational =>
+				self.no_international.as_ref(),
+		}
+	}
+
+	pub fn general(&self) -> &Descriptor {
+		&self.general
+	}
+
+	pub fn fixed_line(&self) -> Option<&Descriptor> {
+		self.fixed_line.as_ref()
+	}
+
+	pub fn mobile(&self) -> Option<&Descriptor> {
+		self.mobile.as_ref()
+	}
+
+	pub fn toll_free(&self) -> Option<&Descriptor> {
+		self.toll_free.as_ref()
+	}
+
+	pub fn premium_rate(&self) -> Option<&Descriptor> {
+		self.premium_rate.as_ref()
+	}
+
+	pub fn shared_cost(&self) -> Option<&Descriptor> {
+		self.shared_cost.as_ref()
+	}
+
+	pub fn personal_number(&self) -> Option<&Descriptor> {
+		self.personal_number.as_ref()
+	}
+
+	pub fn voip(&self) -> Option<&Descriptor> {
+		self.voip.as_ref()
+	}
+
+	pub fn pager(&self) -> Option<&Descriptor> {
+		self.pager.as_ref()
+	}
+
+	pub fn uan(&self) -> Option<&Descriptor> {
+		self.uan.as_ref()
+	}
+
+	pub fn emergency(&self) -> Option<&Descriptor> {
+		self.emergency.as_ref()
+	}
+
+	pub fn voicemail(&self) -> Option<&Descriptor> {
+		self.voicemail.as_ref()
+	}
+
+	pub fn short_code(&self) -> Option<&Descriptor> {
+		self.short_code.as_ref()
+	}
+
+	pub fn standard_rate(&self) -> Option<&Descriptor> {
+		self.standard_rate.as_ref()
+	}
+
+	pub fn carrier(&self) -> Option<&Descriptor> {
+		self.carrier.as_ref()
+	}
+
+	pub fn no_international(&self) -> Option<&Descriptor> {
+		self.no_international.as_ref()
+	}
 }

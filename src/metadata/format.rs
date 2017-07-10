@@ -12,17 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex_cache::LazyRegex;
+use regex_cache::{Regex, LazyRegex};
 
 #[derive(Clone, Debug)]
 pub struct Format {
+	pub(crate) pattern: LazyRegex,
+	pub(crate) format: String,
+
+	pub(crate) leading_digits: Vec<LazyRegex>,
+
+	pub(crate) national_prefix: Option<String>,
+
+	pub(crate) domestic_carrier: Option<String>,
+}
+
+impl Format {
 	/// A regex that is used to match the national (significant) number. For
 	/// example, the pattern "(20)(\d{4})(\d{4})" will match number "2070313000",
 	/// which is the national (significant) number for Google London.
 	///
 	/// Note the presence of the parentheses, which are capturing groups what
 	/// specifies the grouping of numbers.
-	pub(crate) pattern: LazyRegex,
+	pub fn pattern(&self) -> &Regex {
+		self.pattern.as_ref()
+	}
 
 	/// Specifies how the national (significant) number matched by pattern should
 	/// be formatted.
@@ -32,7 +45,9 @@ pub struct Format {
 	///
 	/// Each $x are replaced by the numbers captured by group x in the regex
 	/// specified by pattern.
-	pub(crate) format: String,
+	pub fn format(&self) -> &str {
+		&self.format
+	}
 
 	/// A regex that is used to match a certain number of digits at the beginning
 	/// of the national (significant) number. When the match is successful, the
@@ -48,7 +63,9 @@ pub struct Format {
 	///
 	/// In the case when only one formatting pattern exists, no
 	/// leading_digits_pattern is needed.
-	pub(crate) leading_digits: Vec<LazyRegex>,
+	pub fn leading_digits(&self) -> Vec<&Regex> {
+		self.leading_digits.iter().map(AsRef::as_ref).collect()
+	}
 
 	/// Specifies how the national prefix ($NP) together with the first group
 	/// ($FG) in the national significant number should be formatted in the
@@ -68,11 +85,15 @@ pub struct Format {
 	/// When this field is missing, a number will be formatted without national
 	/// prefix in NATIONAL format. This field does not affect how a number is
 	/// formatted in other formats, such as INTERNATIONAL.
-	pub(crate) national_prefix: Option<String>,
+	pub fn national_prefix(&self) -> Option<&str> {
+		self.national_prefix.as_ref().map(AsRef::as_ref)
+	}
 
 	/// Specifies how any carrier code ($CC) together with the first group ($FG)
 	/// in the national significant number should be formatted when
 	/// formatWithCarrierCode is called, if carrier codes are used for a certain
 	/// country.
-	pub(crate) domestic_carrier: Option<String>,
+	pub fn domestic_carrier(&self) -> Option<&str> {
+		self.domestic_carrier.as_ref().map(AsRef::as_ref)
+	}
 }

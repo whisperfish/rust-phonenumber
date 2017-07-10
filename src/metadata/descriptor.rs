@@ -12,24 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex_cache::LazyRegex;
+use regex_cache::{Regex, LazyRegex};
 
 #[derive(Clone, Debug)]
 pub struct Descriptor {
-	/// The national_number_pattern is the pattern that a valid national
+	pub(crate) national_number: LazyRegex,
+	pub(crate) possible_number: Option<LazyRegex>,
+
+	pub(crate) possible_length: Vec<u16>,
+	pub(crate) possible_local_length: Vec<u16>,
+
+	pub(crate) example: Option<String>,
+}
+
+impl Descriptor {
+	/// The national_number is the pattern that a valid national
 	/// significant number would match. This specifies information such as its
 	/// total length and leading digits.
-	pub(crate) national_number: LazyRegex,
+	pub fn national_number(&self) -> &Regex {
+		self.national_number.as_ref()
+	}
 
-	/// The possible_number_pattern represents what a potentially valid phone
-	/// number for this region may be written as. This is a superset of the
-	/// national_number_pattern above and includes numbers that have the area code
-	/// omitted. Typically the only restrictions here are in the number of digits.
+	/// The possible_number represents what a potentially valid phone number for
+	/// this region may be written as. This is a superset of the national_number
+	/// above and includes numbers that have the area code omitted. Typically the
+	/// only restrictions here are in the number of digits.
 	///
 	/// This could be used to highlight tokens in a text that may be a phone
 	/// number, or to quickly prune numbers that could not possibly be a phone
 	/// number for this locale.
-	pub(crate) possible_number: Option<LazyRegex>,
+	pub fn possible_number(&self) -> Option<&Regex> {
+		self.possible_number.as_ref().map(AsRef::as_ref)
+	}
 
 	/// These represent the lengths a phone number from this region can be. They
 	/// will be sorted from smallest to biggest. Note that these lengths are for
@@ -40,7 +54,9 @@ pub struct Descriptor {
 	/// This could be used to highlight tokens in a text that may be a phone
 	/// number, or to quickly prune numbers that could not possibly be a phone
 	/// number for this locale.
-	pub(crate) possible_length: Vec<u16>,
+	pub fn possible_length(&self) -> &[u16] {
+		&self.possible_length
+	}
 
 	/// These represent the lengths that only local phone numbers (without an
 	/// area code) from this region can be. They will be sorted from smallest to
@@ -56,14 +72,17 @@ pub struct Descriptor {
 	///
 	/// This data is used to calculate whether a number could be a possible
 	/// number for a particular type.
-	pub(crate) possible_local_length: Vec<u16>,
+	pub fn possible_local_length(&self) -> &[u16] {
+		&self.possible_local_length
+	}
 
 	/// An example national significant number for the specific type. It should
 	/// not contain any formatting information.
-	pub(crate) example: Option<String>,
-}
+	pub fn example(&self) -> Option<&str> {
+		self.example.as_ref().map(AsRef::as_ref)
+	}
 
-impl Descriptor {
+	/// Check if the descriptor matches the given national number.
 	pub fn is_match(&self, value: &str) -> bool {
 		if !self.possible_length.is_empty() &&
 		   !self.possible_length.contains(&(value.len() as u16))
