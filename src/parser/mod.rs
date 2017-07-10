@@ -72,8 +72,8 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<Country>, 
 
 	// Strip national prefix if present.
 	if let Some(prefix) = country.and_then(|c| database.by_id(c.as_ref())).and_then(|m| m.national_prefix.as_ref()) {
-		if number.value.starts_with(prefix) {
-			number.value = helper::trim(number.value, prefix.len());
+		if number.national.starts_with(prefix) {
+			number.national = helper::trim(number.national, prefix.len());
 		}
 	}
 
@@ -83,9 +83,9 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<Country>, 
 			source: number.country,
 		},
 
-		national_number: NationalNumber {
-			value: number.value.parse()?,
-			zeros: number.value.chars().take_while(|&c| c == '0').count() as u8,
+		national: NationalNumber {
+			value: number.national.parse()?,
+			zeros: number.national.chars().take_while(|&c| c == '0').count() as u8,
 		},
 
 		extension: number.extension.map(|s| Extension(s.into_owned())),
@@ -119,7 +119,7 @@ mod test {
 				source: Source::Default,
 			},
 
-			national_number: NationalNumber {
+			national: NationalNumber {
 				value: 33316005,
 				zeros: 0,
 			},
@@ -161,7 +161,7 @@ mod test {
 				source: Source::Default,
 			},
 
-			national_number: NationalNumber {
+			national: NationalNumber {
 				value: 64123456,
 				zeros: 0,
 			},
@@ -178,7 +178,7 @@ mod test {
 				source: Source::Default,
 			},
 
-			national_number: NationalNumber {
+			national: NationalNumber {
 				value: 30123456,
 				zeros: 0,
 			},
@@ -210,7 +210,7 @@ mod test {
 				source: Source::Plus,
 			},
 
-			national_number: NationalNumber {
+			national: NationalNumber {
 				value: 2345,
 				zeros: 0,
 			},
@@ -225,7 +225,7 @@ mod test {
 				source: Source::Default,
 			},
 
-			national_number: NationalNumber {
+			national: NationalNumber {
 				value: 12,
 				zeros: 0,
 			},
@@ -240,7 +240,7 @@ mod test {
 				source: Source::Default,
 			},
 
-			national_number: NationalNumber {
+			national: NationalNumber {
 				value: 3121286979,
 				zeros: 0,
 			},

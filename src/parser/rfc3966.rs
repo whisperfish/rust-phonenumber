@@ -21,12 +21,12 @@ named!(pub phone_number(&str) -> Number,
 	do_parse!(
 		opt!(tag_no_case_s!("Tel:")) >>
 		prefix: opt!(prefix) >>
-		value:  take_while1_s!(number) >>
+		national: take_while1_s!(number) >>
 		call!(check) >>
 		params: opt!(parameters) >>
 
 		(Number {
-			value: value.into(),
+			national: national.into(),
 
 			prefix: prefix.or_else(||
 				params.as_ref()
@@ -121,7 +121,7 @@ mod test {
 	fn phone_number() {
 		assert_eq!(rfc3966::phone_number("tel:2034567890;ext=456;phone-context=+44").unwrap().1,
 			Number {
-				value:     "2034567890".into(),
+				national:  "2034567890".into(),
 				prefix:    Some("44".into()),
 				extension: Some("456".into()),
 
@@ -130,7 +130,7 @@ mod test {
 
 		assert_eq!(rfc3966::phone_number("tel:+64-3-331-6005;ext=1235").unwrap().1,
 			Number {
-				value:     "-3-331-6005".into(),
+				national:  "-3-331-6005".into(),
 				prefix:    Some("64".into()),
 				extension: Some("1235".into()),
 

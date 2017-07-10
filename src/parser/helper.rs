@@ -19,14 +19,13 @@ use regex_cache::LazyRegex;
 
 use error::{self, Result};
 use consts;
-use metadata::{Database, Metadata, Descriptor};
+use metadata::{Database, Metadata};
 use country::{Country, Source};
-use phone_number;
 
 #[derive(Clone, Eq, PartialEq, Default, Debug)]
 pub struct Number<'a> {
 	pub country:   Source,
-	pub value:     Cow<'a, str>,
+	pub national:  Cow<'a, str>,
 	pub prefix:    Option<Cow<'a, str>>,
 	pub extension: Option<Cow<'a, str>>,
 	pub carrier:   Option<Cow<'a, str>>,
@@ -97,7 +96,7 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 		// The country source was found from the initial PLUS or it was extract
 		// from the number already.
 		Source::Plus | Source::Idd | Source::Number => {
-			if number.value.len() <= consts::MIN_LENGTH_FOR_NSN {
+			if number.national.len() <= consts::MIN_LENGTH_FOR_NSN {
 				return Err(error::Parse::TooShortNsn.into());
 			}
 
@@ -115,17 +114,17 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 			else {
 				// Check the possible country code does not start with a 0 since those
 				// are invalid.
-				if number.value.chars().next() == Some('0') {
+				if number.national.starts_with('0') {
 					return Err(error::Parse::InvalidCountryCode.into());
 				}
 
 				// Try to find the first available country code.
 				for len in 1 .. consts::MAX_LENGTH_FOR_COUNTRY_CODE + 1 {
-					let code = number.value[.. len].parse().unwrap();
+					let code = number.national[.. len].parse().unwrap();
 
 					if database.by_code(&code).is_some() {
-						number.value  = trim(number.value, len);
-						number.prefix = Some(code.to_string().into());
+						number.national = trim(number.national, len);
+						number.prefix   = Some(code.to_string().into());
 
 						return Ok(number);
 					}
@@ -138,8 +137,8 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 				let meta = database.by_id(country.as_ref()).unwrap();
 				let code = meta.country_code.to_string();
 
-				if number.value.starts_with(&code) && !meta.general.is_match(&number.value) {
-					number.value = trim(number.value, code.len());
+				if number.national.starts_with(&code) && !meta.descriptors().general().is_match(&number.national) {
+					number.national = trim(number.national, code.len());
 				}
 
 				number.prefix = Some(code.into());
@@ -166,18 +165,18 @@ pub fn international_prefix<'a>(idd: Option<&LazyRegex>, mut number: Number<'a>)
 	}
 
 	// Ignore any leading PLUS characters.
-	let start = ignore_plus(&number.value)
+	let start = ignore_plus(&number.national)
 		.to_full_result()
 		.map(|s| s.len())
 		.unwrap_or(0);
 
 	// If there are any pluses, strip them and change the country source.
 	if start != 0 {
-		number.country = Source::Plus;
-		number.value   = trim(number.value, start);
-		number         = normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
+		number.country  = Source::Plus;
+		number.national = trim(number.national, start);
+		number          = normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
 
-		if !idd.and_then(|re| re.find(&number.value)).map(|m| m.start() == 0).unwrap_or(false) {
+		if !idd.and_then(|re| re.find(&number.national)).map(|m| m.start() == 0).unwrap_or(false) {
 			return number;
 		}
 	}
@@ -187,19 +186,19 @@ pub fn international_prefix<'a>(idd: Option<&LazyRegex>, mut number: Number<'a>)
 	}
 
 	// Check if the IDD pattern matches.
-	let index = idd.and_then(|re| re.find(&number.value))
+	let index = idd.and_then(|re| re.find(&number.national))
 		.map(|m| (m.start(), m.end()));
 
 	// If it does.
 	if let Some((start, end)) = index {
 		// Check it starts at the beginning and the next digit after the IDD is not
 		// a 0, since that's invalid.
-		if start == 0 && &number.value[end ..].chars().next() != &Some('0') {
+		if start == 0 && &number.national[end ..].chars().next() != &Some('0') {
 			if number.country != Source::Plus {
 				number.country = Source::Idd;
 			}
 
-			number.value = trim(number.value, end);
+			number.national = trim(number.national, end);
 		}
 	}
 
@@ -214,15 +213,15 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 	}
 	else {
 		if let Some(prefix) = meta.national_prefix.as_ref() {
-			if number.value.starts_with(prefix) {
-				number.value = trim(number.value, prefix.len());
+			if number.national.starts_with(prefix) {
+				number.national = trim(number.national, prefix.len());
 			}
 		}
 
 		return number;
 	};
 
-	let index = parsing.find(&number.value)
+	let index = parsing.find(&number.national)
 		.map(|m| (m.start(), m.end()));
 
 	if index.is_none() {
@@ -234,11 +233,11 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 		return number;
 	}
 
-	let viable = meta.general.is_match(&number.value);
+	let viable = meta.general.is_match(&number.national);
 	let groups = parsing.captures_len();
 
 	// Make this not awfully slow when non-lexical lifetimes are stabilized.
-	let mut captures = parsing.captures(&number.value).map(|captures| {
+	let mut captures = parsing.captures(&number.national).map(|captures| {
 		let mut result = Vec::new();
 
 		for i in 0 .. captures.len() {
@@ -249,7 +248,7 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 	}).unwrap();
 
 	if transform.is_none() || captures[groups - 1].is_none() {
-		if viable && !meta.general.is_match(&number.value[start ..]) {
+		if viable && !meta.general.is_match(&number.national[start ..]) {
 			return number;
 		}
 
@@ -257,17 +256,17 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 			number.carrier = Some(captures.remove(groups - 1).unwrap().into());
 		}
 
-		number.value = trim(number.value, end);
+		number.national = trim(number.national, end);
 	}
 	else {
-		let transformed = parsing.replace(&number.value, &**transform.unwrap()).into_owned();
+		let transformed = parsing.replace(&number.national, &**transform.unwrap()).into_owned();
 
 		if viable && !meta.general.is_match(&transformed) {
 			return number;
 		}
 
-		number.carrier = Some(captures.remove(1).unwrap().into());
-		number.value   = transformed.into();
+		number.carrier  = Some(captures.remove(1).unwrap().into());
+		number.national = transformed.into();
 	}
 
 	number
@@ -312,80 +311,11 @@ pub fn normalize<'a>(mut number: Number<'a>, mappings: &FnvHashMap<char, char>) 
 		owned.map(Cow::Owned).unwrap_or(value)
 	}
 
-	number.value     = act(number.value, mappings);
+	number.national  = act(number.national, mappings);
 	number.prefix    = number.prefix.map(|p| act(p, mappings));
 	number.extension = number.extension.map(|e| act(e, mappings));
 
 	number
-}
-
-pub fn validate(meta: &Metadata, number: &Number, kind: phone_number::Type) -> super::Validation {
-	fn descriptor(meta: &Metadata, kind: phone_number::Type) -> Option<&Descriptor> {
-		match kind {
-			phone_number::Type::PremiumRate =>
-				meta.premium_rate.as_ref(),
-
-			phone_number::Type::TollFree =>
-				meta.toll_free.as_ref(),
-
-			phone_number::Type::Mobile =>
-				meta.mobile.as_ref(),
-
-			phone_number::Type::FixedLine |
-			phone_number::Type::FixedLineOrMobile =>
-				meta.fixed_line.as_ref(),
-
-			phone_number::Type::SharedCost =>
-				meta.shared_cost.as_ref(),
-
-			phone_number::Type::Voip =>
-				meta.voip.as_ref(),
-
-			phone_number::Type::PersonalNumber =>
-				meta.personal.as_ref(),
-
-			_ =>
-				Some(&meta.general),
-		}
-	}
-
-	let desc = if let Some(desc) = descriptor(meta, kind) { desc } else {
-		return super::Validation::InvalidLength;
-	};
-
-	let length   = number.value.len() as u16;
-	let local    = &desc.possible_local_length[..];
-	let possible = if desc.possible_length.is_empty() {
-		&desc.possible_length[..]
-	}
-	else {
-		&meta.general.possible_length[..]
-	};
-
-	if possible.is_empty() {
-		return super::Validation::InvalidLength;
-	}
-
-	let minimum = possible[0];
-
-	if local.contains(&length) {
-		super::Validation::IsPossibleLocalOnly
-	}
-	else if length == minimum {
-		super::Validation::IsPossible
-	}
-	else if length < minimum {
-		super::Validation::TooShort
-	}
-	else if length > *possible.last().unwrap() {
-		super::Validation::TooLong
-	}
-	else if possible.contains(&length) {
-		super::Validation::IsPossible
-	}
-	else {
-		super::Validation::InvalidLength
-	}
 }
 
 pub fn trim(value: Cow<str>, start: usize) -> Cow<str> {
@@ -542,72 +472,72 @@ mod test {
 	#[test]
 	fn country_code() {
 		assert_eq!(Number {
-			country: Source::Idd,
-			value:   "123456789".into(),
-			prefix:  Some("1".into()),
+			country:  Source::Idd,
+			national: "123456789".into(),
+			prefix:   Some("1".into()),
 
 			.. Default::default()
 		}, helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
-				value: "011112-3456789".into(),
+				national: "011112-3456789".into(),
 
 				.. Default::default()
 			}).unwrap());
 
 		assert_eq!(Number {
-			country: Source::Plus,
-			value:   "23456789".into(),
-			prefix:  Some("64".into()),
+			country:  Source::Plus,
+			national: "23456789".into(),
+			prefix:   Some("64".into()),
 
 			.. Default::default()
 		}, helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
-				value: "+6423456789".into(),
+				national: "+6423456789".into(),
 
 				.. Default::default()
 			}).unwrap());
 
 		assert_eq!(Number {
-			country: Source::Plus,
-			value:   "12345678".into(),
-			prefix:  Some("800".into()),
+			country:  Source::Plus,
+			national: "12345678".into(),
+			prefix:   Some("800".into()),
 
 			.. Default::default()
 		}, helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
-				value: "+80012345678".into(),
+				national: "+80012345678".into(),
 
 				.. Default::default()
 			}).unwrap());
 
 		assert_eq!(Number {
-			country: Source::Default,
-			value:   "23456789".into(),
-			prefix:  Some("1".into()),
+			country:  Source::Default,
+			national: "23456789".into(),
+			prefix:   Some("1".into()),
 
 			.. Default::default()
 		}, helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
-				value: "2345-6789".into(),
+				national: "2345-6789".into(),
 
 				.. Default::default()
 			}).unwrap());
 
 		assert!(helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
-				value: "0119991123456789".into(),
+				national: "0119991123456789".into(),
 
 				.. Default::default()
 			}).is_err());
 
 		assert_eq!(Number {
-			value:  "6106194466".into(),
-			prefix: Some("1".into()),
+			national: "6106194466".into(),
+			prefix:   Some("1".into()),
 
 			.. Default::default()
 		}, helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
-				value: "(1 610) 619 4466".into(),
+				national: "(1 610) 619 4466".into(),
 
 				.. Default::default()
 			}).unwrap());
@@ -617,77 +547,77 @@ mod test {
 	fn normalize() {
 		// Strips symbols.
 		assert_eq!("034562",
-			helper::normalize(Number { value: "034-56&+#2".into(), .. Default::default() },
-				&consts::ALPHA_PHONE_MAPPINGS).value);
+			helper::normalize(Number { national: "034-56&+#2".into(), .. Default::default() },
+				&consts::ALPHA_PHONE_MAPPINGS).national);
 
 		// Converts letters to numbers.
     assert_eq!("034426486479",
-			helper::normalize(Number { value: "034-I-am-HUNGRY".into(), .. Default::default() },
-				&consts::ALPHA_PHONE_MAPPINGS).value);
+			helper::normalize(Number { national: "034-I-am-HUNGRY".into(), .. Default::default() },
+				&consts::ALPHA_PHONE_MAPPINGS).national);
 
 		// Handles wide numbers.
     assert_eq!("420",
-			helper::normalize(Number { value: "４2０".into(), .. Default::default() },
-				&consts::ALPHA_PHONE_MAPPINGS).value);
+			helper::normalize(Number { national: "４2０".into(), .. Default::default() },
+				&consts::ALPHA_PHONE_MAPPINGS).national);
 	}
 
 	#[test]
 	fn international_prefix() {
 		assert_eq!(Number {
-			country: Source::Idd,
-			value:   "45677003898003".into(),
+			country:  Source::Idd,
+			national: "45677003898003".into(),
 
 			.. Default::default()
 		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
 			Number {
-				value: "0034567700-3898003".into(),
+				national: "0034567700-3898003".into(),
 
 				.. Default::default()
 			}));
 
 		assert_eq!(Number {
-			country: Source::Idd,
-			value:   "45677003898003".into(),
+			country:  Source::Idd,
+			national: "45677003898003".into(),
 
 			.. Default::default()
 		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
 			Number {
-				value: "00945677003898003".into(),
+				national: "00945677003898003".into(),
 
 				.. Default::default()
 			}));
 
 		assert_eq!(Number {
-			country: Source::Idd,
-			value:   "45677003898003".into(),
+			country:  Source::Idd,
+			national: "45677003898003".into(),
 
 			.. Default::default()
 		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
 			Number {
-				value: "00 9 45677003898003".into(),
+				national: "00 9 45677003898003".into(),
 				
 				.. Default::default()
 			}));
 
 		assert_eq!(Number {
-			value: "45677003898003".into(),
+			national: "45677003898003".into(),
 
 			.. Default::default()
 		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
 			Number {
-				value: "45677003898003".into(),
+				national: "45677003898003".into(),
 
 				.. Default::default()
 			}));
 
 		assert_eq!(Number {
-			country: Source::Plus,
-			value:   "45677003898003".into(),
+			country:  Source::Plus,
+			national: "45677003898003".into(),
 
 			.. Default::default()
 		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
 			Number {
-				value: "+45677003898003".into(),
+				national: "+45677003898003".into(),
 
 			.. Default::default()
 			}));

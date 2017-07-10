@@ -24,7 +24,7 @@ pub fn validate(number: &PhoneNumber) -> bool {
 
 pub fn validate_with(database: &Database, number: &PhoneNumber) -> bool {
 	let code     = number.country().code();
-	let national = number.national_number().to_string();
+	let national = number.national.to_string();
 	let source   = try_opt!(bool; source_for(database, code, &national));
 	let meta     = try_opt!(bool; match source {
 		Left(region) =>

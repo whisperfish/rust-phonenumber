@@ -44,7 +44,7 @@ pub struct PhoneNumber {
 	/// (significant) Number does not contain the National (trunk) prefix.
 	/// Obviously, as a uint64, it will never contain any formatting (hyphens,
 	/// spaces, parentheses), nor any alphanumeric spellings.
-	pub(crate) national_number: NationalNumber,
+	pub(crate) national: NationalNumber,
 
 	/// Extension is not standardized in ITU recommendations, except for being
 	/// defined as a series of numbers with a maximum length of 40 digits. It is
@@ -140,8 +140,8 @@ impl PhoneNumber {
 		&self.country
 	}
 
-	pub fn national_number(&self) -> &NationalNumber {
-		&self.national_number
+	pub fn national(&self) -> &NationalNumber {
+		&self.national
 	}
 
 	pub fn extension(&self) -> Option<&Extension> {

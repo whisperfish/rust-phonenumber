@@ -22,7 +22,7 @@ pub fn phone_number(i: &str) -> IResult<&str, Number> {
 	let extension = consts::EXTN_PATTERN.captures(i);
 
 	IResult::Done("", Number {
-		value: extension.as_ref()
+		national: extension.as_ref()
 			.map(|c| &i[.. c.get(0).unwrap().start()])
 			.unwrap_or(i)
 			.into(),
@@ -44,7 +44,7 @@ mod test {
 	fn phone_number() {
 		assert_eq!(natural::phone_number("650 253 0000 extn. 4567").unwrap().1,
 			Number {
-				value:     "650 253 0000".into(),
+				national:  "650 253 0000".into(),
 				extension: Some("4567".into()),
 
 				.. Default::default()
