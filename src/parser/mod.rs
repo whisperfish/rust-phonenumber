@@ -19,6 +19,8 @@ use country::{Code, Country};
 use extension::Extension;
 use carrier::Carrier;
 use consts;
+use validator::{self, Validation};
+use phone_number::Type;
 use error::{self, Result};
 
 pub mod helper;
@@ -37,17 +39,34 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<Country>, 
 		alt_complete!(call!(rfc3966::phone_number) | call!(natural::phone_number)));
 
 	// Try to parse the number as RFC3966 or natural language.
-	let number = phone_number(string.as_ref()).to_full_result()
+	let mut number = phone_number(string.as_ref()).to_full_result()
 		.or(Err(error::Parse::NoNumber))?;
 
 	// Normalize the number and extract country code.
-	let mut number = helper::country_code(database, country, number)?;
+	number = helper::country_code(database, country, number)?;
 
-	// Strip national prefix if present.
-	if let Some(prefix) = country.and_then(|c| database.by_id(c.as_ref())).and_then(|m| m.national_prefix.as_ref()) {
-		if number.national.starts_with(prefix) {
-			number.national = helper::trim(number.national, prefix.len());
+	// Extract carrier and strip national prefix if present.
+	if let Some(meta) = country.and_then(|c| database.by_id(c.as_ref())) {
+		let mut potential = helper::national_number(meta, number.clone());
+
+		// Strip national prefix if present.
+		if let Some(prefix) = meta.national_prefix.as_ref() {
+			if potential.national.starts_with(prefix) {
+				potential.national = helper::trim(potential.national, prefix.len());
+			}
 		}
+
+		if validator::length(meta, &potential, Type::Unknown) != Validation::TooShort {
+			number = potential;
+		}
+	}
+
+	if number.national.len() < consts::MIN_LENGTH_FOR_NSN {
+		return Err(error::Parse::TooShortNsn.into());
+	}
+
+	if number.national.len() > consts::MAX_LENGTH_FOR_NSN {
+		return Err(error::Parse::TooLong.into());
 	}
 
 	Ok(PhoneNumber {
