@@ -1,10 +1,13 @@
 [package]
 name    = "phonenumber"
-version = "8.5.0"
-authors = ["meh. <meh@1aim.com>"]
+version = "0.1.0+8.6.0"
 
-[profile.release]
-debug = true
+authors = ["meh. <meh@1aim.com>"]
+license = "Apache-2"
+
+description = "Library for parsing, formatting and validating international phone numbers."
+repository  = "https://github.com/1aim/rust-phonenumber"
+keywords    = ["phonenumber", "phone", "number", "parser", "validator", "formatter"]
 
 [dependencies]
 regex       = "0.2"
