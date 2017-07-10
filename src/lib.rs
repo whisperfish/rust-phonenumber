@@ -36,9 +36,12 @@ extern crate bincode;
 #[macro_use]
 mod helper;
 
+/// Errors for various parts of the crate.
 pub mod error;
 pub use error::{Error, ErrorKind, Result};
 
+/// Phone number metadata, containing patterns, formatting and other useful
+/// data about countries and phone numbers.
 pub mod metadata;
 pub use metadata::Metadata;
 

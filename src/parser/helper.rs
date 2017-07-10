@@ -53,7 +53,7 @@ named!(pub ignore_plus(&str) -> &str,
 /// Attempts to extract a possible number from the string passed in. This
 /// currently strips all leading characters that cannot be used to start a
 /// phone number. Characters that can be used to start a phone number are
-/// defined in the VALID_START_CHAR_PATTERN. If none of these characters are
+/// defined in the `VALID_START_CHAR` regex. If none of these characters are
 /// found in the number passed in, an empty string is returned. This function
 /// also attempts to strip off any alternative extensions or endings if two or
 /// more are present, such as in the case of: (530) 583-6985 x302/x2303. The

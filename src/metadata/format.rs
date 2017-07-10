@@ -14,6 +14,7 @@
 
 use regex_cache::{Regex, LazyRegex};
 
+/// Description of a phone number format.
 #[derive(Clone, Debug)]
 pub struct Format {
 	pub(crate) pattern: LazyRegex,

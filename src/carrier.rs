@@ -14,6 +14,7 @@
 
 use std::ops::Deref;
 
+/// A phone number carrier.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct Carrier(pub(crate) String);
 

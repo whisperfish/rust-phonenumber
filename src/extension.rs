@@ -14,6 +14,7 @@
 
 use std::ops::Deref;
 
+/// A phone number extension.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct Extension(pub(crate) String);
 

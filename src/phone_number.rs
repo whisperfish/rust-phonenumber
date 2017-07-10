@@ -23,6 +23,7 @@ use carrier::Carrier;
 use parser;
 use formatter;
 
+/// A phone number.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct PhoneNumber {
 	/// The country calling code for this number, as defined by the International
@@ -66,6 +67,7 @@ pub struct PhoneNumber {
 	pub(crate) carrier: Option<Carrier>,
 }
 
+/// The phone number type.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Type {
 	///
@@ -155,14 +157,17 @@ impl PhoneNumber {
 		&self.country
 	}
 
+	/// Get the national number.
 	pub fn national(&self) -> &NationalNumber {
 		&self.national
 	}
 
+	/// Get the extension.
 	pub fn extension(&self) -> Option<&Extension> {
 		self.extension.as_ref()
 	}
 
+	/// Get the carrier.
 	pub fn carrier(&self) -> Option<&Carrier> {
 		self.carrier.as_ref()
 	}

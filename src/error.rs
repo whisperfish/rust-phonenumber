@@ -35,27 +35,35 @@ error_chain! {
 	}
 }
 
+/// Metadata loading errors.
 #[derive(Clone, Debug)]
 pub enum Metadata {
+	/// EOF was reached before the parsing was complete.
 	UnexpectedEof,
+
+	/// A mismatched tag was met.
 	MismatchedTag(String),
 
+	/// A required value was missing.
 	MissingValue {
 		phase: String,
 		name:  String,
 	},
 
+	/// An element was not handled.
 	UnhandledElement {
 		phase: String,
 		name:  String
 	},
 
+	/// An attribute was not handled.
 	UnhandledAttribute {
 		phase: String,
 		name:  String,
 		value: String,
 	},
 
+	/// An event was not handled.
 	UnhandledEvent {
 		phase: String,
 		event: String,
@@ -74,6 +82,7 @@ impl From<Metadata> for ErrorKind {
 	}
 }
 
+/// Parsing errors.
 #[derive(Clone, Debug)]
 pub enum Parse {
 	/// This generally indicates the string passed in had less than 3 digits in

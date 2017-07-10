@@ -21,12 +21,14 @@ use xml::events::attributes::Attribute;
 
 use error::{self, Result};
 
+/// Temporary defaults for `Format` and `Descriptor`.
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct Defaults {
 	format:     Format,
 	descriptor: Descriptor,
 }
 
+/// Parsed version of `metadata::Metadata`.
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct Metadata {
 	pub general:          Option<Descriptor>,
@@ -67,6 +69,7 @@ pub struct Metadata {
 	pub defaults: Defaults,
 }
 
+/// Parsed version of `metadata::Format`.
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct Format {
 	pub pattern: Option<String>,
@@ -78,6 +81,7 @@ pub struct Format {
 	pub domestic_carrier: Option<String>,
 }
 
+/// Parsed version of `metadata::Descriptor`.
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct Descriptor {
 	pub national_number: Option<String>,

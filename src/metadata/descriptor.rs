@@ -14,6 +14,7 @@
 
 use regex_cache::{Regex, LazyRegex};
 
+/// Description of a phone number to parse.
 #[derive(Clone, Debug)]
 pub struct Descriptor {
 	pub(crate) national_number: LazyRegex,

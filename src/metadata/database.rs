@@ -26,10 +26,10 @@ use bincode;
 use error::{self, Result, Error};
 use metadata::loader;
 
-/// The Google provided metadata database, used as default.
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
 lazy_static! {
+	/// The Google provided metadata database, used as default.
 	pub static ref DEFAULT: Database =
 		Database::from(bincode::deserialize(DATABASE).unwrap()).unwrap();
 }
