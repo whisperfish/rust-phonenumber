@@ -18,9 +18,9 @@ use national_number::NationalNumber;
 use country_code::{CountryCode, Country};
 use extension::Extension;
 use carrier::Carrier;
+use consts;
 use error::{self, Result};
 
-pub mod consts;
 pub mod helper;
 pub mod valid;
 pub mod rfc3966;

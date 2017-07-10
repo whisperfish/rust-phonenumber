@@ -14,8 +14,8 @@
 
 use nom::IResult;
 
+use consts;
 use parser::helper::*;
-use parser::consts;
 
 pub fn phone_number(i: &str) -> IResult<&str, Number> {
 	let (_, i)    = try_parse!(i, extract);

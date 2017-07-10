@@ -42,6 +42,8 @@ pub use error::{Error, ErrorKind, Result};
 pub mod metadata;
 pub use metadata::Metadata;
 
+mod consts;
+
 mod national_number;
 pub use national_number::NationalNumber;
 

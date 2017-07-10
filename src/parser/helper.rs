@@ -18,7 +18,7 @@ use fnv::FnvHashMap;
 use regex_cache::LazyRegex;
 
 use error::{self, Result};
-use parser::consts;
+use consts;
 use metadata::{Database, Metadata, Descriptor};
 use country_code::{Country, Source};
 use phone_number;
@@ -485,9 +485,9 @@ impl<T: AsChar> AsCharExt for T {
 mod test {
 	use regex_cache::LazyRegex;
 
+	use consts;
 	use parser::helper;
 	use parser::helper::*;
-	use parser::consts;
 	use country_code::Source;
 	use metadata::{DATABASE};
 
