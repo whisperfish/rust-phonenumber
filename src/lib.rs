@@ -51,6 +51,9 @@ pub use country_code::{CountryCode, Country};
 mod extension;
 pub use extension::Extension;
 
+mod carrier;
+pub use carrier::Carrier;
+
 pub mod phone_number;
 pub use phone_number::PhoneNumber;
 

@@ -19,6 +19,7 @@ use error::{Error, Result};
 use country_code::CountryCode;
 use national_number::NationalNumber;
 use extension::Extension;
+use carrier::Carrier;
 use parser;
 use formatter;
 
@@ -62,7 +63,7 @@ pub struct PhoneNumber {
 	///
 	/// Note this is the "preferred" code, which means other codes may work as
 	/// well.
-	pub(crate) carrier: Option<String>,
+	pub(crate) carrier: Option<Carrier>,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -146,7 +147,7 @@ impl PhoneNumber {
 		self.extension.as_ref()
 	}
 
-	pub fn carrier(&self) -> Option<&str> {
-		self.carrier.as_ref().map(AsRef::as_ref)
+	pub fn carrier(&self) -> Option<&Carrier> {
+		self.carrier.as_ref()
 	}
 }

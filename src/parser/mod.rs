@@ -17,6 +17,7 @@ use phone_number::PhoneNumber;
 use national_number::NationalNumber;
 use country_code::{CountryCode, Country};
 use extension::Extension;
+use carrier::Carrier;
 use error::{self, Result};
 
 pub mod consts;
@@ -88,7 +89,7 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<Country>, 
 		},
 
 		extension: number.extension.map(|s| Extension(s.into_owned())),
-		carrier:   number.carrier.map(|s| s.into_owned()),
+		carrier:   number.carrier.map(|s| Carrier(s.into_owned())),
 	})
 }
 
@@ -232,5 +233,20 @@ mod test {
 			extension: None,
 			carrier:   None,
 		}, parser::parse(Some(Country::NZ), "12").unwrap());
+
+		assert_eq!(PhoneNumber {
+			country_code: CountryCode {
+				value:  55,
+				source: Source::Default,
+			},
+
+			national_number: NationalNumber {
+				value: 3121286979,
+				zeros: 0,
+			},
+
+			extension: None,
+			carrier:   Some("12".into()),
+		}, parser::parse(Some(Country::BR), "012 3121286979").unwrap());
 	}
 }
