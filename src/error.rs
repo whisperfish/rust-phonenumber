@@ -39,7 +39,11 @@ error_chain! {
 pub enum Metadata {
 	UnexpectedEof,
 	MismatchedTag(String),
-	MissingValue(String),
+
+	MissingValue {
+		phase: String,
+		name:  String,
+	},
 
 	UnhandledElement {
 		phase: String,

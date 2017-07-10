@@ -23,7 +23,7 @@ use fnv::FnvHashMap;
 use regex_cache::{LazyRegexBuilder, LazyRegex};
 use bincode;
 
-use error::{self, Result};
+use error::{self, Result, Error};
 use metadata::loader;
 
 /// The Google provided metadata database, used as default.
@@ -75,7 +75,12 @@ impl Database {
 		fn metadata(meta: loader::Metadata) -> Result<super::Metadata> {
 			Ok(super::Metadata {
 				descriptors: super::Descriptors {
-					general:          descriptor(meta.general.ok_or_else(|| error::Metadata::MissingValue("generalDesc".into()))?)?,
+					general: descriptor(meta.general.ok_or_else(||
+						Error::from(error::Metadata::MissingValue {
+							phase: "metadata".into(),
+							name:  "generalDesc".into(),
+						}))?)?,
+
 					fixed_line:       switch(meta.fixed_line.map(descriptor))?,
 					mobile:           switch(meta.mobile.map(descriptor))?,
 					toll_free:        switch(meta.toll_free.map(descriptor))?,
@@ -93,8 +98,17 @@ impl Database {
 					no_international: switch(meta.no_international.map(descriptor))?,
 				},
 
-				id: meta.id.ok_or_else(|| error::Metadata::MissingValue("id".into()))?,
-				country_code: meta.country_code.ok_or_else(|| error::Metadata::MissingValue("countryCode".into()))?,
+				id: meta.id.ok_or_else(||
+					Error::from(error::Metadata::MissingValue {
+						phase: "metadata".into(),
+						name:  "id".into()
+					}))?,
+
+				country_code: meta.country_code.ok_or_else(||
+					Error::from(error::Metadata::MissingValue {
+						phase: "metadata".into(),
+						name: "countryCode".into(),
+					}))?,
 
 				international_prefix: switch(meta.international_prefix.map(regex))?,
 				preferred_international_prefix: meta.preferred_international_prefix,
@@ -117,7 +131,12 @@ impl Database {
 			desc.national_number.as_ref().unwrap();
 
 			Ok(super::Descriptor {
-				national_number: desc.national_number.ok_or_else(|| error::Metadata::MissingValue("format".into()).into()).and_then(regex)?,
+				national_number: desc.national_number.ok_or_else(||
+					Error::from(error::Metadata::MissingValue {
+						phase: "descriptor".into(),
+						name:  "national_number".into(),
+					})).and_then(regex)?,
+
 				possible_number: switch(desc.possible_number.map(regex))?,
 				possible_length: desc.possible_length,
 				possible_local_length: desc.possible_local_length,
@@ -127,9 +146,21 @@ impl Database {
 
 		fn format(format: loader::Format) -> Result<super::Format> {
 			Ok(super::Format {
-				pattern: format.pattern.ok_or_else(|| error::Metadata::MissingValue("format".into()).into()).and_then(regex)?,
-				format: format.format.ok_or_else(|| error::Metadata::MissingValue("format".into()))?,
-				leading_digits: format.leading_digits.into_iter().map(regex).collect::<Result<_>>()?,
+				pattern: format.pattern.ok_or_else(||
+					Error::from(error::Metadata::MissingValue {
+						phase: "format".into(),
+						name:  "pattern".into(),
+					})).and_then(regex)?,
+
+				format: format.format.ok_or_else(||
+					Error::from(error::Metadata::MissingValue {
+						phase: "format".into(),
+						name:  "format".into()
+					}))?,
+
+				leading_digits: format.leading_digits.into_iter()
+					.map(regex).collect::<Result<_>>()?,
+
 				national_prefix: format.national_prefix,
 				domestic_carrier: format.domestic_carrier,
 			})
