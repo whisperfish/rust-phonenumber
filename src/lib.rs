@@ -65,8 +65,8 @@ pub use parser::{parse, parse_with};
 pub mod formatter;
 pub use formatter::{format, format_with};
 
-pub mod validator;
-pub use validator::{validate, validate_with};
+mod validator;
+pub use validator::{Validation, is_viable, is_valid, is_valid_with};
 
 pub fn init() -> error::Result<()> {
 	lazy_static::initialize(&metadata::DATABASE);

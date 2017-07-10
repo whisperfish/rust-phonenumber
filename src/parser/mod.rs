@@ -26,33 +26,6 @@ pub mod valid;
 pub mod rfc3966;
 pub mod natural;
 
-/// Possible outcomes when testing if a PhoneNumber is possible.
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub enum Validation {
-	/// The number length matches that of valid numbers for this region.
-	IsPossible,
-
-	/// The number length matches that of local numbers for this region only
-	/// (i.e. numbers that may be able to be dialled within an area, but do not
-	/// have all the information to be dialled from anywhere inside or outside
-	/// the country).
-	IsPossibleLocalOnly,
-
-	/// The number has an invalid country calling code.
-	InvalidCountryCode,
-
-	/// The number is shorter than all valid numbers for this region.
-	TooShort,
-
-	/// The number is longer than the shortest valid numbers for this region,
-	/// shorter than the longest valid numbers for this region, and does not
-	/// itself have a number length that matches valid numbers for this region.
-	InvalidLength,
-
-	/// The number is longer than all valid numbers for this region.
-	TooLong,
-}
-
 /// Parse a phone number.
 pub fn parse<S: AsRef<str>>(country: Option<Country>, string: S) -> Result<PhoneNumber> {
 	parse_with(&*DATABASE, country, string)
@@ -91,17 +64,6 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<Country>, 
 		extension: number.extension.map(|s| Extension(s.into_owned())),
 		carrier:   number.carrier.map(|s| Carrier(s.into_owned())),
 	})
-}
-
-/// Check if the provided string is a viable phone number.
-pub fn is_viable<S: AsRef<str>>(string: S) -> bool {
-	let string = string.as_ref();
-
-	if string.len() < consts::MIN_LENGTH_FOR_NSN {
-		return false;
-	}
-
-	valid::phone_number(string).is_done()
 }
 
 #[cfg(test)]
