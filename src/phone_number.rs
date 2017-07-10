@@ -16,7 +16,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use error::{Error, Result};
-use country_code::CountryCode;
+use country::Code;
 use national_number::NationalNumber;
 use extension::Extension;
 use carrier::Carrier;
@@ -28,7 +28,7 @@ pub struct PhoneNumber {
 	/// The country calling code for this number, as defined by the International
 	/// Telecommunication Union (ITU). For example, this would be 1 for NANPA
 	/// countries, and 33 for France.
-	pub(crate) country_code: CountryCode,
+	pub(crate) country: Code,
 
 	/// The National (significant) Number, as defined in International
 	/// Telecommunication Union (ITU) Recommendation E.164, without any leading
@@ -135,8 +135,9 @@ impl fmt::Display for PhoneNumber {
 }
 
 impl PhoneNumber {
-	pub fn country_code(&self) -> &CountryCode {
-		&self.country_code
+	/// Get the country code.
+	pub fn country(&self) -> &Code {
+		&self.country
 	}
 
 	pub fn national_number(&self) -> &NationalNumber {

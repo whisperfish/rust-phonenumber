@@ -30,7 +30,7 @@ pub fn format<W: Write>(kind: Type, number: &PhoneNumber, out: W) -> io::Result<
 }
 
 pub fn format_with<W: Write>(database: &Database, kind: Type, number: &PhoneNumber, mut out: W) -> io::Result<()> {
-	write!(&mut out, "+{} ", number.country_code.value)?;
+	write!(&mut out, "+{} ", number.country().code())?;
 
 	for _ in 0 .. number.national_number.zeros {
 		write!(&mut out, "0")?;

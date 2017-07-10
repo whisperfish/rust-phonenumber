@@ -20,7 +20,7 @@ use regex_cache::LazyRegex;
 use error::{self, Result};
 use consts;
 use metadata::{Database, Metadata, Descriptor};
-use country_code::{Country, Source};
+use country::{Country, Source};
 use phone_number;
 
 #[derive(Clone, Eq, PartialEq, Default, Debug)]
@@ -488,7 +488,7 @@ mod test {
 	use consts;
 	use parser::helper;
 	use parser::helper::*;
-	use country_code::Source;
+	use country::Source;
 	use metadata::{DATABASE};
 
 	#[test]

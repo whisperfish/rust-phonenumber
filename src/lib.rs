@@ -47,8 +47,8 @@ mod consts;
 mod national_number;
 pub use national_number::NationalNumber;
 
-pub mod country_code;
-pub use country_code::{CountryCode, Country};
+pub mod country;
+pub use country::Country;
 
 mod extension;
 pub use extension::Extension;

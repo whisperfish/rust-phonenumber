@@ -15,7 +15,7 @@
 use either::*;
 
 use metadata::{DATABASE, Database, Metadata};
-use country_code::Country;
+use country::Country;
 use phone_number::{Type, PhoneNumber};
 
 pub fn validate(number: &PhoneNumber) -> bool {
@@ -23,7 +23,7 @@ pub fn validate(number: &PhoneNumber) -> bool {
 }
 
 pub fn validate_with(database: &Database, number: &PhoneNumber) -> bool {
-	let code     = number.country_code().value();
+	let code     = number.country().code();
 	let national = number.national_number().to_string();
 	let source   = try_opt!(bool; source_for(database, code, &national));
 	let meta     = try_opt!(bool; match source {
@@ -130,7 +130,7 @@ pub fn number_type(meta: &Metadata, value: &str) -> Type {
 mod test {
 	use validator;
 	use parser;
-	use country_code::Country;
+	use country::Country;
 
 	#[test]
 	fn validate() {

@@ -12,35 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Country related types.
+
 use std::str;
 
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
-pub struct CountryCode {
+pub struct Code {
 	/// The country code value.
-	pub(crate) value: u16,
+	pub(crate) code: u16,
 
-	/// The source from which the country_code is derived.
+	/// The source from which the country code is derived.
 	pub(crate) source: Source,
 }
 
-/// The source from which the country_code is derived. This is not set in the
+/// The source from which the country code is derived. This is not set in the
 /// general parsing method, but in the method that parses and keeps raw_input.
 #[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum Source {
-	/// The country_code is derived based on a phone number with a leading "+",
+	/// The country code is derived based on a phone number with a leading "+",
 	/// e.g. the French number "+33 1 42 68 53 00".
 	Plus,
 
-	/// The country_code is derived based on a phone number with a leading IDD,
+	/// The country code is derived based on a phone number with a leading IDD,
 	/// e.g. the French number "011 33 1 42 68 53 00", as it is dialled from US.
 	Idd,
 
-	/// The country_code is derived based on a phone number without a leading
+	/// The country code is derived based on a phone number without a leading
 	/// "+", e.g. the French number "33 1 42 68 53 00" when defaultCountry is
 	/// supplied as France.
 	Number,
 
-	/// The country_code is derived NOT based on the phone number itself, but
+	/// The country code is derived NOT based on the phone number itself, but
 	/// from the defaultCountry parameter provided in the parsing function by the
 	/// clients. This happens mostly for numbers written in the national format
 	/// (without country code). For example, this would be set when parsing the
@@ -55,9 +57,9 @@ impl Default for Source {
 	}
 }
 
-impl CountryCode {
-	pub fn value(&self) -> u16 {
-		self.value
+impl Code {
+	pub fn code(&self) -> u16 {
+		self.code
 	}
 
 	pub fn source(&self) -> Source {
@@ -65,9 +67,9 @@ impl CountryCode {
 	}
 }
 
-impl Into<u16> for CountryCode {
+impl Into<u16> for Code {
 	fn into(self) -> u16 {
-		self.value
+		self.code
 	}
 }
 
