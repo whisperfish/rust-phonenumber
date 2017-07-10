@@ -17,6 +17,12 @@ use std::ops::Deref;
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct Extension(pub(crate) String);
 
+impl<T: Into<String>> From<T> for Extension {
+	fn from(value: T) -> Extension {
+		Extension(value.into())
+	}
+}
+
 impl Deref for Extension {
 	type Target = str;
 
