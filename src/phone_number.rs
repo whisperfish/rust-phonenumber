@@ -139,15 +139,8 @@ impl FromStr for PhoneNumber {
 }
 
 impl fmt::Display for PhoneNumber {
-	// FIXME: Make this not awful, there's some lacking interaction between
-	// `fmt::Write` and `io::Write`, or maybe `formatter::format` should
-	// implement things based on `fmt::Write`.
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		use std::str;
-		let mut result = Vec::new();
-		formatter::format(formatter::Type::E164, self, &mut result)
-			.map_err(|_| fmt::Error)?;
-		f.write_str(str::from_utf8(&result).unwrap())
+		write!(f, "{}", self.format())
 	}
 }
 
@@ -170,5 +163,9 @@ impl PhoneNumber {
 	/// Get the carrier.
 	pub fn carrier(&self) -> Option<&Carrier> {
 		self.carrier.as_ref()
+	}
+
+	pub fn format<'n>(&'n self) -> formatter::Formatter<'n, 'static, 'static> {
+		formatter::format(self)
 	}
 }

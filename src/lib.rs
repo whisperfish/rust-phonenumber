@@ -65,7 +65,7 @@ pub use phone_number::{PhoneNumber, Type};
 mod parser;
 pub use parser::{parse, parse_with};
 
-mod formatter;
+pub mod formatter;
 pub use formatter::{format, format_with};
 
 mod validator;
