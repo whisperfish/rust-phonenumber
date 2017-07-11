@@ -13,21 +13,12 @@
 // limitations under the License.
 
 macro_rules! try_opt {
-	(bool; $value:expr) => (
+	($ret:expr; $value:expr) => (
 		if let Some(value) = $value {
 			value
 		}
 		else {
-			return false;
-		}
-	);
-
-	($value:expr) => (
-		if let Some(value) = $value {
-			value
-		}
-		else {
-			return None;
+			return $ret;
 		}
 	);
 }

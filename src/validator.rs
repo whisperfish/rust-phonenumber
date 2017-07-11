@@ -68,8 +68,8 @@ pub fn is_valid(number: &PhoneNumber) -> bool {
 pub fn is_valid_with(database: &Database, number: &PhoneNumber) -> bool {
 	let code     = number.country().code();
 	let national = number.national.to_string();
-	let source   = try_opt!(bool; source_for(database, code, &national));
-	let meta     = try_opt!(bool; match source {
+	let source   = try_opt!(false; source_for(database, code, &national));
+	let meta     = try_opt!(false; match source {
 		Left(region) =>
 			database.by_id(region.as_ref()),
 
@@ -122,7 +122,7 @@ pub fn length(meta: &Metadata, number: &ParseNumber, kind: Type) -> Validation {
 
 /// Find the metadata source.
 pub fn source_for(database: &Database, code: u16, national: &str) -> Option<Either<Country, u16>> {
-	let regions = try_opt!(database.region(&code));
+	let regions = try_opt!(None; database.region(&code));
 
 	if regions.len() == 1 {
 		if regions[0] == "001" {
