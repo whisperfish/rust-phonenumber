@@ -117,8 +117,8 @@ impl Database {
 				national_prefix_for_parsing: switch(meta.national_prefix_for_parsing.map(regex))?,
 				national_prefix_transform_rule: meta.national_prefix_transform_rule,
 
-				format: meta.format.into_iter().map(format).collect::<Result<_>>()?,
-				international_format: meta.international_format.into_iter().map(format).collect::<Result<_>>()?,
+				formats: meta.formats.into_iter().map(format).collect::<Result<_>>()?,
+				international_formats: meta.international_formats.into_iter().map(format).collect::<Result<_>>()?,
 
 				main_country_for_code: meta.main_country_for_code,
 				leading_digits: switch(meta.leading_digits.map(regex))?,
@@ -160,7 +160,9 @@ impl Database {
 				leading_digits: format.leading_digits.into_iter()
 					.map(regex).collect::<Result<_>>()?,
 
-				national_prefix: format.national_prefix,
+				national_prefix:          format.national_prefix_formatting_rule,
+				national_prefix_optional: format.national_prefix_optional_when_formatting,
+
 				domestic_carrier: format.domestic_carrier,
 			})
 		}
@@ -173,8 +175,21 @@ impl Database {
 			let meta = Arc::new(metadata(meta)?);
 
 			by_id.insert(meta.id.clone(), meta.clone());
-			by_code.entry(meta.country_code).or_insert_with(Vec::new).push(meta.clone());
-			regions.entry(meta.country_code).or_insert_with(Vec::new).push(meta.id.clone());
+
+			let mut by_code = by_code.entry(meta.country_code)
+				.or_insert_with(Vec::new);
+
+			let mut regions = regions.entry(meta.country_code)
+				.or_insert_with(Vec::new);
+
+			if meta.main_country_for_code {
+				by_code.insert(0, meta.clone());
+				regions.insert(0, meta.id.clone())
+			}
+			else {
+				by_code.push(meta.clone());
+				regions.push(meta.id.clone());
+			}
 		}
 
 		Ok(Database {

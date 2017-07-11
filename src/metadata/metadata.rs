@@ -31,8 +31,8 @@ pub struct Metadata {
 	pub(crate) national_prefix_for_parsing: Option<LazyRegex>,
 	pub(crate) national_prefix_transform_rule: Option<String>,
 
-	pub(crate) format: Vec<Format>,
-	pub(crate) international_format: Vec<Format>,
+	pub(crate) formats: Vec<Format>,
+	pub(crate) international_formats: Vec<Format>,
 	pub(crate) main_country_for_code: bool,
 	pub(crate) leading_digits: Option<LazyRegex>,
 	pub(crate) mobile_number_portable: bool,
@@ -151,8 +151,8 @@ impl Metadata {
 	///
 	/// When this element is absent, the national significant number will be
 	/// formatted as a whole without any formatting applied.
-	pub fn format(&self) -> &[Format] {
-		&self.format
+	pub fn formats(&self) -> &[Format] {
+		&self.formats
 	}
 
 	/// This field is populated only when the national significant number is
@@ -181,8 +181,8 @@ impl Metadata {
 	///       <format>$1 $2 $3</format>
 	///       <intlFormat>NA</intlFormat>
 	///     </numberFormat>
-	pub fn international_format(&self) -> &[Format] {
-		&self.international_format
+	pub fn international_formats(&self) -> &[Format] {
+		&self.international_formats
 	}
 
 	/// This field is set when this country is considered to be the main country

@@ -21,9 +21,8 @@ pub struct Format {
 	pub(crate) format: String,
 
 	pub(crate) leading_digits: Vec<LazyRegex>,
-
 	pub(crate) national_prefix: Option<String>,
-
+	pub(crate) national_prefix_optional: bool,
 	pub(crate) domestic_carrier: Option<String>,
 }
 
@@ -88,6 +87,11 @@ impl Format {
 	/// formatted in other formats, such as INTERNATIONAL.
 	pub fn national_prefix(&self) -> Option<&str> {
 		self.national_prefix.as_ref().map(AsRef::as_ref)
+	}
+
+	/// Whether the national_prefix is optional when formatting.
+	pub fn is_national_prefix_optional(&self) -> bool {
+		self.national_prefix_optional
 	}
 
 	/// Specifies how any carrier code ($CC) together with the first group ($FG)

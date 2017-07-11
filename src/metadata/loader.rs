@@ -59,8 +59,8 @@ pub struct Metadata {
 	pub national_prefix_for_parsing: Option<String>,
 	pub national_prefix_transform_rule: Option<String>,
 
-	pub format:               Vec<Format>,
-	pub international_format: Vec<Format>,
+	pub formats:               Vec<Format>,
+	pub international_formats: Vec<Format>,
 
 	pub main_country_for_code: bool,
 	pub leading_digits: Option<String>,
@@ -75,7 +75,6 @@ pub struct Format {
 	pub pattern: Option<String>,
 	pub format: Option<String>,
 	pub leading_digits: Vec<String>,
-	pub national_prefix: Option<String>,
 	pub national_prefix_formatting_rule: Option<String>,
 	pub national_prefix_optional_when_formatting: bool,
 	pub domestic_carrier: Option<String>,
@@ -287,8 +286,8 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 					name @ b"availableFormats" => {
 						let (national, international) = formats(reader, &meta, name)?;
 
-						meta.format               = national;
-						meta.international_format = international;
+						meta.formats               = national;
+						meta.international_formats = international;
 					}
 
 					name =>
@@ -474,6 +473,8 @@ fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], 
 
 	let mut format        = meta.defaults.format.clone();
 	let mut international = None;
+
+	println!("{:?}", format);
 
 	for attr in e.attributes() {
 		let Attribute { key, value } = attr?;
