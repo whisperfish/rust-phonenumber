@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use std::ops::Deref;
+use std::fmt;
 
 /// A phone number extension.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
@@ -35,5 +36,11 @@ impl Deref for Extension {
 impl AsRef<str> for Extension {
 	fn as_ref(&self) -> &str {
 		&self.0
+	}
+}
+
+impl fmt::Display for Extension {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{}", self.0)
 	}
 }
