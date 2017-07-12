@@ -73,6 +73,7 @@ impl Into<u16> for Code {
 	}
 }
 
+/// CLDR country IDs.
 #[derive(Eq, PartialEq, Copy, Clone, Debug)]
 pub enum Country {
 	AC,

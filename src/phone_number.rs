@@ -171,8 +171,7 @@ impl PhoneNumber {
 	/// # Example
 	///
 	/// ```
-	/// use phonenumber::{self, Country};
-	/// use phonenumber::formatter::Mode;
+	/// use phonenumber::{self, Country, Mode};
 	///
 	/// let number = phonenumber::parse(Some(Country::DE), "301/23456").unwrap()
 	/// 	.format().mode(Mode::National).to_string();
