@@ -18,14 +18,24 @@ use metadata::{DATABASE, Database, Metadata, Format};
 use phone_number::PhoneNumber;
 use consts;
 
+/// Formatting modes for phone number.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Mode {
+	/// E.164 formatting, no spaces, no decorations.
 	E164,
+
+	/// International formatting, contains country code and country dependent
+	/// formatting.
 	International,
+
+	/// National formatting, no country code and country dependent formatting.
 	National,
+
+	/// RFC3966 formatting, see the RFC.
 	Rfc3966,
 }
 
+/// A formatter for a `PhoneNumber`.
 #[derive(Copy, Clone, Debug)]
 pub struct Formatter<'n, 'd, 'f> {
 	number:   &'n PhoneNumber,
@@ -35,6 +45,7 @@ pub struct Formatter<'n, 'd, 'f> {
 }
 
 impl<'n, 'd, 'f> Formatter<'n, 'd, 'f> {
+	/// Define a metadata database to use for formatting.
 	pub fn database<'a>(self, database: &'a Database) -> Formatter<'n, 'a, 'f> {
 		Formatter {
 			number:   self.number,
@@ -44,11 +55,13 @@ impl<'n, 'd, 'f> Formatter<'n, 'd, 'f> {
 		}
 	}
 
+	/// Define the formatting mode.
 	pub fn mode(mut self, mode: Mode) -> Formatter<'n, 'd, 'f> {
 		self.mode = mode;
 		self
 	}
 
+	/// Define a custom `Format` to use for formatting.
 	pub fn with<'a>(self, format: &'a Format) -> Formatter<'n, 'd, 'a> {
 		Formatter {
 			number:   self.number,
@@ -59,6 +72,7 @@ impl<'n, 'd, 'f> Formatter<'n, 'd, 'f> {
 	}
 }
 
+/// Create a new `Formatter` for the given phone number.
 pub fn format<'n>(number: &'n PhoneNumber) -> Formatter<'n, 'static, 'static> {
 	Formatter {
 		number:   number,
@@ -68,6 +82,8 @@ pub fn format<'n>(number: &'n PhoneNumber) -> Formatter<'n, 'static, 'static> {
 	}
 }
 
+/// Create a new `Formatter` for the given phone number using the given
+/// metadata database.
 pub fn format_with<'d, 'n>(database: &'d Database, number: &'n PhoneNumber) -> Formatter<'n, 'd, 'static> {
 	Formatter {
 		number:   number,

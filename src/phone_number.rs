@@ -20,6 +20,7 @@ use country::Code;
 use national_number::NationalNumber;
 use extension::Extension;
 use carrier::Carrier;
+use metadata::Database;
 use parser;
 use formatter;
 
@@ -165,7 +166,25 @@ impl PhoneNumber {
 		self.carrier.as_ref()
 	}
 
+	/// Prepare a formatter for this `PhoneNumber`.
+	///
+	/// # Example
+	///
+	/// ```
+	/// use phonenumber::{self, Country};
+	/// use phonenumber::formatter::Mode;
+	///
+	/// let number = phonenumber::parse(Some(Country::DE), "301/23456").unwrap()
+	/// 	.format().mode(Mode::National).to_string();
+	///
+	/// assert_eq!("030 123456", number);
+	/// ```
 	pub fn format<'n>(&'n self) -> formatter::Formatter<'n, 'static, 'static> {
 		formatter::format(self)
+	}
+
+	/// Prepare a formatter for this `PhoneNumber` with the given `Database`.
+	pub fn format_with<'n, 'd>(&'n self, database: &'d Database) -> formatter::Formatter<'n, 'd, 'static> {
+		formatter::format_with(database, self)
 	}
 }
