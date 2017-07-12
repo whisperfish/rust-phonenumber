@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex_cache::{Regex, LazyRegex};
+use regex_cache::CachedRegex;
 
 /// Description of a phone number to parse.
 #[derive(Clone, Debug)]
 pub struct Descriptor {
-	pub(crate) national_number: LazyRegex,
+	pub(crate) national_number: CachedRegex,
 
 	pub(crate) possible_length: Vec<u16>,
 	pub(crate) possible_local_length: Vec<u16>,
@@ -29,8 +29,8 @@ impl Descriptor {
 	/// The national_number is the pattern that a valid national
 	/// significant number would match. This specifies information such as its
 	/// total length and leading digits.
-	pub fn national_number(&self) -> &Regex {
-		self.national_number.as_ref()
+	pub fn national_number(&self) -> &CachedRegex {
+		&self.national_number
 	}
 
 	/// These represent the lengths a phone number from this region can be. They

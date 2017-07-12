@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex_cache::{Regex, LazyRegex};
+	use regex_cache::CachedRegex;
 
 use metadata::{Format, Descriptor};
 use phone_number::Type;
@@ -24,17 +24,17 @@ pub struct Metadata {
 	pub(crate) id: String,
 	pub(crate) country_code: u16,
 
-	pub(crate) international_prefix: Option<LazyRegex>,
+	pub(crate) international_prefix: Option<CachedRegex>,
 	pub(crate) preferred_international_prefix: Option<String>,
 	pub(crate) national_prefix: Option<String>,
 	pub(crate) preferred_extension_prefix: Option<String>,
-	pub(crate) national_prefix_for_parsing: Option<LazyRegex>,
+	pub(crate) national_prefix_for_parsing: Option<CachedRegex>,
 	pub(crate) national_prefix_transform_rule: Option<String>,
 
 	pub(crate) formats: Vec<Format>,
 	pub(crate) international_formats: Vec<Format>,
 	pub(crate) main_country_for_code: bool,
-	pub(crate) leading_digits: Option<LazyRegex>,
+	pub(crate) leading_digits: Option<CachedRegex>,
 	pub(crate) mobile_number_portable: bool,
 }
 
@@ -86,8 +86,8 @@ impl Metadata {
 	/// by the country code for country B. Note that some countries may have more
 	/// than one international prefix, and for those cases, a regular expression
 	/// matching the international prefixes will be stored in this field.
-	pub fn international_prefix(&self) -> Option<&Regex> {
-		self.international_prefix.as_ref().map(AsRef::as_ref)
+	pub fn international_prefix(&self) -> Option<&CachedRegex> {
+		self.international_prefix.as_ref()
 	}
 
 	/// If more than one international prefix is present, a preferred prefix can
@@ -129,8 +129,8 @@ impl Metadata {
 	///
 	/// When it is missing from the XML file, this field inherits the value of
 	/// national_prefix, if that is present.
-	pub fn national_prefix_for_parsing(&self) -> Option<&Regex> {
-		self.national_prefix_for_parsing.as_ref().map(AsRef::as_ref)
+	pub fn national_prefix_for_parsing(&self) -> Option<&CachedRegex> {
+		self.national_prefix_for_parsing.as_ref()
 	}
 
 	/// This field is only populated and used under very rare situations.  For
@@ -208,8 +208,8 @@ impl Metadata {
 	/// It is used merely as a short-cut for working out which region a number
 	/// comes from in the case that there is only one, so leading_digit prefixes
 	/// should not overlap.
-	pub fn leading_digits(&self) -> Option<&Regex> {
-		self.leading_digits.as_ref().map(AsRef::as_ref)
+	pub fn leading_digits(&self) -> Option<&CachedRegex> {
+		self.leading_digits.as_ref()
 	}
 
 	/// This field is set when this country has implemented mobile number

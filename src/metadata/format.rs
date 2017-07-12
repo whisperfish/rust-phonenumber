@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex_cache::{Regex, LazyRegex};
+use regex_cache::CachedRegex;
 
 /// Description of a phone number format.
 #[derive(Clone, Debug)]
 pub struct Format {
-	pub(crate) pattern: LazyRegex,
+	pub(crate) pattern: CachedRegex,
 	pub(crate) format: String,
 
-	pub(crate) leading_digits: Vec<LazyRegex>,
+	pub(crate) leading_digits: Vec<CachedRegex>,
 	pub(crate) national_prefix: Option<String>,
 	pub(crate) national_prefix_optional: bool,
 	pub(crate) domestic_carrier: Option<String>,
@@ -33,8 +33,8 @@ impl Format {
 	///
 	/// Note the presence of the parentheses, which are capturing groups what
 	/// specifies the grouping of numbers.
-	pub fn pattern(&self) -> &Regex {
-		self.pattern.as_ref()
+	pub fn pattern(&self) -> &CachedRegex {
+		&self.pattern
 	}
 
 	/// Specifies how the national (significant) number matched by pattern should
@@ -63,8 +63,8 @@ impl Format {
 	///
 	/// In the case when only one formatting pattern exists, no
 	/// leading_digits_pattern is needed.
-	pub fn leading_digits(&self) -> Vec<&Regex> {
-		self.leading_digits.iter().map(AsRef::as_ref).collect()
+	pub fn leading_digits(&self) -> &[CachedRegex] {
+		&self.leading_digits
 	}
 
 	/// Specifies how the national prefix ($NP) together with the first group

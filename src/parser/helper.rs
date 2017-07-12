@@ -15,7 +15,7 @@
 use std::borrow::Cow;
 use nom::{self, AsChar, IResult};
 use fnv::FnvHashMap;
-use regex_cache::LazyRegex;
+use regex_cache::CachedRegex;
 
 use error::{self, Result};
 use consts;
@@ -156,7 +156,7 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 ///
 /// Note that since the IDD comes from a passed default region, we can find the
 /// country code from the given default if the country source is from the IDD.
-pub fn international_prefix<'a>(idd: Option<&LazyRegex>, mut number: Number<'a>) -> Number<'a> {
+pub fn international_prefix<'a>(idd: Option<&CachedRegex>, mut number: Number<'a>) -> Number<'a> {
 	// If there's a prefix already, i.e. RFC3966, just change the country source.
 	if number.prefix.is_some() {
 		number.country = Source::Plus;
@@ -406,7 +406,7 @@ impl<T: AsChar> AsCharExt for T {
 
 #[cfg(test)]
 mod test {
-	use regex_cache::LazyRegex;
+	use regex_cache::CachedRegex;
 
 	use consts;
 	use parser::helper;
@@ -561,7 +561,7 @@ mod test {
 			national: "45677003898003".into(),
 
 			.. Default::default()
-		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
+		}, helper::international_prefix(Some(&CachedRegex::new(DATABASE.cache(), "00[39]").unwrap()),
 			Number {
 				national: "0034567700-3898003".into(),
 
@@ -573,7 +573,7 @@ mod test {
 			national: "45677003898003".into(),
 
 			.. Default::default()
-		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
+		}, helper::international_prefix(Some(&CachedRegex::new(DATABASE.cache(), "00[39]").unwrap()),
 			Number {
 				national: "00945677003898003".into(),
 
@@ -585,7 +585,7 @@ mod test {
 			national: "45677003898003".into(),
 
 			.. Default::default()
-		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
+		}, helper::international_prefix(Some(&CachedRegex::new(DATABASE.cache(), "00[39]").unwrap()),
 			Number {
 				national: "00 9 45677003898003".into(),
 				
@@ -596,7 +596,7 @@ mod test {
 			national: "45677003898003".into(),
 
 			.. Default::default()
-		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
+		}, helper::international_prefix(Some(&CachedRegex::new(DATABASE.cache(), "00[39]").unwrap()),
 			Number {
 				national: "45677003898003".into(),
 
@@ -608,7 +608,7 @@ mod test {
 			national: "45677003898003".into(),
 
 			.. Default::default()
-		}, helper::international_prefix(Some(&LazyRegex::new("00[39]").unwrap()),
+		}, helper::international_prefix(Some(&CachedRegex::new(DATABASE.cache(), "00[39]").unwrap()),
 			Number {
 				national: "+45677003898003".into(),
 

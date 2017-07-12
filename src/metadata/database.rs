@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::sync::Arc;
 use std::path::Path;
 use std::fs::File;
 use std::io::{Cursor, BufReader};
 use std::borrow::Borrow;
 use std::hash::Hash;
+use std::sync::{Arc, Mutex};
 
 use fnv::FnvHashMap;
-use regex_cache::{LazyRegexBuilder, LazyRegex};
+use regex_cache::{RegexCache, CachedRegex, CachedRegexBuilder};
 use bincode;
 
 use error::{self, Result, Error};
@@ -37,6 +37,7 @@ lazy_static! {
 /// Representation of a database of metadata for phone number.
 #[derive(Clone, Debug)]
 pub struct Database {
+	cache:   Arc<Mutex<RegexCache>>,
 	by_id:   FnvHashMap<String, Arc<super::Metadata>>,
 	by_code: FnvHashMap<u16, Vec<Arc<super::Metadata>>>,
 	regions: FnvHashMap<u16, Vec<String>>,
@@ -68,11 +69,54 @@ impl Database {
 			}
 		}
 
-		fn regex(value: String) -> Result<LazyRegex> {
-			Ok(LazyRegexBuilder::new(&value).ignore_whitespace(true).build()?)
-		}
+		let cache = Arc::new(Mutex::new(RegexCache::new(100)));
+		let regex = |value: String| -> Result<CachedRegex> {
+			Ok(CachedRegexBuilder::new(cache.clone(), &value)
+				.ignore_whitespace(true).build()?)
+		};
 
-		fn metadata(meta: loader::Metadata) -> Result<super::Metadata> {
+		let descriptor = |desc: loader::Descriptor| -> Result<super::Descriptor> {
+			desc.national_number.as_ref().unwrap();
+			desc.national_number.as_ref().unwrap();
+
+			Ok(super::Descriptor {
+				national_number: desc.national_number.ok_or_else(||
+					Error::from(error::Metadata::MissingValue {
+						phase: "descriptor".into(),
+						name:  "national_number".into(),
+					})).and_then(&regex)?,
+
+				possible_length: desc.possible_length,
+				possible_local_length: desc.possible_local_length,
+				example: desc.example,
+			})
+		};
+
+		let format = |format: loader::Format| -> Result<super::Format> {
+			Ok(super::Format {
+				pattern: format.pattern.ok_or_else(||
+					Error::from(error::Metadata::MissingValue {
+						phase: "format".into(),
+						name:  "pattern".into(),
+					})).and_then(&regex)?,
+
+				format: format.format.ok_or_else(||
+					Error::from(error::Metadata::MissingValue {
+						phase: "format".into(),
+						name:  "format".into()
+					}))?,
+
+				leading_digits: format.leading_digits.into_iter()
+					.map(&regex).collect::<Result<_>>()?,
+
+				national_prefix:          format.national_prefix_formatting_rule,
+				national_prefix_optional: format.national_prefix_optional_when_formatting,
+
+				domestic_carrier: format.domestic_carrier,
+			})
+		};
+
+		let metadata = |meta: loader::Metadata| -> Result<super::Metadata> {
 			Ok(super::Metadata {
 				descriptors: super::Descriptors {
 					general: descriptor(meta.general.ok_or_else(||
@@ -81,21 +125,21 @@ impl Database {
 							name:  "generalDesc".into(),
 						}))?)?,
 
-					fixed_line:       switch(meta.fixed_line.map(descriptor))?,
-					mobile:           switch(meta.mobile.map(descriptor))?,
-					toll_free:        switch(meta.toll_free.map(descriptor))?,
-					premium_rate:     switch(meta.premium_rate.map(descriptor))?,
-					shared_cost:      switch(meta.shared_cost.map(descriptor))?,
-					personal_number:  switch(meta.personal_number.map(descriptor))?,
-					voip:             switch(meta.voip.map(descriptor))?,
-					pager:            switch(meta.pager.map(descriptor))?,
-					uan:              switch(meta.uan.map(descriptor))?,
-					emergency:        switch(meta.emergency.map(descriptor))?,
-					voicemail:        switch(meta.voicemail.map(descriptor))?,
-					short_code:       switch(meta.short_code.map(descriptor))?,
-					standard_rate:    switch(meta.standard_rate.map(descriptor))?,
-					carrier:          switch(meta.carrier.map(descriptor))?,
-					no_international: switch(meta.no_international.map(descriptor))?,
+					fixed_line:       switch(meta.fixed_line.map(&descriptor))?,
+					mobile:           switch(meta.mobile.map(&descriptor))?,
+					toll_free:        switch(meta.toll_free.map(&descriptor))?,
+					premium_rate:     switch(meta.premium_rate.map(&descriptor))?,
+					shared_cost:      switch(meta.shared_cost.map(&descriptor))?,
+					personal_number:  switch(meta.personal_number.map(&descriptor))?,
+					voip:             switch(meta.voip.map(&descriptor))?,
+					pager:            switch(meta.pager.map(&descriptor))?,
+					uan:              switch(meta.uan.map(&descriptor))?,
+					emergency:        switch(meta.emergency.map(&descriptor))?,
+					voicemail:        switch(meta.voicemail.map(&descriptor))?,
+					short_code:       switch(meta.short_code.map(&descriptor))?,
+					standard_rate:    switch(meta.standard_rate.map(&descriptor))?,
+					carrier:          switch(meta.carrier.map(&descriptor))?,
+					no_international: switch(meta.no_international.map(&descriptor))?,
 				},
 
 				id: meta.id.ok_or_else(||
@@ -110,62 +154,21 @@ impl Database {
 						name: "countryCode".into(),
 					}))?,
 
-				international_prefix: switch(meta.international_prefix.map(regex))?,
+				international_prefix: switch(meta.international_prefix.map(&regex))?,
 				preferred_international_prefix: meta.preferred_international_prefix,
 				national_prefix: meta.national_prefix,
 				preferred_extension_prefix: meta.preferred_extension_prefix,
-				national_prefix_for_parsing: switch(meta.national_prefix_for_parsing.map(regex))?,
+				national_prefix_for_parsing: switch(meta.national_prefix_for_parsing.map(&regex))?,
 				national_prefix_transform_rule: meta.national_prefix_transform_rule,
 
-				formats: meta.formats.into_iter().map(format).collect::<Result<_>>()?,
-				international_formats: meta.international_formats.into_iter().map(format).collect::<Result<_>>()?,
+				formats: meta.formats.into_iter().map(&format).collect::<Result<_>>()?,
+				international_formats: meta.international_formats.into_iter().map(&format).collect::<Result<_>>()?,
 
 				main_country_for_code: meta.main_country_for_code,
-				leading_digits: switch(meta.leading_digits.map(regex))?,
+				leading_digits: switch(meta.leading_digits.map(&regex))?,
 				mobile_number_portable: meta.mobile_number_portable,
 			})
-		}
-
-		fn descriptor(desc: loader::Descriptor) -> Result<super::Descriptor> {
-			desc.national_number.as_ref().unwrap();
-			desc.national_number.as_ref().unwrap();
-
-			Ok(super::Descriptor {
-				national_number: desc.national_number.ok_or_else(||
-					Error::from(error::Metadata::MissingValue {
-						phase: "descriptor".into(),
-						name:  "national_number".into(),
-					})).and_then(regex)?,
-
-				possible_length: desc.possible_length,
-				possible_local_length: desc.possible_local_length,
-				example: desc.example,
-			})
-		}
-
-		fn format(format: loader::Format) -> Result<super::Format> {
-			Ok(super::Format {
-				pattern: format.pattern.ok_or_else(||
-					Error::from(error::Metadata::MissingValue {
-						phase: "format".into(),
-						name:  "pattern".into(),
-					})).and_then(regex)?,
-
-				format: format.format.ok_or_else(||
-					Error::from(error::Metadata::MissingValue {
-						phase: "format".into(),
-						name:  "format".into()
-					}))?,
-
-				leading_digits: format.leading_digits.into_iter()
-					.map(regex).collect::<Result<_>>()?,
-
-				national_prefix:          format.national_prefix_formatting_rule,
-				national_prefix_optional: format.national_prefix_optional_when_formatting,
-
-				domestic_carrier: format.domestic_carrier,
-			})
-		}
+		};
 
 		let mut by_id   = FnvHashMap::default();
 		let mut by_code = FnvHashMap::default();
@@ -193,10 +196,16 @@ impl Database {
 		}
 
 		Ok(Database {
+			cache:   cache.clone(),
 			by_id:   by_id,
 			by_code: by_code,
 			regions: regions,
 		})
+	}
+
+	/// Get the regular expression cache.
+	pub fn cache(&self) -> Arc<Mutex<RegexCache>> {
+		self.cache.clone()
 	}
 
 	/// Get a metadata entry by country ID.

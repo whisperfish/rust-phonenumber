@@ -11,7 +11,7 @@ keywords    = ["phonenumber", "phone", "number", "parser", "validator", "formatt
 
 [dependencies]
 regex       = "0.2"
-regex-cache = "0.1.2"
+regex-cache = "0.1.5"
 lazy_static = "0.2"
 fnv         = "1.0"
 error-chain = "0.10"
