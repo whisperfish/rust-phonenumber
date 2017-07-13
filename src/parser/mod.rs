@@ -168,23 +168,6 @@ mod test {
 			carrier:   None,
 		}, parser::parse(Some(Country::DE), "301/23456").unwrap());
 
-		// TODO: figure out why their tests do not fail on this, US numbers cannot
-		// start with 1, or so the regex says.
-		// assert_eq!(PhoneNumber {
-		// 	country_code: CountryCode {
-		// 		value:  1,
-		// 		source: Source::Default,
-		// 	},
-		//
-		// 	national_number: NationalNumber {
-		// 		value: 1234567890,
-		// 		zeros: 0,
-		// 	},
-		//
-		// 	extension: None,
-		// 	carrier:   None,
-		// }, parser::parse(Some(Country::US), "123-456-7890").unwrap());
-
 		assert_eq!(PhoneNumber {
 			country: Code {
 				code:   81,
