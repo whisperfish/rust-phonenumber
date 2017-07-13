@@ -139,7 +139,7 @@ mod test {
 		let number = PhoneNumber {
 			country: Code {
 				code:   64,
-				source: Source::Default,
+				source: Source::Number,
 			},
 
 			national: NationalNumber {

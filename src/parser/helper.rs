@@ -21,6 +21,8 @@ use error::{self, Result};
 use consts;
 use metadata::{Database, Metadata};
 use country::{Country, Source};
+use phone_number::Type;
+use validator;
 
 #[derive(Clone, Eq, PartialEq, Default, Debug)]
 pub struct Number<'a> {
@@ -137,7 +139,11 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 				let meta = database.by_id(country.as_ref()).unwrap();
 				let code = meta.country_code.to_string();
 
-				if number.national.starts_with(&code) && !meta.descriptors().general().is_match(&number.national) {
+				if number.national.starts_with(&code) &&
+				   (!meta.descriptors().general().is_match(&number.national) ||
+				    !validator::length(meta, &number, Type::Unknown).is_possible())
+				{
+					number.country  = Source::Number;
 					number.national = trim(number.national, code.len());
 				}
 
@@ -526,11 +532,25 @@ mod test {
 		assert_eq!(Number {
 			national: "6106194466".into(),
 			prefix:   Some("1".into()),
+			country:  Source::Number,
 
 			.. Default::default()
 		}, helper::country_code(&*DATABASE, Some(Country::US),
 			Number {
 				national: "(1 610) 619 4466".into(),
+
+				.. Default::default()
+			}).unwrap());
+
+		assert_eq!(Number {
+			national: "3298888888".into(),
+			prefix:   Some("39".into()),
+			country:  Source::Number,
+
+			.. Default::default()
+		}, helper::country_code(&*DATABASE, Some(Country::IT),
+			Number {
+				national: "393298888888".into(),
 
 				.. Default::default()
 			}).unwrap());

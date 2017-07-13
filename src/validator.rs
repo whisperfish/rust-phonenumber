@@ -48,6 +48,19 @@ pub enum Validation {
 	TooLong,
 }
 
+impl Validation {
+	pub fn is_possible(&self) -> bool {
+		match *self {
+			Validation::IsPossible |
+			Validation::IsPossibleLocalOnly =>
+				true,
+
+			_ =>
+				false,
+		}
+	}
+}
+
 /// Check if the provided string is a viable phone number.
 pub fn is_viable<S: AsRef<str>>(string: S) -> bool {
 	let string = string.as_ref();
