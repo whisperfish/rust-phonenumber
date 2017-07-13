@@ -49,10 +49,38 @@ pub enum Validation {
 }
 
 impl Validation {
+	/// Whether it's a possible number.
 	pub fn is_possible(&self) -> bool {
 		match *self {
 			Validation::IsPossible |
 			Validation::IsPossibleLocalOnly =>
+				true,
+
+			_ =>
+				false,
+		}
+	}
+
+	/// Whether it's an invalid number.
+	pub fn is_invalid(&self) -> bool {
+		match *self {
+			Validation::InvalidCountryCode |
+			Validation::TooShort |
+			Validation::InvalidLength |
+			Validation::TooLong =>
+				true,
+
+			_ =>
+				false,
+		}
+	}
+
+	/// Whether the length is invalid.
+	pub fn is_invalid_length(&self) -> bool {
+		match *self {
+			Validation::TooShort |
+			Validation::InvalidLength |
+			Validation::TooLong =>
 				true,
 
 			_ =>
