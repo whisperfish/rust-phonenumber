@@ -217,23 +217,29 @@ mod test {
 
 	#[test]
 	fn us() {
-//		assert_eq!("650 253 0000", formatter::format(Mode::National,
-//			&parser::parse(Some(Country::US), "+1 6502530000").unwrap()).to_string());
-//
-//		assert_eq!("+1 650 253 0000", formatter::format(Mode::International,
-//			&parser::parse(Some(Country::US), "+1 6502530000").unwrap()).to_string());
-//
-//		assert_eq!("800 253 0000", formatter::format(Mode::National,
-//			&parser::parse(Some(Country::US), "+1 8002530000").unwrap()).to_string());
-//
-//		assert_eq!("+1 800 253 0000", formatter::format(Mode::International,
-//			&parser::parse(Some(Country::US), "+1 8002530000").unwrap()).to_string());
-//
-//		assert_eq!("900 253 0000", formatter::format(Mode::National,
-//			&parser::parse(Some(Country::US), "+1 9002530000").unwrap()).to_string());
-//
-//		assert_eq!("+1 900 253 0000", formatter::format(Mode::International,
-//			&parser::parse(Some(Country::US), "+1 9002530000").unwrap()).to_string());
+		assert_eq!("(650) 253-0000",
+			parser::parse(Some(Country::US), "+1 6502530000").unwrap()
+				.format().mode(Mode::National).to_string());
+
+		assert_eq!("+1 650-253-0000",
+			parser::parse(Some(Country::US), "+1 6502530000").unwrap()
+				.format().mode(Mode::International).to_string());
+
+		assert_eq!("(800) 253-0000",
+			parser::parse(Some(Country::US), "+1 8002530000").unwrap()
+				.format().mode(Mode::National).to_string());
+
+		assert_eq!("+1 800-253-0000",
+			parser::parse(Some(Country::US), "+1 8002530000").unwrap()
+				.format().mode(Mode::International).to_string());
+
+		assert_eq!("(900) 253-0000",
+			parser::parse(Some(Country::US), "+1 9002530000").unwrap()
+				.format().mode(Mode::National).to_string());
+
+		assert_eq!("+1 900-253-0000",
+			parser::parse(Some(Country::US), "+1 9002530000").unwrap()
+				.format().mode(Mode::International).to_string());
 
 		assert_eq!("tel:+1-900-253-0000",
 			parser::parse(Some(Country::US), "+1 9002530000").unwrap()
@@ -242,19 +248,24 @@ mod test {
 
 	#[test]
 	fn gb() {
-//		assert_eq!("(020) 7031 3000",
-//			parser::parse(Some(Country::US), "+44 2070313000").unwrap()
-//				.format().mode(Mode::National).to_string());
+		assert_eq!("020 7031 3000",
+			parser::parse(Some(Country::GB), "+44 2070313000").unwrap()
+				.format().mode(Mode::National).to_string());
 
 		assert_eq!("+44 20 7031 3000",
-			parser::parse(Some(Country::US), "+44 2070313000").unwrap()
+			parser::parse(Some(Country::GB), "+44 2070313000").unwrap()
 				.format().mode(Mode::International).to_string());
 
-//    assertEquals("(020) 7031 3000", phoneUtil.format(GB_NUMBER, PhoneNumberFormat.NATIONAL));
-//    assertEquals("+44 20 7031 3000", phoneUtil.format(GB_NUMBER, PhoneNumberFormat.INTERNATIONAL));
-//
-//    assertEquals("(07912) 345 678", phoneUtil.format(GB_MOBILE, PhoneNumberFormat.NATIONAL));
-//    assertEquals("+44 7912 345 678", phoneUtil.format(GB_MOBILE, PhoneNumberFormat.INTERNATIONAL));
-//
+		assert_eq!("020 7031 3000",
+			parser::parse(Some(Country::GB), "+44 2070313000").unwrap()
+				.format().mode(Mode::National).to_string());
+
+		assert_eq!("07912 345678",
+			parser::parse(Some(Country::GB), "+44 7912345678").unwrap()
+				.format().mode(Mode::National).to_string());
+
+		assert_eq!("+44 7912 345678",
+			parser::parse(Some(Country::GB), "+44 7912345678").unwrap()
+				.format().mode(Mode::International).to_string());
 	}
 }
