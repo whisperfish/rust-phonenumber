@@ -363,9 +363,9 @@ lazy_static! {
 	/// use \d, so that the first group actually used in the pattern will be
 	/// matched.
   pub static ref FIRST_GROUP: Regex = Regex::new(r"(\$\d)").unwrap();
-  pub static ref NP:          Regex = Regex::new(r"\$NP").unwrap();
-  pub static ref FG:          Regex = Regex::new(r"\$FG").unwrap();
-  pub static ref CC:          Regex = Regex::new(r"\$CC").unwrap();
+  pub static ref NP:          &'static str = "$NP";
+  pub static ref FG:          &'static str = "$FG";
+  pub static ref CC:          &'static str = "$CC";
 
 	/// A pattern that is used to determine if the national prefix formatting
 	/// rule has the first group only, i.e., does not start with the national

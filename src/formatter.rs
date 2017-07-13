@@ -198,9 +198,9 @@ fn replace(national: &str, meta: &Metadata, formatter: &Format, transform: Optio
 
 	formatter.pattern().replace(national, &*if let Some(transform) = transform {
 		let first  = consts::FIRST_GROUP.captures(&formatter.format()).unwrap().get(1).unwrap().as_str();
-		let format = consts::NP.replace(transform, meta.national_prefix().unwrap_or(""));
-		let format = consts::FG.replace(&format, &*format!("${}", first));
-		let format = consts::CC.replace(&format, carrier.unwrap_or(""));
+		let format = transform.replace(*consts::NP, meta.national_prefix().unwrap_or(""));
+		let format = format.replace(*consts::FG, &*format!("${}", first));
+		let format = format.replace(*consts::CC, carrier.unwrap_or(""));
 
 		consts::FIRST_GROUP.replace(formatter.format(), &*format)
 	}
