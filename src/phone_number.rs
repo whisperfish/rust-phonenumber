@@ -69,7 +69,8 @@ pub struct PhoneNumber {
 }
 
 /// The phone number type.
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
 pub enum Type {
 	///
 	FixedLine,

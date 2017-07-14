@@ -28,6 +28,7 @@ pub struct Code {
 /// The source from which the country code is derived. This is not set in the
 /// general parsing method, but in the method that parses and keeps raw_input.
 #[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
 pub enum Source {
 	/// The country code is derived based on a phone number with a leading "+",
 	/// e.g. the French number "+33 1 42 68 53 00".
@@ -74,7 +75,7 @@ impl Into<u16> for Code {
 }
 
 /// CLDR country IDs.
-#[derive(Eq, PartialEq, Copy, Clone, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum Country {
 	AC,
 	AD,
