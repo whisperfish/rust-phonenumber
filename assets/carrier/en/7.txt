@@ -1,0 +1,36 @@
+# Copyright (C) 2013 The Libphonenumber Authors
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# KCell has two brands; KCell and Activ.
+# Carrier allocations outside the ITU doc from
+# https://ru.wikipedia.org/wiki/Телефонный_план_нумерации_Казахстана
+# 750 and 751 skipped for being dial-up and VoIP providers, not mobile.
+# 761 has been skipped since we can't find evidence that it is actually in use.
+
+7700|Altel
+7701|Kcell/Activ
+7702|Kcell/Activ
+7705|Beeline
+7707|Tele2
+7708|Altel
+7747|Tele2
+7760|Kulan
+7762|Nursat
+7763|Arna
+7764|2Day Telecom
+7771|Beeline
+7775|Kcell/Activ
+7776|Beeline
+7777|Beeline
+7778|Kcell/Activ
