@@ -3,7 +3,7 @@ name    = "phonenumber"
 version = "0.1.0+8.7.0"
 
 authors = ["meh. <meh@1aim.com>"]
-license = "Apache-2"
+license = "Apache-2.0"
 
 description = "Library for parsing, formatting and validating international phone numbers."
 repository  = "https://github.com/1aim/rust-phonenumber"
