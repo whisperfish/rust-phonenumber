@@ -209,5 +209,69 @@ mod test {
 			extension: None,
 			carrier:   Some("12".into()),
 		}, parser::parse(Some(Country::BR), "012 3121286979").unwrap());
+
+		assert_eq!(PhoneNumber {
+			country: Code {
+				code:   61,
+				source: Source::Plus,
+				alpha2: Ok(Country::AU),
+			},
+
+			national: NationalNumber {
+				value: 406823897,
+				zeros: 0,
+			},
+
+			extension: None,
+			carrier:   None,
+		}, parser::parse(Some(Country::None), "+61406823897").unwrap());
+
+		assert_eq!(PhoneNumber {
+			country: Code {
+				code:   34,
+				source: Source::Plus,
+				alpha2: Ok(Country::ES),
+			},
+
+			national: NationalNumber {
+				value: 666777888,
+				zeros: 0,
+			},
+
+			extension: None,
+			carrier:   None,
+		}, parser::parse(Some(Country::None), "+34666777888").unwrap());
+
+		assert_eq!(PhoneNumber {
+			country: Code {
+				code:   1,
+				source: Source::Plus,
+				alpha2: Ok(Country::KY),
+			},
+
+			national: NationalNumber {
+				value: 3459492311,
+				zeros: 0,
+			},
+
+			extension: None,
+			carrier:   None,
+		}, parser::parse(Some(Country::None), "+13459492311").unwrap());
+
+		assert_eq!(PhoneNumber {
+			country: Code {
+				code:   1,
+				source: Source::Plus,
+				alpha2: Ok(Country::CA),
+			},
+
+			national: NationalNumber {
+				value: 6137827274,
+				zeros: 0,
+			},
+
+			extension: None,
+			carrier:   None,
+		}, parser::parse(Some(Country::None), "+16137827274").unwrap());
 	}
 }
