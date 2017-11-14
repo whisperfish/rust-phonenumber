@@ -179,10 +179,10 @@ impl Database {
 
 			by_id.insert(meta.id.clone(), meta.clone());
 
-			let mut by_code = by_code.entry(meta.country_code)
+			let by_code = by_code.entry(meta.country_code)
 				.or_insert_with(Vec::new);
 
-			let mut regions = regions.entry(meta.country_code)
+			let regions = regions.entry(meta.country_code)
 				.or_insert_with(Vec::new);
 
 			if meta.main_country_for_code {

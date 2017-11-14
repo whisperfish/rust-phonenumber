@@ -20,8 +20,6 @@ pub use std::str::FromStr;
 use extension::Extension;
 use carrier::Carrier;
 use consts;
-use validator::{self, Validation};
-use phone_number::Type;
 use error::{self, Result};
 
 pub mod helper;
