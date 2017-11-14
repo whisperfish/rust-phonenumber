@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use std::borrow::Cow;
+use std::str::FromStr;
 use nom::{self, AsChar, IResult};
 use fnv::FnvHashMap;
 use regex_cache::CachedRegex;
@@ -22,7 +23,7 @@ use consts;
 use metadata::{Database, Metadata};
 use country::{Country, Source};
 use phone_number::Type;
-use validator;
+use validator::{self, Validation};
 
 #[derive(Clone, Eq, PartialEq, Default, Debug)]
 pub struct Number<'a> {
@@ -31,7 +32,12 @@ pub struct Number<'a> {
 	pub prefix:    Option<Cow<'a, str>>,
 	pub extension: Option<Cow<'a, str>>,
 	pub carrier:   Option<Cow<'a, str>>,
+	pub main: bool,
+	pub alpha2: Country,
 }
+
+
+type AlphaResult<'a> = ::std::result::Result<Number<'a>, ()>;
 
 named!(pub punctuation(&str) -> char,
 	one_of!("-x\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2212}\u{30FC}\u{FF0D}-\u{FF0F} \u{00A0}\u{00AD}\u{200B}\u{2060}\u{3000}()\u{FF08}\u{FF09}\u{FF3B}\u{FF3D}.[]/~\u{2053}\u{223C}\u{FF5E}"));
@@ -84,6 +90,46 @@ pub fn extract(value: &str) -> IResult<&str, &str> {
 	else {
 		IResult::Done(&value[start + result.len() ..], result)
 	}
+}
+
+pub fn country_alpha2<'a>(database: &Database, mut number: Number<'a>) -> AlphaResult<'a> {
+	let pref: u16 = number.prefix.to_owned().unwrap().clone().to_string().parse().unwrap();
+
+	if let Some(metas) = database.by_code(&pref) {
+		let mut potential;
+		let mut results: Vec<AlphaResult> = Vec::new();
+		for meta in metas {
+			potential = national_number(meta, number.clone());
+			if let Some(prefix) = meta.national_prefix.as_ref() {
+				if potential.national.starts_with(prefix) {
+					potential.national = trim(potential.national, prefix.len());
+				}
+			}
+			if !meta.leading_digits().is_none() && !meta.leading_digits().unwrap().is_match(potential.national.as_ref()) { continue; }
+
+
+			if validator::length(meta, &potential, Type::Unknown) != Validation::TooShort {
+				potential.alpha2 = Country::from_str(&meta.id).unwrap_or(Country::None);
+				potential.main = meta.leading_digits().is_none();
+				results.push(Ok(potential));
+			}
+		};
+		if results.len() == 1 { return results.pop().unwrap() }
+		let mut main = None;
+		for result in results {
+			if result.as_ref().unwrap().main {
+				main = Some(result);
+				continue;
+			}
+			return result;
+		}
+		if !main.is_none(){
+			return main.to_owned().unwrap();
+		}
+	}
+
+	number.alpha2 = Country::None;
+	Ok(number)
 }
 
 /// Parse and insert the proper country code.

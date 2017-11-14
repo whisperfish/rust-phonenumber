@@ -16,6 +16,7 @@ use metadata::{DATABASE, Database};
 use phone_number::PhoneNumber;
 use national_number::NationalNumber;
 use country::{Code, Country};
+pub use std::str::FromStr;
 use extension::Extension;
 use carrier::Carrier;
 use consts;
@@ -46,19 +47,10 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<Country>, 
 	number = helper::country_code(database, country, number)?;
 
 	// Extract carrier and strip national prefix if present.
-	if let Some(meta) = country.and_then(|c| database.by_id(c.as_ref())) {
-		let mut potential = helper::national_number(meta, number.clone());
 
-		// Strip national prefix if present.
-		if let Some(prefix) = meta.national_prefix.as_ref() {
-			if potential.national.starts_with(prefix) {
-				potential.national = helper::trim(potential.national, prefix.len());
-			}
-		}
-
-		if validator::length(meta, &potential, Type::Unknown) != Validation::TooShort {
-			number = potential;
-		}
+	let result = helper::country_alpha2(database, number.clone());
+	if result.is_ok() {
+		number = result.unwrap();
 	}
 
 	if number.national.len() < consts::MIN_LENGTH_FOR_NSN {
@@ -73,6 +65,7 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<Country>, 
 		country: Code {
 			code:   number.prefix.map(|p| p.parse()).unwrap_or(Ok(0))?,
 			source: number.country,
+			alpha2: Ok(number.alpha2),
 		},
 
 		national: NationalNumber {

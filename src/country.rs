@@ -23,6 +23,8 @@ pub struct Code {
 
 	/// The source from which the country code is derived.
 	pub(crate) source: Source,
+
+	pub(crate) alpha2: Result<Country, ()>,
 }
 
 /// The source from which the country code is derived. This is not set in the
@@ -65,6 +67,10 @@ impl Code {
 
 	pub fn source(&self) -> Source {
 		self.source
+	}
+
+	pub fn alpha2(&self) -> Result<Country, ()> {
+		self.alpha2
 	}
 }
 
@@ -321,6 +327,14 @@ pub enum Country {
 	ZA,
 	ZM,
 	ZW,
+	None,
+}
+
+impl Default for Country {
+	fn default() -> Self {
+		Country::None
+	}
+
 }
 
 impl str::FromStr for Country {
@@ -824,6 +838,7 @@ impl AsRef<str> for Country {
 			Country::ZA => "ZA",
 			Country::ZM => "ZM",
 			Country::ZW => "ZW",
+			_ 			=> "",
 		}
 	}
 }
