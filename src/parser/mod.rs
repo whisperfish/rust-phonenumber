@@ -89,6 +89,7 @@ mod test {
 			country: Code {
 				code:   64,
 				source: Source::Default,
+				alpha2: Ok(Country::NZ),
 			},
 
 			national: NationalNumber {
@@ -131,6 +132,7 @@ mod test {
 			country: Code {
 				code:   64,
 				source: Source::Number,
+				alpha2: Ok(Country::NZ),
 			},
 
 			national: NationalNumber {
@@ -148,6 +150,7 @@ mod test {
 			country: Code {
 				code:   49,
 				source: Source::Default,
+				alpha2: Ok(Country::DE),
 			},
 
 			national: NationalNumber {
@@ -163,6 +166,7 @@ mod test {
 			country: Code {
 				code:   81,
 				source: Source::Plus,
+				alpha2: Ok(Country::JP),
 			},
 
 			national: NationalNumber {
@@ -178,6 +182,7 @@ mod test {
 			country: Code {
 				code:   64,
 				source: Source::Default,
+				alpha2: Ok(Country::NZ),
 			},
 
 			national: NationalNumber {
@@ -193,6 +198,7 @@ mod test {
 			country: Code {
 				code:   55,
 				source: Source::Default,
+				alpha2: Ok(Country::BR),
 			},
 
 			national: NationalNumber {
