@@ -45,13 +45,14 @@ pub use error::{Error, ErrorKind, Result};
 pub mod metadata;
 pub use metadata::Metadata;
 
+/// Country related types.
+pub mod country;
+
 mod consts;
 
 mod national_number;
 pub use national_number::NationalNumber;
 
-pub mod country;
-pub use country::Country;
 
 mod extension;
 pub use extension::Extension;

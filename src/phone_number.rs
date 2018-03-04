@@ -14,15 +14,18 @@
 
 use std::fmt;
 use std::str::FromStr;
+use std::ops::Deref;
+use either::*;
 
 use error::{Error, Result};
-use country::Code;
+use country;
 use national_number::NationalNumber;
 use extension::Extension;
 use carrier::Carrier;
-use metadata::Database;
+use metadata::{DATABASE, Database, Metadata};
 use parser;
 use formatter;
+use validator;
 
 /// A phone number.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
@@ -30,7 +33,7 @@ pub struct PhoneNumber {
 	/// The country calling code for this number, as defined by the International
 	/// Telecommunication Union (ITU). For example, this would be 1 for NANPA
 	/// countries, and 33 for France.
-	pub(crate) country: Code,
+	pub(crate) code: country::Code,
 
 	/// The National (significant) Number, as defined in International
 	/// Telecommunication Union (ITU) Recommendation E.164, without any leading
@@ -67,6 +70,10 @@ pub struct PhoneNumber {
 	/// well.
 	pub(crate) carrier: Option<Carrier>,
 }
+
+/// Wrapper to make it easier to access information about the country of a
+/// phone number.
+pub struct Country<'a>(&'a PhoneNumber);
 
 /// The phone number type.
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
@@ -147,9 +154,14 @@ impl fmt::Display for PhoneNumber {
 }
 
 impl PhoneNumber {
+	/// Get information about the country for the phone number.
+	pub fn country(&self) -> Country {
+		Country(self)
+	}
+
 	/// Get the country code.
-	pub fn country(&self) -> &Code {
-		&self.country
+	pub fn code(&self) -> &country::Code {
+		&self.code
 	}
 
 	/// Get the national number.
@@ -172,9 +184,9 @@ impl PhoneNumber {
 	/// # Example
 	///
 	/// ```
-	/// use phonenumber::{self, Country, Mode};
+	/// use phonenumber::{self, country, Mode};
 	///
-	/// let number = phonenumber::parse(Some(Country::DE), "301/23456").unwrap()
+	/// let number = phonenumber::parse(Some(country::DE), "301/23456").unwrap()
 	/// 	.format().mode(Mode::National).to_string();
 	///
 	/// assert_eq!("030 123456", number);
@@ -186,5 +198,60 @@ impl PhoneNumber {
 	/// Prepare a formatter for this `PhoneNumber` with the given `Database`.
 	pub fn format_with<'n, 'd>(&'n self, database: &'d Database) -> formatter::Formatter<'n, 'd, 'static> {
 		formatter::format_with(database, self)
+	}
+
+	/// Get the metadata that applies to this phone number from the given
+	/// database.
+	pub fn metadata<'a>(&self, database: &'a Database) -> Option<&'a Metadata> {
+		match try_opt!(None; validator::source_for(database, self.code.value(), &self.national.to_string())) {
+			Left(region) =>
+				database.by_id(region.as_ref()),
+
+			Right(code) =>
+				database.by_code(&code).and_then(|m| m.into_iter().next()),
+		}
+	}
+}
+
+impl<'a> Country<'a> {
+	pub fn code(&self) -> u16 {
+		self.0.code.value()
+	}
+
+	pub fn id(&self) -> Option<country::Id> {
+		self.0.metadata(&*DATABASE).map(|m| m.id().parse().unwrap())
+	}
+}
+
+impl<'a> Deref for Country<'a> {
+	type Target = country::Code;
+
+	fn deref(&self) -> &Self::Target {
+		self.0.code()
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use parser;
+	use country;
+
+	#[test]
+	fn country_id() {
+		assert_eq!(country::AU,
+			parser::parse(None, "+61406823897").unwrap()
+				.country().id().unwrap());
+
+		assert_eq!(country::ES,
+			parser::parse(None, "+34666777888").unwrap()
+				.country().id().unwrap());
+
+		assert_eq!(country::KY,
+			parser::parse(None, "+13459492311").unwrap()
+				.country().id().unwrap());
+
+		assert_eq!(country::CA,
+			parser::parse(None, "+16137827274").unwrap()
+				.country().id().unwrap());
 	}
 }

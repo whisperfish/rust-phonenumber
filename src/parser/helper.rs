@@ -20,13 +20,13 @@ use regex_cache::CachedRegex;
 use error::{self, Result};
 use consts;
 use metadata::{Database, Metadata};
-use country::{Country, Source};
+use country;
 use phone_number::Type;
 use validator;
 
 #[derive(Clone, Eq, PartialEq, Default, Debug)]
 pub struct Number<'a> {
-	pub country:   Source,
+	pub country:   country::Source,
 	pub national:  Cow<'a, str>,
 	pub prefix:    Option<Cow<'a, str>>,
 	pub extension: Option<Cow<'a, str>>,
@@ -87,7 +87,7 @@ pub fn extract(value: &str) -> IResult<&str, &str> {
 }
 
 /// Parse and insert the proper country code.
-pub fn country_code<'a>(database: &Database, country: Option<Country>, mut number: Number<'a>) -> Result<Number<'a>> {
+pub fn country_code<'a>(database: &Database, country: Option<country::Id>, mut number: Number<'a>) -> Result<Number<'a>> {
 	let idd = country
 		.and_then(|c| database.by_id(c.as_ref()))
 		.and_then(|m| m.international_prefix.as_ref());
@@ -97,7 +97,7 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 	match number.country {
 		// The country source was found from the initial PLUS or it was extract
 		// from the number already.
-		Source::Plus | Source::Idd | Source::Number => {
+		country::Source::Plus | country::Source::Idd | country::Source::Number => {
 			if number.national.len() <= consts::MIN_LENGTH_FOR_NSN {
 				return Err(error::Parse::TooShortNsn.into());
 			}
@@ -134,7 +134,7 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 			}
 		}
 
-		Source::Default => {
+		country::Source::Default => {
 			if let Some(country) = country {
 				let meta = database.by_id(country.as_ref()).unwrap();
 				let code = meta.country_code.to_string();
@@ -143,7 +143,7 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 				   (!meta.descriptors().general().is_match(&number.national) ||
 				    !validator::length(meta, &number, Type::Unknown).is_possible())
 				{
-					number.country  = Source::Number;
+					number.country  = country::Source::Number;
 					number.national = trim(number.national, code.len());
 				}
 
@@ -165,7 +165,7 @@ pub fn country_code<'a>(database: &Database, country: Option<Country>, mut numbe
 pub fn international_prefix<'a>(idd: Option<&CachedRegex>, mut number: Number<'a>) -> Number<'a> {
 	// If there's a prefix already, i.e. RFC3966, just change the country source.
 	if number.prefix.is_some() {
-		number.country = Source::Plus;
+		number.country = country::Source::Plus;
 		return normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
 	}
 
@@ -177,7 +177,7 @@ pub fn international_prefix<'a>(idd: Option<&CachedRegex>, mut number: Number<'a
 
 	// If there are any pluses, strip them and change the country source.
 	if start != 0 {
-		number.country  = Source::Plus;
+		number.country  = country::Source::Plus;
 		number.national = trim(number.national, start);
 		number          = normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
 
@@ -186,7 +186,7 @@ pub fn international_prefix<'a>(idd: Option<&CachedRegex>, mut number: Number<'a
 		}
 	}
 	else {
-		number.country = Source::Default;
+		number.country = country::Source::Default;
 		number         = normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
 	}
 
@@ -199,8 +199,8 @@ pub fn international_prefix<'a>(idd: Option<&CachedRegex>, mut number: Number<'a
 		// Check it starts at the beginning and the next digit after the IDD is not
 		// a 0, since that's invalid.
 		if start == 0 && !number.national[end ..].starts_with('0') {
-			if number.country != Source::Plus {
-				number.country = Source::Idd;
+			if number.country != country::Source::Plus {
+				number.country = country::Source::Idd;
 			}
 
 			number.national = trim(number.national, end);
@@ -417,7 +417,7 @@ mod test {
 	use consts;
 	use parser::helper;
 	use parser::helper::*;
-	use country::Source;
+	use country;
 	use metadata::{DATABASE};
 
 	#[test]
@@ -471,12 +471,12 @@ mod test {
 	#[test]
 	fn country_code() {
 		assert_eq!(Number {
-			country:  Source::Idd,
+			country:  country::Source::Idd,
 			national: "123456789".into(),
 			prefix:   Some("1".into()),
 
 			.. Default::default()
-		}, helper::country_code(&*DATABASE, Some(Country::US),
+		}, helper::country_code(&*DATABASE, Some(country::US),
 			Number {
 				national: "011112-3456789".into(),
 
@@ -484,12 +484,12 @@ mod test {
 			}).unwrap());
 
 		assert_eq!(Number {
-			country:  Source::Plus,
+			country:  country::Source::Plus,
 			national: "23456789".into(),
 			prefix:   Some("64".into()),
 
 			.. Default::default()
-		}, helper::country_code(&*DATABASE, Some(Country::US),
+		}, helper::country_code(&*DATABASE, Some(country::US),
 			Number {
 				national: "+6423456789".into(),
 
@@ -497,12 +497,12 @@ mod test {
 			}).unwrap());
 
 		assert_eq!(Number {
-			country:  Source::Plus,
+			country:  country::Source::Plus,
 			national: "12345678".into(),
 			prefix:   Some("800".into()),
 
 			.. Default::default()
-		}, helper::country_code(&*DATABASE, Some(Country::US),
+		}, helper::country_code(&*DATABASE, Some(country::US),
 			Number {
 				national: "+80012345678".into(),
 
@@ -510,19 +510,19 @@ mod test {
 			}).unwrap());
 
 		assert_eq!(Number {
-			country:  Source::Default,
+			country:  country::Source::Default,
 			national: "23456789".into(),
 			prefix:   Some("1".into()),
 
 			.. Default::default()
-		}, helper::country_code(&*DATABASE, Some(Country::US),
+		}, helper::country_code(&*DATABASE, Some(country::US),
 			Number {
 				national: "2345-6789".into(),
 
 				.. Default::default()
 			}).unwrap());
 
-		assert!(helper::country_code(&*DATABASE, Some(Country::US),
+		assert!(helper::country_code(&*DATABASE, Some(country::US),
 			Number {
 				national: "0119991123456789".into(),
 
@@ -532,10 +532,10 @@ mod test {
 		assert_eq!(Number {
 			national: "6106194466".into(),
 			prefix:   Some("1".into()),
-			country:  Source::Number,
+			country:  country::Source::Number,
 
 			.. Default::default()
-		}, helper::country_code(&*DATABASE, Some(Country::US),
+		}, helper::country_code(&*DATABASE, Some(country::US),
 			Number {
 				national: "(1 610) 619 4466".into(),
 
@@ -545,10 +545,10 @@ mod test {
 		assert_eq!(Number {
 			national: "3298888888".into(),
 			prefix:   Some("39".into()),
-			country:  Source::Number,
+			country:  country::Source::Number,
 
 			.. Default::default()
-		}, helper::country_code(&*DATABASE, Some(Country::IT),
+		}, helper::country_code(&*DATABASE, Some(country::IT),
 			Number {
 				national: "393298888888".into(),
 
@@ -577,7 +577,7 @@ mod test {
 	#[test]
 	fn international_prefix() {
 		assert_eq!(Number {
-			country:  Source::Idd,
+			country:  country::Source::Idd,
 			national: "45677003898003".into(),
 
 			.. Default::default()
@@ -589,7 +589,7 @@ mod test {
 			}));
 
 		assert_eq!(Number {
-			country:  Source::Idd,
+			country:  country::Source::Idd,
 			national: "45677003898003".into(),
 
 			.. Default::default()
@@ -601,7 +601,7 @@ mod test {
 			}));
 
 		assert_eq!(Number {
-			country:  Source::Idd,
+			country:  country::Source::Idd,
 			national: "45677003898003".into(),
 
 			.. Default::default()
@@ -624,7 +624,7 @@ mod test {
 			}));
 
 		assert_eq!(Number {
-			country:  Source::Plus,
+			country:  country::Source::Plus,
 			national: "45677003898003".into(),
 
 			.. Default::default()

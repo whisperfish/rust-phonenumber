@@ -15,7 +15,7 @@
 use either::*;
 
 use metadata::{DATABASE, Database, Metadata};
-use country::Country;
+use country;
 use phone_number::{Type, PhoneNumber};
 use consts;
 use parser::helper::Number as ParseNumber;
@@ -162,7 +162,7 @@ pub fn length(meta: &Metadata, number: &ParseNumber, kind: Type) -> Validation {
 }
 
 /// Find the metadata source.
-pub fn source_for(database: &Database, code: u16, national: &str) -> Option<Either<Country, u16>> {
+pub fn source_for(database: &Database, code: u16, national: &str) -> Option<Either<country::Id, u16>> {
 	let regions = try_opt!(None; database.region(&code));
 
 	if regions.len() == 1 {
@@ -254,18 +254,18 @@ pub fn number_type(meta: &Metadata, value: &str) -> Type {
 mod test {
 	use validator;
 	use parser;
-	use country::Country;
+	use country;
 
 	#[test]
 	fn validate() {
 		assert!(validator::is_valid(&parser::parse(
-			Some(Country::US), "+1 6502530000").unwrap()));
+			Some(country::US), "+1 6502530000").unwrap()));
 
 		assert!(validator::is_valid(&parser::parse(
-			Some(Country::IT), "+39 0236618300").unwrap()));
+			Some(country::IT), "+39 0236618300").unwrap()));
 
 		assert!(validator::is_valid(&parser::parse(
-			Some(Country::GB), "+44 7912345678").unwrap()));
+			Some(country::GB), "+44 7912345678").unwrap()));
 
 		assert!(validator::is_valid(&parser::parse(
 			None, "+800 12345678").unwrap()));
