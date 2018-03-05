@@ -211,6 +211,16 @@ impl PhoneNumber {
 				database.by_code(&code).and_then(|m| m.into_iter().next()),
 		}
 	}
+
+	/// Check if the phone number is valid.
+	pub fn is_valid(&self) -> bool {
+		validator::is_valid(self)
+	}
+
+	/// Check if the phone number is valid with the given `Database`.
+	pub fn is_valid_with(&self, database: &Database) -> bool {
+		validator::is_valid_with(database, self)
+	}
 }
 
 impl<'a> Country<'a> {
