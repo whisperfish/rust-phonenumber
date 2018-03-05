@@ -16,8 +16,8 @@ use std::fmt;
 use std::str::FromStr;
 use std::ops::Deref;
 use either::*;
+use failure::Error;
 
-use error::{Error, Result};
 use country;
 use national_number::NationalNumber;
 use extension::Extension;
@@ -142,7 +142,7 @@ pub enum Type {
 impl FromStr for PhoneNumber {
 	type Err = Error;
 
-	fn from_str(s: &str) -> Result<Self> {
+	fn from_str(s: &str) -> Result<Self, Error> {
 		parser::parse(None, s)
 	}
 }

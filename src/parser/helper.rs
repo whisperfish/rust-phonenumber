@@ -16,8 +16,9 @@ use std::borrow::Cow;
 use nom::{self, AsChar, IResult};
 use fnv::FnvHashMap;
 use regex_cache::CachedRegex;
+use failure::Error;
 
-use error::{self, Result};
+use error;
 use consts;
 use metadata::{Database, Metadata};
 use country;
@@ -87,7 +88,7 @@ pub fn extract(value: &str) -> IResult<&str, &str> {
 }
 
 /// Parse and insert the proper country code.
-pub fn country_code<'a>(database: &Database, country: Option<country::Id>, mut number: Number<'a>) -> Result<Number<'a>> {
+pub fn country_code<'a>(database: &Database, country: Option<country::Id>, mut number: Number<'a>) -> Result<Number<'a>, Error> {
 	let idd = country
 		.and_then(|c| database.by_id(c.as_ref()))
 		.and_then(|m| m.international_prefix.as_ref());

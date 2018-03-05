@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use failure::Error;
+
 use metadata::{DATABASE, Database};
-use phone_number::PhoneNumber;
+use phone_number::{PhoneNumber, Type};
 use national_number::NationalNumber;
 use country;
 use extension::Extension;
 use carrier::Carrier;
 use consts;
 use validator::{self, Validation};
-use phone_number::Type;
-use error::{self, Result};
+use error;
 
 pub mod helper;
 pub mod valid;
@@ -29,12 +30,12 @@ pub mod rfc3966;
 pub mod natural;
 
 /// Parse a phone number.
-pub fn parse<S: AsRef<str>>(country: Option<country::Id>, string: S) -> Result<PhoneNumber> {
+pub fn parse<S: AsRef<str>>(country: Option<country::Id>, string: S) -> Result<PhoneNumber, Error> {
 	parse_with(&*DATABASE, country, string)
 }
 
 /// Parse a phone number using a specific `Database`.
-pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<country::Id>, string: S) -> Result<PhoneNumber> {
+pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<country::Id>, string: S) -> Result<PhoneNumber, Error> {
 	named!(phone_number(&str) -> helper::Number,
 		alt_complete!(call!(rfc3966::phone_number) | call!(natural::phone_number)));
 

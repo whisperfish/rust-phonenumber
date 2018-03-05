@@ -15,11 +15,12 @@
 use std::str;
 use std::io::{BufRead};
 
-use xml::reader::Reader;
+use xml::Reader;
 use xml::events::{self, Event};
 use xml::events::attributes::Attribute;
+use failure::Error;
 
-use error::{self, Result};
+use error;
 
 /// Temporary defaults for `Format` and `Descriptor`.
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
@@ -90,11 +91,11 @@ pub struct Descriptor {
 }
 
 /// Load XML metadata from the given reader.
-pub fn load<R: BufRead>(reader: R) -> Result<Vec<Metadata>> {
+pub fn load<R: BufRead>(reader: R) -> Result<Vec<Metadata>, Error> {
 	metadata(&mut Reader::from_reader(reader))
 }
 
-fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> {
+fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, Error> {
 	let mut buffer = Vec::new();
 	let mut result = Vec::new();
 
@@ -134,7 +135,7 @@ fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> {
 	}
 }
 
-fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> {
+fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, Error> {
 	let mut buffer = Vec::new();
 	let mut result = Vec::new();
 
@@ -173,14 +174,14 @@ fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>> {
 	}
 }
 
-fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>) -> Result<Metadata> {
+fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>) -> Result<Metadata, Error> {
 	let mut buffer = Vec::new();
 	let mut meta   = Metadata::default();
 
 	for attr in e.attributes() {
 		let Attribute { key, value } = attr?;
 
-		match (str::from_utf8(key)?, str::from_utf8(value)?) {
+		match (str::from_utf8(key)?, str::from_utf8(&value)?) {
 			("id", value) =>
 				meta.id = Some(value.into()),
 
@@ -317,11 +318,11 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 	}
 }
 
-fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> Result<Descriptor> {
+fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> Result<Descriptor, Error> {
 	let mut buffer     = Vec::new();
 	let mut descriptor = meta.defaults.descriptor.clone();
 
-	fn lengths(value: &str) -> Result<Vec<u16>> {
+	fn lengths(value: &str) -> Result<Vec<u16>, Error> {
 		let mut result = Vec::new();
 
 		for part in value.split(',').map(str::trim) {
@@ -373,7 +374,7 @@ fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) 
 						for attr in e.attributes() {
 							let Attribute {key, value } = attr?;
 
-							match (str::from_utf8(key)?, str::from_utf8(value)?) {
+							match (str::from_utf8(key)?, str::from_utf8(&value)?) {
 								("national", value) =>
 									descriptor.possible_length = lengths(value)?,
 
@@ -418,7 +419,7 @@ fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) 
 	}
 }
 
-fn formats<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> Result<(Vec<Format>, Vec<Format>)> {
+fn formats<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> Result<(Vec<Format>, Vec<Format>), Error> {
 	let mut buffer        = Vec::new();
 	let mut national      = Vec::new();
 	let mut international = Vec::new();
@@ -468,7 +469,7 @@ fn formats<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> 
 	}
 }
 
-fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], e: &events::BytesStart<'a>) -> Result<(Format, Option<Format>)> {
+fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], e: &events::BytesStart<'a>) -> Result<(Format, Option<Format>), Error> {
 	let mut buffer = Vec::new();
 
 	let mut format        = meta.defaults.format.clone();
@@ -479,7 +480,7 @@ fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], 
 	for attr in e.attributes() {
 		let Attribute { key, value } = attr?;
 
-		match (str::from_utf8(key)?, str::from_utf8(value)?) {
+		match (str::from_utf8(key)?, str::from_utf8(&value)?) {
 			("pattern", value) =>
 				format.pattern = Some(value.into()),
 
@@ -564,7 +565,7 @@ fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], 
 	}
 }
 
-fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<()> {
+fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<(), Error> {
 	let mut buffer = Vec::new();
 
 	loop {
@@ -600,7 +601,7 @@ fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<()> {
 	}
 }
 
-fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String> {
+fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, Error> {
 	let mut buffer = Vec::new();
 	let mut result = String::new();
 

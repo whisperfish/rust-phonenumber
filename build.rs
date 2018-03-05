@@ -4,7 +4,7 @@ use std::io::{BufReader, BufWriter};
 use std::env;
 
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate regex;
 extern crate quick_xml as xml;
 
@@ -29,6 +29,6 @@ fn main() {
 		&Path::new(&env::var("OUT_DIR").unwrap()).join("database.bin"))
 			.expect("could not create database file"));
 
-	bincode::serialize_into(&mut out, &metadata, bincode::Infinite)
+	bincode::serialize_into(&mut out, &metadata)
 		.expect("failed to serialize database");
 }

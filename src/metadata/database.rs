@@ -22,8 +22,9 @@ use std::sync::{Arc, Mutex};
 use fnv::FnvHashMap;
 use regex_cache::{RegexCache, CachedRegex, CachedRegexBuilder};
 use bincode;
+use failure::Error;
 
-use error::{self, Result, Error};
+use error;
 use metadata::loader;
 
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
@@ -45,18 +46,18 @@ pub struct Database {
 
 impl Database {
 	/// Load a database from the given file.
-	pub fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
+	pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
 		Database::from(loader::load(BufReader::new(File::open(path)?))?)
 	}
 
 	/// Parse a database from the given string.
-	pub fn parse<S: AsRef<str>>(content: S) -> Result<Self> {
+	pub fn parse<S: AsRef<str>>(content: S) -> Result<Self, Error> {
 		Database::from(loader::load(Cursor::new(content.as_ref()))?)
 	}
 
 	/// Create a database from a loaded database.
-	pub fn from(meta: Vec<loader::Metadata>) -> Result<Self> {
-		fn switch<T>(value: Option<Result<T>>) -> Result<Option<T>> {
+	pub fn from(meta: Vec<loader::Metadata>) -> Result<Self, Error> {
+		fn tranpose<T, E>(value: Option<Result<T, E>>) -> Result<Option<T>, E> {
 			match value {
 				None =>
 					Ok(None),
@@ -70,12 +71,12 @@ impl Database {
 		}
 
 		let cache = Arc::new(Mutex::new(RegexCache::new(100)));
-		let regex = |value: String| -> Result<CachedRegex> {
+		let regex = |value: String| -> Result<CachedRegex, Error> {
 			Ok(CachedRegexBuilder::new(cache.clone(), &value)
 				.ignore_whitespace(true).build()?)
 		};
 
-		let descriptor = |desc: loader::Descriptor| -> Result<super::Descriptor> {
+		let descriptor = |desc: loader::Descriptor| -> Result<super::Descriptor, Error> {
 			desc.national_number.as_ref().unwrap();
 			desc.national_number.as_ref().unwrap();
 
@@ -92,7 +93,7 @@ impl Database {
 			})
 		};
 
-		let format = |format: loader::Format| -> Result<super::Format> {
+		let format = |format: loader::Format| -> Result<super::Format, Error> {
 			Ok(super::Format {
 				pattern: format.pattern.ok_or_else(||
 					Error::from(error::Metadata::MissingValue {
@@ -107,7 +108,7 @@ impl Database {
 					}))?,
 
 				leading_digits: format.leading_digits.into_iter()
-					.map(&regex).collect::<Result<_>>()?,
+					.map(&regex).collect::<Result<_, _>>()?,
 
 				national_prefix:          format.national_prefix_formatting_rule,
 				national_prefix_optional: format.national_prefix_optional_when_formatting,
@@ -116,7 +117,7 @@ impl Database {
 			})
 		};
 
-		let metadata = |meta: loader::Metadata| -> Result<super::Metadata> {
+		let metadata = |meta: loader::Metadata| -> Result<super::Metadata, Error> {
 			Ok(super::Metadata {
 				descriptors: super::Descriptors {
 					general: descriptor(meta.general.ok_or_else(||
@@ -125,21 +126,21 @@ impl Database {
 							name:  "generalDesc".into(),
 						}))?)?,
 
-					fixed_line:       switch(meta.fixed_line.map(&descriptor))?,
-					mobile:           switch(meta.mobile.map(&descriptor))?,
-					toll_free:        switch(meta.toll_free.map(&descriptor))?,
-					premium_rate:     switch(meta.premium_rate.map(&descriptor))?,
-					shared_cost:      switch(meta.shared_cost.map(&descriptor))?,
-					personal_number:  switch(meta.personal_number.map(&descriptor))?,
-					voip:             switch(meta.voip.map(&descriptor))?,
-					pager:            switch(meta.pager.map(&descriptor))?,
-					uan:              switch(meta.uan.map(&descriptor))?,
-					emergency:        switch(meta.emergency.map(&descriptor))?,
-					voicemail:        switch(meta.voicemail.map(&descriptor))?,
-					short_code:       switch(meta.short_code.map(&descriptor))?,
-					standard_rate:    switch(meta.standard_rate.map(&descriptor))?,
-					carrier:          switch(meta.carrier.map(&descriptor))?,
-					no_international: switch(meta.no_international.map(&descriptor))?,
+					fixed_line:       tranpose(meta.fixed_line.map(&descriptor))?,
+					mobile:           tranpose(meta.mobile.map(&descriptor))?,
+					toll_free:        tranpose(meta.toll_free.map(&descriptor))?,
+					premium_rate:     tranpose(meta.premium_rate.map(&descriptor))?,
+					shared_cost:      tranpose(meta.shared_cost.map(&descriptor))?,
+					personal_number:  tranpose(meta.personal_number.map(&descriptor))?,
+					voip:             tranpose(meta.voip.map(&descriptor))?,
+					pager:            tranpose(meta.pager.map(&descriptor))?,
+					uan:              tranpose(meta.uan.map(&descriptor))?,
+					emergency:        tranpose(meta.emergency.map(&descriptor))?,
+					voicemail:        tranpose(meta.voicemail.map(&descriptor))?,
+					short_code:       tranpose(meta.short_code.map(&descriptor))?,
+					standard_rate:    tranpose(meta.standard_rate.map(&descriptor))?,
+					carrier:          tranpose(meta.carrier.map(&descriptor))?,
+					no_international: tranpose(meta.no_international.map(&descriptor))?,
 				},
 
 				id: meta.id.ok_or_else(||
@@ -154,18 +155,18 @@ impl Database {
 						name: "countryCode".into(),
 					}))?,
 
-				international_prefix: switch(meta.international_prefix.map(&regex))?,
+				international_prefix: tranpose(meta.international_prefix.map(&regex))?,
 				preferred_international_prefix: meta.preferred_international_prefix,
 				national_prefix: meta.national_prefix,
 				preferred_extension_prefix: meta.preferred_extension_prefix,
-				national_prefix_for_parsing: switch(meta.national_prefix_for_parsing.map(&regex))?,
+				national_prefix_for_parsing: tranpose(meta.national_prefix_for_parsing.map(&regex))?,
 				national_prefix_transform_rule: meta.national_prefix_transform_rule,
 
-				formats: meta.formats.into_iter().map(&format).collect::<Result<_>>()?,
-				international_formats: meta.international_formats.into_iter().map(&format).collect::<Result<_>>()?,
+				formats: meta.formats.into_iter().map(&format).collect::<Result<_, _>>()?,
+				international_formats: meta.international_formats.into_iter().map(&format).collect::<Result<_, _>>()?,
 
 				main_country_for_code: meta.main_country_for_code,
-				leading_digits: switch(meta.leading_digits.map(&regex))?,
+				leading_digits: tranpose(meta.leading_digits.map(&regex))?,
 				mobile_number_portable: meta.mobile_number_portable,
 			})
 		};

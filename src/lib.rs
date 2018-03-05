@@ -17,7 +17,7 @@
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 #[macro_use]
 extern crate nom;
 
@@ -37,8 +37,8 @@ extern crate bincode;
 mod helper;
 
 /// Errors for various parts of the crate.
-pub mod error;
-pub use error::{Error, ErrorKind, Result};
+mod error;
+pub use error::{Metadata as MetadataError, Parse as ParseError};
 
 /// Phone number metadata, containing patterns, formatting and other useful
 /// data about countries and phone numbers.
