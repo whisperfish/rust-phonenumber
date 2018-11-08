@@ -76,7 +76,7 @@ fn check(i: &str) -> IResult<&str, ()> {
 		IResult::Done(i, ())
 	}
 	else {
-		IResult::Error(nom::ErrorKind::Tag)
+		IResult::Error(nom::Err::Code(nom::ErrorKind::Tag))
 	}
 }
 

@@ -68,7 +68,7 @@ pub fn extract(value: &str) -> IResult<&str, &str> {
 		(&value[index.start() ..], index.start())
 	}
 	else {
-		return IResult::Error(nom::ErrorKind::RegexpMatch);
+		return IResult::Error(nom::Err::Code(nom::ErrorKind::RegexpMatch));
 	};
 
 	if let Some(trailing) = consts::UNWANTED_END_CHARS.find(result) {
@@ -80,7 +80,7 @@ pub fn extract(value: &str) -> IResult<&str, &str> {
 	}
 
 	if result.is_empty() {
-		IResult::Error(nom::ErrorKind::RegexpMatch)
+		IResult::Error(nom::Err::Code(nom::ErrorKind::RegexpMatch))
 	}
 	else {
 		IResult::Done(&value[start + result.len() ..], result)
