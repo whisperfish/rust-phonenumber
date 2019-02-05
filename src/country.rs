@@ -16,7 +16,7 @@
 
 use std::str;
 
-#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 pub struct Code {
 	/// The country code value.
 	pub(crate) value: u16,
@@ -27,7 +27,7 @@ pub struct Code {
 
 /// The source from which the country code is derived. This is not set in the
 /// general parsing method, but in the method that parses and keeps raw_input.
-#[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Hash, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum Source {
 	/// The country code is derived based on a phone number with a leading "+",
@@ -75,7 +75,7 @@ impl Into<u16> for Code {
 }
 
 /// CLDR country IDs.
-#[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Hash, Debug)]
 pub enum Id {
 	AC,
 	AD,

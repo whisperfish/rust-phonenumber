@@ -28,7 +28,7 @@ use formatter;
 use validator;
 
 /// A phone number.
-#[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
+#[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 pub struct PhoneNumber {
 	/// The country calling code for this number, as defined by the International
 	/// Telecommunication Union (ITU). For example, this would be 1 for NANPA
@@ -76,7 +76,7 @@ pub struct PhoneNumber {
 pub struct Country<'a>(&'a PhoneNumber);
 
 /// The phone number type.
-#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum Type {
 	///
