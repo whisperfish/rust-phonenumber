@@ -40,19 +40,19 @@ mod test {
 
 	#[test]
 	fn phone() {
-    assert!(!valid::phone_number(CompleteStr("1")).is_ok());
-    // Only one or two digits before strange non-possible punctuation.
-    assert!(!valid::phone_number(CompleteStr("1+1+1")).is_ok());
-    assert!(!valid::phone_number(CompleteStr("80+0")).is_ok());
-    // Two digits is viable.
-    assert!(valid::phone_number(CompleteStr("00")).is_ok());
-    assert!(valid::phone_number(CompleteStr("111")).is_ok());
-    // Alpha numbers.
-    assert!(valid::phone_number(CompleteStr("0800-4-pizza")).is_ok());
-    assert!(valid::phone_number(CompleteStr("0800-4-PIZZA")).is_ok());
-    // We need at least three digits before any alpha characters.
-    assert!(!valid::phone_number(CompleteStr("08-PIZZA")).is_ok());
-    assert!(!valid::phone_number(CompleteStr("8-PIZZA")).is_ok());
-    assert!(!valid::phone_number(CompleteStr("12. March")).is_ok());
+	    assert!(!valid::phone_number(CompleteStr("1")).is_ok());
+	    // Only one or two digits before strange non-possible punctuation.
+	    assert!(!valid::phone_number(CompleteStr("1+1+1")).is_ok());
+	    assert!(!valid::phone_number(CompleteStr("80+0")).is_ok());
+	    // Two digits is viable.
+	    assert!(valid::phone_number(CompleteStr("00")).is_ok());
+	    assert!(valid::phone_number(CompleteStr("111")).is_ok());
+	    // Alpha numbers.
+	    assert!(valid::phone_number(CompleteStr("0800-4-pizza")).is_ok());
+	    assert!(valid::phone_number(CompleteStr("0800-4-PIZZA")).is_ok());
+	    // We need at least three digits before any alpha characters.
+	    assert!(!valid::phone_number(CompleteStr("08-PIZZA")).is_ok());
+	    assert!(!valid::phone_number(CompleteStr("8-PIZZA")).is_ok());
+	    assert!(!valid::phone_number(CompleteStr("12. March")).is_ok());
 	}
 }
