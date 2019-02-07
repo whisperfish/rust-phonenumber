@@ -12,43 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use nom::{self, IResult, AsChar};
+use nom::{IResult, AsChar, Err, ErrorKind};
+use nom::types::CompleteStr;
 use fnv::FnvHashMap;
 
 use parser::helper::*;
 
-named!(pub phone_number(&str) -> Number,
+named!(pub phone_number(CompleteStr) -> Number,
 	do_parse!(
-		opt!(tag_no_case_s!("Tel:")) >>
+		opt!(tag_no_case!("Tel:")) >>
 		prefix: opt!(prefix) >>
-		national: take_while1_s!(number) >>
+		national: take_while1!(number) >>
 		call!(check) >>
 		params: opt!(parameters) >>
 
 		(Number {
-			national: national.into(),
+			national: (*national).into(),
 
 			prefix: prefix.or_else(||
 				params.as_ref()
-					.and_then(|m| m.get("phone-context"))
-					.map(|&s| if s.as_bytes()[0] == b'+' { &s[1 ..] } else { s }))
-				.map(Into::into),
+					.and_then(|m| m.get(&CompleteStr("phone-context")))
+					.map(|&s| if s.as_bytes()[0] == b'+' { CompleteStr(&s[1 ..]) } else { CompleteStr(&s) }))
+				.map(|cs|(*cs as &str).into()),
 
 			extension: params.as_ref()
-				.and_then(|m| m.get("ext"))
-				.map(|&s| s.into()),
+				.and_then(|m| m.get(&CompleteStr("ext")))
+				.map(|&cs| (*cs as &str).into()),
 
 			.. Default::default()
 		})));
 
-named!(prefix(&str) -> &str,
+named!(prefix(CompleteStr) -> CompleteStr,
 	do_parse!(
 		char!('+') >>
-		prefix: take_till1_s!(separator) >>
+		prefix: take_till1!(separator) >>
 
 		(prefix)));
 
-named!(parameters(&str) -> FnvHashMap<&str, &str>,
+named!(parameters(CompleteStr) -> FnvHashMap<CompleteStr, CompleteStr>,
 	do_parse!(
 		params: many1!(parameter) >>
 
@@ -62,21 +63,21 @@ named!(parameters(&str) -> FnvHashMap<&str, &str>,
 			map
 		})));
 
-named!(parameter(&str) -> (&str, &str),
+named!(parameter(CompleteStr) -> (CompleteStr, CompleteStr),
 	do_parse!(
 		char!(';') >>
-		key: take_while_s!(pname) >>
+		key: take_while!(pname) >>
 		char!('=') >>
-		value: take_while_s!(pchar) >>
+		value: take_while!(pchar) >>
 
 		(key, value)));
 
-fn check(i: &str) -> IResult<&str, ()> {
+fn check(i: CompleteStr) -> IResult<CompleteStr, ()> {
 	if i.is_empty() || i.as_bytes()[0] == b';' {
-		IResult::Done(i, ())
+		Ok((i, ()))
 	}
 	else {
-		IResult::Error(nom::ErrorKind::Tag)
+		Err(Err::Error(error_position!(i, ErrorKind::Tag)))
 	}
 }
 
@@ -116,10 +117,11 @@ fn mark(c: char) -> bool {
 mod test {
 	use parser::rfc3966;
 	use parser::helper::*;
+	use nom::types::CompleteStr;
 
 	#[test]
 	fn phone_number() {
-		assert_eq!(rfc3966::phone_number("tel:2034567890;ext=456;phone-context=+44").unwrap().1,
+		assert_eq!(rfc3966::phone_number(CompleteStr("tel:2034567890;ext=456;phone-context=+44")).unwrap().1,
 			Number {
 				national:  "2034567890".into(),
 				prefix:    Some("44".into()),
@@ -128,7 +130,7 @@ mod test {
 				.. Default::default()
 			});
 
-		assert_eq!(rfc3966::phone_number("tel:+64-3-331-6005;ext=1235").unwrap().1,
+		assert_eq!(rfc3966::phone_number(CompleteStr("tel:+64-3-331-6005;ext=1235")).unwrap().1,
 			Number {
 				national:  "-3-331-6005".into(),
 				prefix:    Some("64".into()),

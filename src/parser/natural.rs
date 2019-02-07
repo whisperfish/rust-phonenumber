@@ -13,18 +13,19 @@
 // limitations under the License.
 
 use nom::IResult;
+use nom::types::CompleteStr;
 
 use consts;
 use parser::helper::*;
 
-pub fn phone_number(i: &str) -> IResult<&str, Number> {
+pub fn phone_number(i: CompleteStr) -> IResult<CompleteStr, Number> {
 	let (_, i)    = try_parse!(i, extract);
-	let extension = consts::EXTN_PATTERN.captures(i);
+	let extension = consts::EXTN_PATTERN.captures(&i);
 
-	IResult::Done("", Number {
+	Ok((CompleteStr(""), Number {
 		national: extension.as_ref()
 			.map(|c| &i[.. c.get(0).unwrap().start()])
-			.unwrap_or(i)
+			.unwrap_or(&i)
 			.into(),
 
 		extension: extension.as_ref()
@@ -32,17 +33,18 @@ pub fn phone_number(i: &str) -> IResult<&str, Number> {
 			.map(Into::into),
 
 		.. Default::default()
-	})
+	}))
 }
 
 #[cfg(test)]
 mod test {
 	use parser::natural;
 	use parser::helper::*;
+	use nom::types::CompleteStr;
 
 	#[test]
 	fn phone_number() {
-		assert_eq!(natural::phone_number("650 253 0000 extn. 4567").unwrap().1,
+		assert_eq!(natural::phone_number(CompleteStr("650 253 0000 extn. 4567")).unwrap().1,
 			Number {
 				national:  "650 253 0000".into(),
 				extension: Some("4567".into()),
