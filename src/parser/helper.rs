@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use std::borrow::Cow;
-use nom::{self, AsChar, IResult};
+use nom::{AsChar, IResult, Err, ErrorKind};
+use nom::types::CompleteStr;
+
 use fnv::FnvHashMap;
 use regex_cache::CachedRegex;
 use failure::Error;
@@ -34,23 +36,23 @@ pub struct Number<'a> {
 	pub carrier:   Option<Cow<'a, str>>,
 }
 
-named!(pub punctuation(&str) -> char,
+named!(pub punctuation(CompleteStr) -> char,
 	one_of!("-x\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2212}\u{30FC}\u{FF0D}-\u{FF0F} \u{00A0}\u{00AD}\u{200B}\u{2060}\u{3000}()\u{FF08}\u{FF09}\u{FF3B}\u{FF3D}.[]/~\u{2053}\u{223C}\u{FF5E}"));
 
-named!(pub alpha(&str) -> char,
+named!(pub alpha(CompleteStr) -> char,
 	one_of!("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"));
 
 // TODO: Extend with Unicode digits.
-named!(pub digit(&str) -> char,
+named!(pub digit(CompleteStr) -> char,
 	one_of!("0123456789"));
 
-named!(pub plus(&str) -> char,
+named!(pub plus(CompleteStr) -> char,
 	one_of!("+\u{FF0B}"));
 
-named!(pub star(&str) -> char,
+named!(pub star(CompleteStr) -> char,
 	one_of!("*"));
 
-named!(pub ignore_plus(&str) -> &str,
+named!(pub ignore_plus(CompleteStr) -> CompleteStr,
 	recognize!(many1!(plus)));
 
 /// Attempts to extract a possible number from the string passed in. This
@@ -63,12 +65,12 @@ named!(pub ignore_plus(&str) -> &str,
 /// second extension here makes this actually two phone numbers, (530) 583-6985
 /// x302 and (530) 583-6985 x2303. We remove the second extension so that the
 /// first number is parsed correctly.
-pub fn extract(value: &str) -> IResult<&str, &str> {
-	let (mut result, start) = if let Some(index) = consts::VALID_START_CHAR.find(value) {
+pub fn extract(value: CompleteStr) -> IResult<CompleteStr, CompleteStr> {
+	let (mut result, start) = if let Some(index) = consts::VALID_START_CHAR.find(&value) {
 		(&value[index.start() ..], index.start())
 	}
 	else {
-		return IResult::Error(nom::ErrorKind::RegexpMatch);
+		return Err(Err::Error(error_position!(value, ErrorKind::RegexpMatch)))
 	};
 
 	if let Some(trailing) = consts::UNWANTED_END_CHARS.find(result) {
@@ -80,10 +82,10 @@ pub fn extract(value: &str) -> IResult<&str, &str> {
 	}
 
 	if result.is_empty() {
-		IResult::Error(nom::ErrorKind::RegexpMatch)
+		return Err(Err::Error(error_position!(value, ErrorKind::RegexpMatch)))
 	}
 	else {
-		IResult::Done(&value[start + result.len() ..], result)
+		Ok((CompleteStr(&value[start + result.len() ..]), CompleteStr(result)))
 	}
 }
 
@@ -171,9 +173,8 @@ pub fn international_prefix<'a>(idd: Option<&CachedRegex>, mut number: Number<'a
 	}
 
 	// Ignore any leading PLUS characters.
-	let start = ignore_plus(&number.national)
-		.to_full_result()
-		.map(|s| s.len())
+	let start = ignore_plus(CompleteStr(&number.national))
+		.map(|(_,s)| s.len()) ////YANN: CHECK
 		.unwrap_or(0);
 
 	// If there are any pluses, strip them and change the country source.
@@ -423,50 +424,50 @@ mod test {
 
 	#[test]
 	fn punctuation() {
-		assert!(helper::punctuation("-").is_done());
-		assert!(helper::punctuation("x").is_done());
-		assert!(helper::punctuation("\u{2015}").is_done());
+		assert!(helper::punctuation(CompleteStr("-")).is_ok());
+		assert!(helper::punctuation(CompleteStr("x")).is_ok());
+		assert!(helper::punctuation(CompleteStr("\u{2015}")).is_ok());
 
-		assert!(helper::punctuation("a").is_err());
+		assert!(helper::punctuation(CompleteStr("a")).is_err());
 	}
 
 	#[test]
 	fn alpha() {
-		assert!(helper::alpha("a").is_done());
-		assert!(helper::alpha("x").is_done());
-		assert!(helper::alpha("Z").is_done());
+		assert!(helper::alpha(CompleteStr("a")).is_ok());
+		assert!(helper::alpha(CompleteStr("x")).is_ok());
+		assert!(helper::alpha(CompleteStr("Z")).is_ok());
 
-		assert!(helper::alpha("2").is_err());
+		assert!(helper::alpha(CompleteStr("2")).is_err());
 	}
 
 	#[test]
 	fn plus() {
-		assert!(helper::plus("+").is_done());
-		assert!(helper::plus("\u{FF0B}").is_done());
-		assert!(helper::plus("a").is_err());
+		assert!(helper::plus(CompleteStr("+")).is_ok());
+		assert!(helper::plus(CompleteStr("\u{FF0B}")).is_ok());
+		assert!(helper::plus(CompleteStr("a")).is_err());
 	}
 
 	#[test]
 	fn extract() {
     // Removes preceding funky punctuation and letters but leaves the rest untouched.
-    assert_eq!("0800-345-600", helper::extract("Tel:0800-345-600").unwrap().1);
-    assert_eq!("0800 FOR PIZZA", helper::extract("Tel:0800 FOR PIZZA").unwrap().1);
+    assert_eq!(CompleteStr("0800-345-600"), helper::extract(CompleteStr("Tel:0800-345-600")).unwrap().1);
+    assert_eq!(CompleteStr("0800 FOR PIZZA"), helper::extract(CompleteStr("Tel:0800 FOR PIZZA")).unwrap().1);
     // Should not remove plus sign
-    assert_eq!("+800-345-600", helper::extract("Tel:+800-345-600").unwrap().1);
+    assert_eq!(CompleteStr("+800-345-600"), helper::extract(CompleteStr("Tel:+800-345-600")).unwrap().1);
     // Should recognise wide digits as possible start values.
-    assert_eq!("\u{FF10}\u{FF12}\u{FF13}", helper::extract("\u{FF10}\u{FF12}\u{FF13}").unwrap().1);
+    assert_eq!(CompleteStr("\u{FF10}\u{FF12}\u{FF13}"), helper::extract(CompleteStr("\u{FF10}\u{FF12}\u{FF13}")).unwrap().1);
     // Dashes are not possible start values and should be removed.
-    assert_eq!("\u{FF11}\u{FF12}\u{FF13}", helper::extract("Num-\u{FF11}\u{FF12}\u{FF13}").unwrap().1);
+    assert_eq!(CompleteStr("\u{FF11}\u{FF12}\u{FF13}"), helper::extract(CompleteStr("Num-\u{FF11}\u{FF12}\u{FF13}")).unwrap().1);
     // If not possible number present, return empty string.
-    assert!(!helper::extract("Num-....").is_done());
+    assert!(!helper::extract(CompleteStr("Num-....")).is_ok());
     // Leading brackets are stripped - these are not used when parsing.
-    assert_eq!("650) 253-0000", helper::extract("(650) 253-0000").unwrap().1);
+    assert_eq!(CompleteStr("650) 253-0000"), helper::extract(CompleteStr("(650) 253-0000")).unwrap().1);
 
     // Trailing non-alpha-numeric characters should be removed.
-    assert_eq!("650) 253-0000", helper::extract("(650) 253-0000..- ..").unwrap().1);
-    assert_eq!("650) 253-0000", helper::extract("(650) 253-0000.").unwrap().1);
+    assert_eq!(CompleteStr("650) 253-0000"), helper::extract(CompleteStr("(650) 253-0000..- ..")).unwrap().1);
+    assert_eq!(CompleteStr("650) 253-0000"), helper::extract(CompleteStr("(650) 253-0000.")).unwrap().1);
     // This case has a trailing RTL char.
-    assert_eq!("650) 253-0000", helper::extract("(650) 253-0000\u{200F}").unwrap().1);
+    assert_eq!(CompleteStr("650) 253-0000"), helper::extract(CompleteStr("(650) 253-0000\u{200F}")).unwrap().1);
 	}
 
 	#[test]

@@ -23,6 +23,7 @@ use carrier::Carrier;
 use consts;
 use validator::{self, Validation};
 use error;
+use nom::types::CompleteStr;
 
 pub mod helper;
 pub mod valid;
@@ -36,11 +37,11 @@ pub fn parse<S: AsRef<str>>(country: Option<country::Id>, string: S) -> Result<P
 
 /// Parse a phone number using a specific `Database`.
 pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<country::Id>, string: S) -> Result<PhoneNumber, Error> {
-	named!(phone_number(&str) -> helper::Number,
+	named!(phone_number(CompleteStr) -> helper::Number,
 		alt_complete!(call!(rfc3966::phone_number) | call!(natural::phone_number)));
 
 	// Try to parse the number as RFC3966 or natural language.
-	let mut number = phone_number(string.as_ref()).to_full_result()
+	let (_,mut number) = phone_number(CompleteStr(string.as_ref()))
 		.or(Err(error::Parse::NoNumber))?;
 
 	// Normalize the number and extract country code.

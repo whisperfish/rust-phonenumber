@@ -13,17 +13,18 @@
 // limitations under the License.
 
 use parser::helper::*;
+use nom::types::CompleteStr;
 
-named!(pub phone_number(&str) -> &str,
+named!(pub phone_number(CompleteStr) -> CompleteStr,
 	alt!(short | long));
 
-named!(short(&str) -> &str,
+named!(short(CompleteStr) -> CompleteStr,
 	recognize!(do_parse!(
 		count_fixed!(char, digit, 2) >>
 		eof!() >>
 		(true))));
 
-named!(long(&str) -> &str,
+named!(long(CompleteStr) -> CompleteStr,
 	recognize!(do_parse!(
 		many0!(plus) >>
 		many0!(alt!(punctuation | star)) >>
@@ -35,22 +36,23 @@ named!(long(&str) -> &str,
 #[cfg(test)]
 mod test {
 	use parser::valid;
+	use nom::types::CompleteStr;
 
 	#[test]
 	fn phone() {
-    assert!(!valid::phone_number("1").is_done());
+    assert!(!valid::phone_number(CompleteStr("1")).is_ok());
     // Only one or two digits before strange non-possible punctuation.
-    assert!(!valid::phone_number("1+1+1").is_done());
-    assert!(!valid::phone_number("80+0").is_done());
+    assert!(!valid::phone_number(CompleteStr("1+1+1")).is_ok());
+    assert!(!valid::phone_number(CompleteStr("80+0")).is_ok());
     // Two digits is viable.
-    assert!(valid::phone_number("00").is_done());
-    assert!(valid::phone_number("111").is_done());
+    assert!(valid::phone_number(CompleteStr("00")).is_ok());
+    assert!(valid::phone_number(CompleteStr("111")).is_ok());
     // Alpha numbers.
-    assert!(valid::phone_number("0800-4-pizza").is_done());
-    assert!(valid::phone_number("0800-4-PIZZA").is_done());
+    assert!(valid::phone_number(CompleteStr("0800-4-pizza")).is_ok());
+    assert!(valid::phone_number(CompleteStr("0800-4-PIZZA")).is_ok());
     // We need at least three digits before any alpha characters.
-    assert!(!valid::phone_number("08-PIZZA").is_done());
-    assert!(!valid::phone_number("8-PIZZA").is_done());
-    assert!(!valid::phone_number("12. March").is_done());
+    assert!(!valid::phone_number(CompleteStr("08-PIZZA")).is_ok());
+    assert!(!valid::phone_number(CompleteStr("8-PIZZA")).is_ok());
+    assert!(!valid::phone_number(CompleteStr("12. March")).is_ok());
 	}
 }

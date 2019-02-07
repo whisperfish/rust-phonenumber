@@ -20,6 +20,7 @@ use phone_number::{Type, PhoneNumber};
 use consts;
 use parser::helper::Number as ParseNumber;
 use parser;
+use nom::types::CompleteStr;
 
 /// Possible outcomes when testing if a `PhoneNumber` is possible.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -97,7 +98,7 @@ pub fn is_viable<S: AsRef<str>>(string: S) -> bool {
 		return false;
 	}
 
-	parser::valid::phone_number(string).is_done()
+	parser::valid::phone_number(CompleteStr(string)).is_ok()
 }
 
 /// Check if the phone number is valid.
