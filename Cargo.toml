@@ -1,6 +1,6 @@
 [package]
 name    = "phonenumber"
-version = "0.2.2+8.10.4"
+version = "0.2.3+8.10.6"
 
 authors = ["meh. <meh@1aim.com>"]
 license = "Apache-2.0"
