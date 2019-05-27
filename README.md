@@ -18,7 +18,9 @@ The following example parses, validates and formats the given phone number.
 
 ```rust,no_run
 extern crate phonenumber;
+
 use phonenumber::Mode;
+use std::env;
 
 fn main() {
 	let mut args = env::args().skip(1).collect::<Vec<_>>();

@@ -33,6 +33,13 @@ extern crate serde;
 extern crate serde_derive;
 extern crate bincode;
 
+#[cfg(test)]
+#[macro_use]
+extern crate doc_comment;
+
+#[cfg(test)]
+doctest!("../README.md");
+
 #[macro_use]
 mod helper;
 
