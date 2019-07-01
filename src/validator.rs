@@ -14,12 +14,12 @@
 
 use either::*;
 
-use metadata::{DATABASE, Database, Metadata};
-use country;
-use phone_number::{Type, PhoneNumber};
-use consts;
-use parser::helper::Number as ParseNumber;
-use parser;
+use crate::metadata::{DATABASE, Database, Metadata};
+use crate::country;
+use crate::phone_number::{Type, PhoneNumber};
+use crate::consts;
+use crate::parser::helper::Number as ParseNumber;
+use crate::parser;
 use nom::types::CompleteStr;
 
 /// Possible outcomes when testing if a `PhoneNumber` is possible.
@@ -253,9 +253,9 @@ pub fn number_type(meta: &Metadata, value: &str) -> Type {
 
 #[cfg(test)]
 mod test {
-	use validator;
-	use parser;
-	use country;
+	use crate::validator;
+	use crate::parser;
+	use crate::country;
 
 	#[test]
 	fn validate() {

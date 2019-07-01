@@ -14,9 +14,9 @@
 
 use std::fmt;
 
-use metadata::{DATABASE, Database, Metadata, Format};
-use phone_number::PhoneNumber;
-use consts;
+use crate::metadata::{DATABASE, Database, Metadata, Format};
+use crate::phone_number::PhoneNumber;
+use crate::consts;
 
 /// Formatting modes for phone number.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -211,9 +211,9 @@ fn replace(national: &str, meta: &Metadata, formatter: &Format, transform: Optio
 
 #[cfg(test)]
 mod test {
-	use parser;
-	use formatter::Mode;
-	use country;
+	use crate::parser;
+	use crate::formatter::Mode;
+	use crate::country;
 
 	#[test]
 	fn us() {

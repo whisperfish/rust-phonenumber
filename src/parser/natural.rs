@@ -15,8 +15,8 @@
 use nom::IResult;
 use nom::types::CompleteStr;
 
-use consts;
-use parser::helper::*;
+use crate::consts;
+use crate::parser::helper::*;
 
 pub fn phone_number(i: CompleteStr) -> IResult<CompleteStr, Number> {
 	let (_, i)    = try_parse!(i, extract);
@@ -38,8 +38,8 @@ pub fn phone_number(i: CompleteStr) -> IResult<CompleteStr, Number> {
 
 #[cfg(test)]
 mod test {
-	use parser::natural;
-	use parser::helper::*;
+	use crate::parser::natural;
+	use crate::parser::helper::*;
 	use nom::types::CompleteStr;
 
 	#[test]

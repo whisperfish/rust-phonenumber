@@ -16,7 +16,7 @@ use nom::{IResult, AsChar, Err, ErrorKind};
 use nom::types::CompleteStr;
 use fnv::FnvHashMap;
 
-use parser::helper::*;
+use crate::parser::helper::*;
 
 named!(pub phone_number(CompleteStr) -> Number,
 	do_parse!(
@@ -115,8 +115,8 @@ fn mark(c: char) -> bool {
 
 #[cfg(test)]
 mod test {
-	use parser::rfc3966;
-	use parser::helper::*;
+	use crate::parser::rfc3966;
+	use crate::parser::helper::*;
 	use nom::types::CompleteStr;
 
 	#[test]

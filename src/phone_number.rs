@@ -18,14 +18,14 @@ use std::ops::Deref;
 use either::*;
 use failure::Error;
 
-use country;
-use national_number::NationalNumber;
-use extension::Extension;
-use carrier::Carrier;
-use metadata::{DATABASE, Database, Metadata};
-use parser;
-use formatter;
-use validator;
+use crate::country;
+use crate::national_number::NationalNumber;
+use crate::extension::Extension;
+use crate::carrier::Carrier;
+use crate::metadata::{DATABASE, Database, Metadata};
+use crate::parser;
+use crate::formatter;
+use crate::validator;
 
 /// A phone number.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
@@ -243,8 +243,8 @@ impl<'a> Deref for Country<'a> {
 
 #[cfg(test)]
 mod test {
-	use parser;
-	use country;
+	use crate::parser;
+	use crate::country;
 
 	#[test]
 	fn country_id() {

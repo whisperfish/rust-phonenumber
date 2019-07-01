@@ -45,12 +45,12 @@ mod helper;
 
 /// Errors for various parts of the crate.
 mod error;
-pub use error::{Metadata as MetadataError, Parse as ParseError};
+pub use crate::error::{Metadata as MetadataError, Parse as ParseError};
 
 /// Phone number metadata, containing patterns, formatting and other useful
 /// data about countries and phone numbers.
 pub mod metadata;
-pub use metadata::Metadata;
+pub use crate::metadata::Metadata;
 
 /// Country related types.
 pub mod country;
@@ -58,23 +58,23 @@ pub mod country;
 mod consts;
 
 mod national_number;
-pub use national_number::NationalNumber;
+pub use crate::national_number::NationalNumber;
 
 
 mod extension;
-pub use extension::Extension;
+pub use crate::extension::Extension;
 
 mod carrier;
-pub use carrier::Carrier;
+pub use crate::carrier::Carrier;
 
 mod phone_number;
-pub use phone_number::{PhoneNumber, Type};
+pub use crate::phone_number::{PhoneNumber, Type};
 
 mod parser;
-pub use parser::{parse, parse_with};
+pub use crate::parser::{parse, parse_with};
 
 mod formatter;
-pub use formatter::{Mode, Formatter, format, format_with};
+pub use crate::formatter::{Mode, Formatter, format, format_with};
 
 mod validator;
-pub use validator::{Validation, is_viable, is_valid, is_valid_with};
+pub use crate::validator::{Validation, is_viable, is_valid, is_valid_with};

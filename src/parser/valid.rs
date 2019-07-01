@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use parser::helper::*;
+use crate::parser::helper::*;
 use nom::types::CompleteStr;
 
 named!(pub phone_number(CompleteStr) -> CompleteStr,
@@ -35,7 +35,7 @@ named!(long(CompleteStr) -> CompleteStr,
 
 #[cfg(test)]
 mod test {
-	use parser::valid;
+	use crate::parser::valid;
 	use nom::types::CompleteStr;
 
 	#[test]

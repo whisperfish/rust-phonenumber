@@ -14,15 +14,15 @@
 
 use failure::Error;
 
-use metadata::{DATABASE, Database};
-use phone_number::{PhoneNumber, Type};
-use national_number::NationalNumber;
-use country;
-use extension::Extension;
-use carrier::Carrier;
-use consts;
-use validator::{self, Validation};
-use error;
+use crate::metadata::{DATABASE, Database};
+use crate::phone_number::{PhoneNumber, Type};
+use crate::national_number::NationalNumber;
+use crate::country;
+use crate::extension::Extension;
+use crate::carrier::Carrier;
+use crate::consts;
+use crate::validator::{self, Validation};
+use crate::error;
 use nom::types::CompleteStr;
 
 pub mod helper;
@@ -89,10 +89,10 @@ pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<country::I
 
 #[cfg(test)]
 mod test {
-	use parser;
-	use phone_number::PhoneNumber;
-	use national_number::NationalNumber;
-	use country;
+	use crate::parser;
+	use crate::phone_number::PhoneNumber;
+	use crate::national_number::NationalNumber;
+	use crate::country;
 
 	#[test]
 	fn parse() {

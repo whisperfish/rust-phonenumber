@@ -24,8 +24,8 @@ use regex_cache::{RegexCache, CachedRegex, CachedRegexBuilder};
 use bincode;
 use failure::Error;
 
-use error;
-use metadata::loader;
+use crate::error;
+use crate::metadata::loader;
 
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
@@ -180,10 +180,10 @@ impl Database {
 
 			by_id.insert(meta.id.clone(), meta.clone());
 
-			let mut by_code = by_code.entry(meta.country_code)
+			let by_code = by_code.entry(meta.country_code)
 				.or_insert_with(Vec::new);
 
-			let mut regions = regions.entry(meta.country_code)
+			let regions = regions.entry(meta.country_code)
 				.or_insert_with(Vec::new);
 
 			if meta.main_country_for_code {

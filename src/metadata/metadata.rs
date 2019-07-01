@@ -14,8 +14,8 @@
 
 	use regex_cache::CachedRegex;
 
-use metadata::{Format, Descriptor};
-use phone_number::Type;
+use crate::metadata::{Format, Descriptor};
+use crate::phone_number::Type;
 
 /// Phone number metadata.
 #[derive(Clone, Debug)]

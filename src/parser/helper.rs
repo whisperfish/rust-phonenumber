@@ -20,12 +20,12 @@ use fnv::FnvHashMap;
 use regex_cache::CachedRegex;
 use failure::Error;
 
-use error;
-use consts;
-use metadata::{Database, Metadata};
-use country;
-use phone_number::Type;
-use validator;
+use crate::error;
+use crate::consts;
+use crate::metadata::{Database, Metadata};
+use crate::country;
+use crate::phone_number::Type;
+use crate::validator;
 
 #[derive(Clone, Eq, PartialEq, Default, Debug)]
 pub struct Number<'a> {
@@ -416,11 +416,11 @@ impl<T: AsChar> AsCharExt for T {
 mod test {
 	use regex_cache::CachedRegex;
 
-	use consts;
-	use parser::helper;
-	use parser::helper::*;
-	use country;
-	use metadata::{DATABASE};
+	use crate::consts;
+	use crate::parser::helper;
+	use crate::parser::helper::*;
+	use crate::country;
+	use crate::metadata::{DATABASE};
 
 	#[test]
 	fn punctuation() {

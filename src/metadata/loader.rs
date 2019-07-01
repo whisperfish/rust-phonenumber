@@ -15,12 +15,12 @@
 use std::str;
 use std::io::{BufRead};
 
-use xml::Reader;
-use xml::events::{self, Event};
-use xml::events::attributes::Attribute;
+use crate::xml::Reader;
+use crate::xml::events::{self, Event};
+use crate::xml::events::attributes::Attribute;
 use failure::Error;
 
-use error;
+use crate::error;
 
 /// Temporary defaults for `Format` and `Descriptor`.
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
