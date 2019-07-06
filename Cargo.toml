@@ -9,6 +9,7 @@ license = "Apache-2.0"
 description = "Library for parsing, formatting and validating international phone numbers."
 repository  = "https://github.com/1aim/rust-phonenumber"
 keywords    = ["phonenumber", "phone", "number", "parser", "formatter"]
+readme = "README.md"
 
 [dependencies]
 regex       = "1.1"
