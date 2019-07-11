@@ -1,6 +1,6 @@
 [package]
 name    = "phonenumber"
-version = "0.2.3+8.10.14"
+version = "0.2.4+8.10.14"
 edition = "2018"
 
 authors = ["meh. <meh@1aim.com>"]
