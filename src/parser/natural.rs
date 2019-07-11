@@ -12,17 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use nom::IResult;
-use nom::types::CompleteStr;
+use nom::{IResult};
 
 use crate::consts;
 use crate::parser::helper::*;
 
-pub fn phone_number(i: CompleteStr) -> IResult<CompleteStr, Number> {
+pub fn phone_number(i: &str) -> IResult<&str, Number> {
 	let (_, i)    = try_parse!(i, extract);
 	let extension = consts::EXTN_PATTERN.captures(&i);
 
-	Ok((CompleteStr(""), Number {
+	Ok(("", Number {
 		national: extension.as_ref()
 			.map(|c| &i[.. c.get(0).unwrap().start()])
 			.unwrap_or(&i)
@@ -40,11 +39,10 @@ pub fn phone_number(i: CompleteStr) -> IResult<CompleteStr, Number> {
 mod test {
 	use crate::parser::natural;
 	use crate::parser::helper::*;
-	use nom::types::CompleteStr;
 
 	#[test]
 	fn phone_number() {
-		assert_eq!(natural::phone_number(CompleteStr("650 253 0000 extn. 4567")).unwrap().1,
+		assert_eq!(natural::phone_number("650 253 0000 extn. 4567").unwrap().1,
 			Number {
 				national:  "650 253 0000".into(),
 				extension: Some("4567".into()),

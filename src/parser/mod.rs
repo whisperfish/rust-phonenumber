@@ -23,8 +23,10 @@ use crate::carrier::Carrier;
 use crate::consts;
 use crate::validator::{self, Validation};
 use crate::error;
-use nom::types::CompleteStr;
 
+use nom::{IResult, branch::alt};
+
+#[macro_use]
 pub mod helper;
 pub mod valid;
 pub mod rfc3966;
@@ -37,11 +39,12 @@ pub fn parse<S: AsRef<str>>(country: Option<country::Id>, string: S) -> Result<P
 
 /// Parse a phone number using a specific `Database`.
 pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<country::Id>, string: S) -> Result<PhoneNumber, Error> {
-	named!(phone_number(CompleteStr) -> helper::Number,
-		alt_complete!(call!(rfc3966::phone_number) | call!(natural::phone_number)));
+	fn phone_number(i: &str) -> IResult<&str, helper::Number> {
+		parse! { i => alt((rfc3966::phone_number, natural::phone_number)) }
+	}
 
 	// Try to parse the number as RFC3966 or natural language.
-	let (_,mut number) = phone_number(CompleteStr(string.as_ref()))
+	let (_, mut number) = phone_number(string.as_ref())
 		.or(Err(error::Parse::NoNumber))?;
 
 	// Normalize the number and extract country code.

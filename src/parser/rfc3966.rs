@@ -12,72 +12,69 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use nom::{IResult, AsChar, Err, ErrorKind};
-use nom::types::CompleteStr;
+use nom::{self, IResult, AsChar, error::{make_error, ErrorKind}, character::complete::*, bytes::complete::*, combinator::*, multi::*};
 use fnv::FnvHashMap;
 
 use crate::parser::helper::*;
 
-named!(pub phone_number(CompleteStr) -> Number,
-	do_parse!(
-		opt!(tag_no_case!("Tel:")) >>
-		prefix: opt!(prefix) >>
-		national: take_while1!(number) >>
-		call!(check) >>
-		params: opt!(parameters) >>
+pub fn phone_number(i: &str) -> IResult<&str, Number> {
+	parse! { i =>
+		opt(tag_no_case("Tel:"));
+		let prefix = opt(prefix);
+		let national = take_while1(number);
+		check;
+		let params = opt(parameters);
+	};
 
-		(Number {
-			national: (*national).into(),
+	Ok((i, Number {
+		national: (*national).into(),
 
-			prefix: prefix.or_else(||
-				params.as_ref()
-					.and_then(|m| m.get(&CompleteStr("phone-context")))
-					.map(|&s| if s.as_bytes()[0] == b'+' { CompleteStr(&s[1 ..]) } else { CompleteStr(&s) }))
-				.map(|cs|(*cs as &str).into()),
+		prefix: prefix.or_else(||
+			params.as_ref()
+				.and_then(|m| m.get("phone-context"))
+				.map(|&s| if s.as_bytes()[0] == b'+' { &s[1 ..] } else { &s }))
+			.map(|cs| cs.into()),
 
-			extension: params.as_ref()
-				.and_then(|m| m.get(&CompleteStr("ext")))
-				.map(|&cs| (*cs as &str).into()),
+		extension: params.as_ref()
+			.and_then(|m| m.get("ext"))
+			.map(|&cs| cs.into()),
 
-			.. Default::default()
-		})));
+		.. Default::default()
+	}))
+}
 
-named!(prefix(CompleteStr) -> CompleteStr,
-	do_parse!(
-		char!('+') >>
-		prefix: take_till1!(separator) >>
+fn prefix(i: &str) -> IResult<&str, &str> {
+	parse! { i =>
+		char('+');
+		take_till1(separator)
+	}
+}
 
-		(prefix)));
+fn parameters(i: &str) -> IResult<&str, FnvHashMap<&str, &str>> {
+	parse! { i =>
+		let params = many1(parameter);
+	};
 
-named!(parameters(CompleteStr) -> FnvHashMap<CompleteStr, CompleteStr>,
-	do_parse!(
-		params: many1!(parameter) >>
+	Ok((i, params.into_iter().collect()))
+}
 
-		({
-			let mut map = FnvHashMap::default();
+fn parameter(i: &str) -> IResult<&str, (&str, &str)> {
+	parse! { i =>
+		char(';');
+		let key = take_while(pname);
+		char('=');
+		let value = take_while(pchar);
+	};
 
-			for (key, value) in params {
-				map.insert(key, value);
-			}
+	Ok((i, (key, value)))
+}
 
-			map
-		})));
-
-named!(parameter(CompleteStr) -> (CompleteStr, CompleteStr),
-	do_parse!(
-		char!(';') >>
-		key: take_while!(pname) >>
-		char!('=') >>
-		value: take_while!(pchar) >>
-
-		(key, value)));
-
-fn check(i: CompleteStr) -> IResult<CompleteStr, ()> {
+fn check(i: &str) -> IResult<&str, ()> {
 	if i.is_empty() || i.as_bytes()[0] == b';' {
 		Ok((i, ()))
 	}
 	else {
-		Err(Err::Error(error_position!(i, ErrorKind::Tag)))
+		Err(nom::Err::Error(make_error(i, ErrorKind::Tag)))
 	}
 }
 
@@ -117,11 +114,10 @@ fn mark(c: char) -> bool {
 mod test {
 	use crate::parser::rfc3966;
 	use crate::parser::helper::*;
-	use nom::types::CompleteStr;
 
 	#[test]
 	fn phone_number() {
-		assert_eq!(rfc3966::phone_number(CompleteStr("tel:2034567890;ext=456;phone-context=+44")).unwrap().1,
+		assert_eq!(rfc3966::phone_number("tel:2034567890;ext=456;phone-context=+44").unwrap().1,
 			Number {
 				national:  "2034567890".into(),
 				prefix:    Some("44".into()),
@@ -130,7 +126,7 @@ mod test {
 				.. Default::default()
 			});
 
-		assert_eq!(rfc3966::phone_number(CompleteStr("tel:+64-3-331-6005;ext=1235")).unwrap().1,
+		assert_eq!(rfc3966::phone_number("tel:+64-3-331-6005;ext=1235").unwrap().1,
 			Number {
 				national:  "-3-331-6005".into(),
 				prefix:    Some("64".into()),

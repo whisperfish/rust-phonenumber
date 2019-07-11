@@ -13,46 +13,54 @@
 // limitations under the License.
 
 use crate::parser::helper::*;
-use nom::types::CompleteStr;
+use nom::{IResult, combinator::*, multi::*, branch::*};
 
-named!(pub phone_number(CompleteStr) -> CompleteStr,
-	alt!(short | long));
+pub fn phone_number(i: &str) -> IResult<&str, &str> {
+	parse! { i => recognize(alt((short, long))) }
 
-named!(short(CompleteStr) -> CompleteStr,
-	recognize!(do_parse!(
-		count_fixed!(char, digit, 2) >>
-		eof!() >>
-		(true))));
+}
 
-named!(long(CompleteStr) -> CompleteStr,
-	recognize!(do_parse!(
-		many0!(plus) >>
-		many0!(alt!(punctuation | star)) >>
-		count_fixed!(char, digit, 3) >>
-		many0!(digit) >>
-		many0!(alt!(punctuation | star | digit | alpha)) >>
-		(true))));
+fn short(i: &str) -> IResult<&str, ()> {
+	parse! { i =>
+		count(digit, 2);
+		eof;
+	};
+
+	Ok((i, ()))
+}
+
+fn long(i: &str) -> IResult<&str, ()> {
+	parse! { i =>
+		many0(plus);
+		many0(alt((punctuation, star)));
+		count(digit, 3);
+		many0(digit);
+		many0(alt((punctuation, star, digit, alpha)));
+		eof;
+	};
+
+	Ok((i, ()))
+}
 
 #[cfg(test)]
 mod test {
-	use crate::parser::valid;
-	use nom::types::CompleteStr;
+	use super::*;
 
 	#[test]
 	fn phone() {
-	    assert!(!valid::phone_number(CompleteStr("1")).is_ok());
-	    // Only one or two digits before strange non-possible punctuation.
-	    assert!(!valid::phone_number(CompleteStr("1+1+1")).is_ok());
-	    assert!(!valid::phone_number(CompleteStr("80+0")).is_ok());
-	    // Two digits is viable.
-	    assert!(valid::phone_number(CompleteStr("00")).is_ok());
-	    assert!(valid::phone_number(CompleteStr("111")).is_ok());
-	    // Alpha numbers.
-	    assert!(valid::phone_number(CompleteStr("0800-4-pizza")).is_ok());
-	    assert!(valid::phone_number(CompleteStr("0800-4-PIZZA")).is_ok());
-	    // We need at least three digits before any alpha characters.
-	    assert!(!valid::phone_number(CompleteStr("08-PIZZA")).is_ok());
-	    assert!(!valid::phone_number(CompleteStr("8-PIZZA")).is_ok());
-	    assert!(!valid::phone_number(CompleteStr("12. March")).is_ok());
+		assert!(!phone_number("1").is_ok());
+		// Only one or two digits before strange non-possible punctuation.
+		assert!(!phone_number("1+1+1").is_ok());
+		assert!(!phone_number("80+0").is_ok());
+		// Two digits is viable.
+		assert!(phone_number("00").is_ok());
+		assert!(phone_number("111").is_ok());
+		// Alpha numbers.
+		assert!(phone_number("0800-4-pizza").is_ok());
+		assert!(phone_number("0800-4-PIZZA").is_ok());
+		// We need at least three digits before any alpha characters.
+		assert!(!phone_number("08-PIZZA").is_ok());
+		assert!(!phone_number("8-PIZZA").is_ok());
+		assert!(!phone_number("12. March").is_ok());
 	}
 }
