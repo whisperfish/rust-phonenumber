@@ -39,16 +39,16 @@ pub enum Source {
 	Idd,
 
 	/// The country code is derived based on a phone number without a leading
-	/// "+", e.g. the French number "33 1 42 68 53 00" when defaultCountry is
-	/// supplied as France.
+	/// "+", e.g. the French number "33 1 42 68 53 00" when the default country
+	/// is supplied as France.
 	Number,
 
 	/// The country code is derived NOT based on the phone number itself, but
-	/// from the defaultCountry parameter provided in the parsing function by the
-	/// clients. This happens mostly for numbers written in the national format
-	/// (without country code). For example, this would be set when parsing the
-	/// French number "01 42 68 53 00", when defaultCountry is supplied as
-	/// France.
+	/// from the default country parameter provided in the parsing function by
+	/// the clients. This happens mostly for numbers written in the national
+	/// format (without country code). For example, this would be set when
+	/// parsing the French number "01 42 68 53 00", when the default country is
+	/// supplied as France.
 	Default,
 }
 
@@ -59,10 +59,12 @@ impl Default for Source {
 }
 
 impl Code {
+	/// The country code number.
 	pub fn value(&self) -> u16 {
 		self.value
 	}
 
+	/// How the country was inferred.
 	pub fn source(&self) -> Source {
 		self.source
 	}

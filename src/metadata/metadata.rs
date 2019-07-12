@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-	use regex_cache::CachedRegex;
-
-use crate::metadata::{Format, Descriptor};
-use crate::phone_number::Type;
+use regex_cache::CachedRegex;
+use crate::{
+	metadata::{Format, Descriptor},
+	phone_number::Type
+};
 
 /// Phone number metadata.
 #[derive(Clone, Debug)]
@@ -81,7 +82,7 @@ impl Metadata {
 		self.country_code
 	}
 
-	/// The international_prefix of country A is the number that needs to be
+	/// The international prefix of country A is the number that needs to be
 	/// dialled from country A to another country (country B). This is followed
 	/// by the country code for country B. Note that some countries may have more
 	/// than one international prefix, and for those cases, a regular expression
@@ -128,7 +129,7 @@ impl Metadata {
 	/// "03[12]".
 	///
 	/// When it is missing from the XML file, this field inherits the value of
-	/// national_prefix, if that is present.
+	/// national prefix, if that is present.
 	pub fn national_prefix_for_parsing(&self) -> Option<&CachedRegex> {
 		self.national_prefix_for_parsing.as_ref()
 	}
@@ -138,7 +139,7 @@ impl Metadata {
 	/// different ways when dialed in-country and out-of-country (e.g. 0343 15
 	/// 555 1212 is exactly the same number as +54 9 343 555 1212).
 	///
-	/// This field is used together with national_prefix_for_parsing to transform
+	/// This field is used together with `national_prefix_for_parsing` to transform
 	/// the number into a particular representation for storing in the
 	/// phonenumber proto buffer in those rare cases.
 	pub fn national_prefix_transform_rule(&self) -> Option<&str> {
@@ -206,7 +207,7 @@ impl Metadata {
 	/// This field should be a regular expression of the expected prefix match.
 	///
 	/// It is used merely as a short-cut for working out which region a number
-	/// comes from in the case that there is only one, so leading_digit prefixes
+	/// comes from in the case that there is only one, so leading digit prefixes
 	/// should not overlap.
 	pub fn leading_digits(&self) -> Option<&CachedRegex> {
 		self.leading_digits.as_ref()

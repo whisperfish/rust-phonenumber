@@ -96,7 +96,7 @@ pub enum Type {
 	PremiumRate,
 
 	/// The cost of this call is shared between the caller and the recipient, and
-	/// is hence typically less than PREMIUM_RATE calls. See //
+	/// is hence typically less than PREMIUM_RATE calls. See
 	/// http://en.wikipedia.org/wiki/Shared_Cost_Service for more information.
 	SharedCost,
 

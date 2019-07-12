@@ -26,9 +26,9 @@ pub struct Descriptor {
 }
 
 impl Descriptor {
-	/// The national_number is the pattern that a valid national
-	/// significant number would match. This specifies information such as its
-	/// total length and leading digits.
+	/// The national number is the pattern that a valid national significant
+	/// number would match. This specifies information such as its total length
+	/// and leading digits.
 	pub fn national_number(&self) -> &CachedRegex {
 		&self.national_number
 	}

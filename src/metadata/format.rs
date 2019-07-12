@@ -89,7 +89,7 @@ impl Format {
 		self.national_prefix.as_ref().map(AsRef::as_ref)
 	}
 
-	/// Whether the national_prefix is optional when formatting.
+	/// Whether the national prefix is optional when formatting.
 	pub fn is_national_prefix_optional(&self) -> bool {
 		self.national_prefix_optional
 	}

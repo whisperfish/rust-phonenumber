@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::fmt;
-
-use crate::metadata::{DATABASE, Database, Metadata, Format};
-use crate::phone_number::PhoneNumber;
-use crate::consts;
+use std::{borrow::Cow, fmt};
+use crate::{
+  metadata::{DATABASE, Database, Metadata, Format},
+  phone_number::PhoneNumber,
+  consts
+};
 
 /// Formatting modes for phone number.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -194,8 +195,6 @@ fn formatter<'a>(number: &str, formats: &'a [Format]) -> Option<&'a Format> {
 }
 
 fn replace(national: &str, meta: &Metadata, formatter: &Format, transform: Option<&str>, carrier: Option<&str>) -> String {
-	use std::borrow::Cow;
-
 	formatter.pattern().replace(national, &*if let Some(transform) = transform {
 		let first  = consts::FIRST_GROUP.captures(&formatter.format()).unwrap().get(1).unwrap().as_str();
 		let format = transform.replace(*consts::NP, meta.national_prefix().unwrap_or(""));
