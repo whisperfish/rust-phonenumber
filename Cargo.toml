@@ -1,6 +1,6 @@
 [package]
 name    = "phonenumber"
-version = "0.2.4+8.10.14"
+version = "0.2.4+8.11.3"
 edition = "2018"
 
 authors = ["meh. <meh@1aim.com>"]
@@ -17,7 +17,7 @@ regex-cache = "0.2"
 lazy_static = "1.2"
 fnv         = "1.0"
 failure     = "0.1"
-quick-xml   = "0.14"
+quick-xml   = "0.17"
 itertools   = "0.8"
 either      = "1.5"
 nom         = "5"
@@ -27,7 +27,7 @@ serde_derive = "1.0"
 bincode      = "1.0"
 
 [build-dependencies]
-quick-xml    = "0.14"
+quick-xml    = "0.17"
 failure      = "0.1"
 regex        = "1.1"
 serde        = "1.0"
