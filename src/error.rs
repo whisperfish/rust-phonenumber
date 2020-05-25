@@ -82,3 +82,9 @@ pub enum Parse {
 	#[fail(display = "the number is too long")]
 	TooLong,
 }
+
+impl From<std::num::ParseIntError> for Parse {
+    fn from(_item: std::num::ParseIntError) -> Parse {
+        Parse::NoNumber
+    }
+}
