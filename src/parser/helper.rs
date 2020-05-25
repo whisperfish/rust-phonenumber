@@ -17,7 +17,6 @@ use nom::{self, AsChar, IResult, error::{make_error, ErrorKind}, character::comp
 
 use fnv::FnvHashMap;
 use regex_cache::CachedRegex;
-use failure::Error;
 
 use crate::error;
 use crate::consts;
@@ -134,7 +133,7 @@ pub fn extract(value: &str) -> IResult<&str, &str> {
 }
 
 /// Parse and insert the proper country code.
-pub fn country_code<'a>(database: &Database, country: Option<country::Id>, mut number: Number<'a>) -> Result<Number<'a>, Error> {
+pub fn country_code<'a>(database: &Database, country: Option<country::Id>, mut number: Number<'a>) -> Result<Number<'a>, error::Parse> {
 	let idd = country
 		.and_then(|c| database.by_id(c.as_ref()))
 		.and_then(|m| m.international_prefix.as_ref());

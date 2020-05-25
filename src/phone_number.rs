@@ -16,7 +16,6 @@ use std::fmt;
 use std::str::FromStr;
 use std::ops::Deref;
 use either::*;
-use failure::Error;
 
 use crate::country;
 use crate::national_number::NationalNumber;
@@ -26,6 +25,7 @@ use crate::metadata::{DATABASE, Database, Metadata};
 use crate::parser;
 use crate::formatter;
 use crate::validator;
+use crate::error;
 
 /// A phone number.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
@@ -140,9 +140,9 @@ pub enum Type {
 }
 
 impl FromStr for PhoneNumber {
-	type Err = Error;
+	type Err = error::Parse;
 
-	fn from_str(s: &str) -> Result<Self, Error> {
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		parser::parse(None, s)
 	}
 }
