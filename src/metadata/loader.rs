@@ -18,7 +18,6 @@ use std::io::{BufRead};
 use crate::xml::Reader;
 use crate::xml::events::{self, Event};
 use crate::xml::events::attributes::Attribute;
-use failure::Error;
 
 use crate::error;
 
@@ -91,11 +90,11 @@ pub struct Descriptor {
 }
 
 /// Load XML metadata from the given reader.
-pub fn load<R: BufRead>(reader: R) -> Result<Vec<Metadata>, Error> {
+pub fn load<R: BufRead>(reader: R) -> Result<Vec<Metadata>, error::LoadMetadata> {
 	metadata(&mut Reader::from_reader(reader))
 }
 
-fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, Error> {
+fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, error::LoadMetadata> {
 	let mut buffer = Vec::new();
 	let mut result = Vec::new();
 
@@ -135,7 +134,7 @@ fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, Error> 
 	}
 }
 
-fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, Error> {
+fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, error::LoadMetadata> {
 	let mut buffer = Vec::new();
 	let mut result = Vec::new();
 
@@ -174,7 +173,7 @@ fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, Erro
 	}
 }
 
-fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>) -> Result<Metadata, Error> {
+fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>) -> Result<Metadata, error::LoadMetadata> {
 	let mut buffer = Vec::new();
 	let mut meta   = Metadata::default();
 
@@ -318,11 +317,11 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 	}
 }
 
-fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> Result<Descriptor, Error> {
+fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> Result<Descriptor, error::LoadMetadata> {
 	let mut buffer     = Vec::new();
 	let mut descriptor = meta.defaults.descriptor.clone();
 
-	fn lengths(value: &str) -> Result<Vec<u16>, Error> {
+	fn lengths(value: &str) -> Result<Vec<u16>, error::LoadMetadata> {
 		let mut result = Vec::new();
 
 		for part in value.split(',').map(str::trim) {
@@ -419,7 +418,7 @@ fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) 
 	}
 }
 
-fn formats<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> Result<(Vec<Format>, Vec<Format>), Error> {
+fn formats<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> Result<(Vec<Format>, Vec<Format>), error::LoadMetadata> {
 	let mut buffer        = Vec::new();
 	let mut national      = Vec::new();
 	let mut international = Vec::new();
@@ -469,7 +468,7 @@ fn formats<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) -> 
 	}
 }
 
-fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], e: &events::BytesStart<'a>) -> Result<(Format, Option<Format>), Error> {
+fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], e: &events::BytesStart<'a>) -> Result<(Format, Option<Format>), error::LoadMetadata> {
 	let mut buffer = Vec::new();
 
 	let mut format        = meta.defaults.format.clone();
@@ -565,7 +564,7 @@ fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], 
 	}
 }
 
-fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<(), Error> {
+fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<(), error::LoadMetadata> {
 	let mut buffer = Vec::new();
 
 	loop {
@@ -601,7 +600,7 @@ fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<(), Error> 
 	}
 }
 
-fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, Error> {
+fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, error::LoadMetadata> {
 	let mut buffer = Vec::new();
 	let mut result = String::new();
 

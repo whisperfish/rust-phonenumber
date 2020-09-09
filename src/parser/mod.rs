@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use failure::Error;
-
 use crate::metadata::{DATABASE, Database};
 use crate::phone_number::{PhoneNumber, Type};
 use crate::national_number::NationalNumber;
@@ -33,12 +31,12 @@ pub mod rfc3966;
 pub mod natural;
 
 /// Parse a phone number.
-pub fn parse<S: AsRef<str>>(country: Option<country::Id>, string: S) -> Result<PhoneNumber, Error> {
+pub fn parse<S: AsRef<str>>(country: Option<country::Id>, string: S) -> Result<PhoneNumber, error::Parse> {
 	parse_with(&*DATABASE, country, string)
 }
 
 /// Parse a phone number using a specific `Database`.
-pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<country::Id>, string: S) -> Result<PhoneNumber, Error> {
+pub fn parse_with<S: AsRef<str>>(database: &Database, country: Option<country::Id>, string: S) -> Result<PhoneNumber, error::Parse> {
 	fn phone_number(i: &str) -> IResult<&str, helper::Number> {
 		parse! { i => alt((rfc3966::phone_number, natural::phone_number)) }
 	}

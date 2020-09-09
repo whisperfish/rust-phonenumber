@@ -3,8 +3,7 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::env;
 
-#[macro_use]
-extern crate failure;
+extern crate thiserror;
 extern crate regex;
 extern crate quick_xml as xml;
 

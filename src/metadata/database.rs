@@ -22,7 +22,6 @@ use std::sync::{Arc, Mutex};
 use fnv::FnvHashMap;
 use regex_cache::{RegexCache, CachedRegex, CachedRegexBuilder};
 use bincode;
-use failure::Error;
 
 use crate::error;
 use crate::metadata::loader;
@@ -46,17 +45,17 @@ pub struct Database {
 
 impl Database {
 	/// Load a database from the given file.
-	pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+	pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, error::LoadMetadata> {
 		Database::from(loader::load(BufReader::new(File::open(path)?))?)
 	}
 
 	/// Parse a database from the given string.
-	pub fn parse<S: AsRef<str>>(content: S) -> Result<Self, Error> {
+	pub fn parse<S: AsRef<str>>(content: S) -> Result<Self, error::LoadMetadata> {
 		Database::from(loader::load(Cursor::new(content.as_ref()))?)
 	}
 
 	/// Create a database from a loaded database.
-	pub fn from(meta: Vec<loader::Metadata>) -> Result<Self, Error> {
+	pub fn from(meta: Vec<loader::Metadata>) -> Result<Self, error::LoadMetadata> {
 		fn tranpose<T, E>(value: Option<Result<T, E>>) -> Result<Option<T>, E> {
 			match value {
 				None =>
@@ -71,18 +70,18 @@ impl Database {
 		}
 
 		let cache = Arc::new(Mutex::new(RegexCache::new(100)));
-		let regex = |value: String| -> Result<CachedRegex, Error> {
+		let regex = |value: String| -> Result<CachedRegex, error::LoadMetadata> {
 			Ok(CachedRegexBuilder::new(cache.clone(), &value)
 				.ignore_whitespace(true).build()?)
 		};
 
-		let descriptor = |desc: loader::Descriptor| -> Result<super::Descriptor, Error> {
+		let descriptor = |desc: loader::Descriptor| -> Result<super::Descriptor, error::LoadMetadata> {
 			desc.national_number.as_ref().unwrap();
 			desc.national_number.as_ref().unwrap();
 
 			Ok(super::Descriptor {
 				national_number: desc.national_number.ok_or_else(||
-					Error::from(error::Metadata::MissingValue {
+					error::LoadMetadata::from(error::Metadata::MissingValue {
 						phase: "descriptor".into(),
 						name:  "national_number".into(),
 					})).and_then(&regex)?,
@@ -93,16 +92,16 @@ impl Database {
 			})
 		};
 
-		let format = |format: loader::Format| -> Result<super::Format, Error> {
+		let format = |format: loader::Format| -> Result<super::Format, error::LoadMetadata> {
 			Ok(super::Format {
 				pattern: format.pattern.ok_or_else(||
-					Error::from(error::Metadata::MissingValue {
+					error::LoadMetadata::from(error::Metadata::MissingValue {
 						phase: "format".into(),
 						name:  "pattern".into(),
 					})).and_then(&regex)?,
 
 				format: format.format.ok_or_else(||
-					Error::from(error::Metadata::MissingValue {
+					error::LoadMetadata::from(error::Metadata::MissingValue {
 						phase: "format".into(),
 						name:  "format".into()
 					}))?,
@@ -117,11 +116,11 @@ impl Database {
 			})
 		};
 
-		let metadata = |meta: loader::Metadata| -> Result<super::Metadata, Error> {
+		let metadata = |meta: loader::Metadata| -> Result<super::Metadata, error::LoadMetadata> {
 			Ok(super::Metadata {
 				descriptors: super::Descriptors {
 					general: descriptor(meta.general.ok_or_else(||
-						Error::from(error::Metadata::MissingValue {
+						error::LoadMetadata::from(error::Metadata::MissingValue {
 							phase: "metadata".into(),
 							name:  "generalDesc".into(),
 						}))?)?,
@@ -144,13 +143,13 @@ impl Database {
 				},
 
 				id: meta.id.ok_or_else(||
-					Error::from(error::Metadata::MissingValue {
+					error::LoadMetadata::from(error::Metadata::MissingValue {
 						phase: "metadata".into(),
 						name:  "id".into()
 					}))?,
 
 				country_code: meta.country_code.ok_or_else(||
-					Error::from(error::Metadata::MissingValue {
+					error::LoadMetadata::from(error::Metadata::MissingValue {
 						phase: "metadata".into(),
 						name: "countryCode".into(),
 					}))?,

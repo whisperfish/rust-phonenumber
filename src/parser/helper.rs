@@ -17,7 +17,6 @@ use nom::{self, AsChar, IResult, error::{make_error, ErrorKind}, character::comp
 
 use fnv::FnvHashMap;
 use regex_cache::CachedRegex;
-use failure::Error;
 
 use crate::error;
 use crate::consts;
@@ -134,7 +133,7 @@ pub fn extract(value: &str) -> IResult<&str, &str> {
 }
 
 /// Parse and insert the proper country code.
-pub fn country_code<'a>(database: &Database, country: Option<country::Id>, mut number: Number<'a>) -> Result<Number<'a>, Error> {
+pub fn country_code<'a>(database: &Database, country: Option<country::Id>, mut number: Number<'a>) -> Result<Number<'a>, error::Parse> {
 	let idd = country
 		.and_then(|c| database.by_id(c.as_ref()))
 		.and_then(|m| m.international_prefix.as_ref());
@@ -331,7 +330,7 @@ pub fn normalize<'a>(mut number: Number<'a>, mappings: &FnvHashMap<char, char>) 
 			while let Some((start, ch)) = chars.next() {
 				if !ch.is_dec_digit() {
 					let mut string = String::from(&value[.. start]);
-					
+
 					if let Some(ch) = ch.as_dec_digit() {
 						string.push(ch);
 					}
@@ -418,7 +417,7 @@ impl<T: AsChar> AsCharExt for T {
 		if ch.is_dec_digit() {
 			return Some(ch);
 		}
-		
+
 		match ch {
 			'٠' | '۰' | '߀' | '०' | '০' | '੦' | '૦' | '୦' | '௦' | '౦' | '೦' | '൦' | '๐' | '໐' | '０' =>
 				Some('0'),
@@ -654,7 +653,7 @@ mod test {
 		}, helper::international_prefix(Some(&CachedRegex::new(DATABASE.cache(), "00[39]").unwrap()),
 			Number {
 				national: "00 9 45677003898003".into(),
-				
+
 				.. Default::default()
 			}));
 
