@@ -12,6 +12,8 @@ extern crate serde;
 extern crate serde_derive;
 extern crate bincode;
 
+use bincode::Options;
+
 #[path = "src/metadata/loader.rs"]
 mod loader;
 
@@ -28,6 +30,6 @@ fn main() {
 		&Path::new(&env::var("OUT_DIR").unwrap()).join("database.bin"))
 			.expect("could not create database file"));
 
-	bincode::serialize_into(&mut out, &metadata)
+	bincode::options().with_varint_encoding().serialize_into(&mut out, &metadata)
 		.expect("failed to serialize database");
 }

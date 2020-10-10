@@ -19,6 +19,7 @@ use std::borrow::Borrow;
 use std::hash::Hash;
 use std::sync::{Arc, Mutex};
 
+use bincode::Options;
 use fnv::FnvHashMap;
 use regex_cache::{RegexCache, CachedRegex, CachedRegexBuilder};
 use bincode;
@@ -31,7 +32,8 @@ const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin")
 lazy_static! {
 	/// The Google provided metadata database, used as default.
 	pub static ref DEFAULT: Database =
-		Database::from(bincode::deserialize(DATABASE).unwrap()).unwrap();
+		Database::from(bincode::options()
+		.with_varint_encoding().deserialize(DATABASE).unwrap()).unwrap();
 }
 
 /// Representation of a database of metadata for phone number.
