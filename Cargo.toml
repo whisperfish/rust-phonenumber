@@ -3,7 +3,7 @@ name    = "phonenumber"
 version = "0.3.2+8.12.9"
 edition = "2018"
 
-authors = ["meh. <meh@1aim.com>"]
+authors = ["meh. <meh@1aim.com>", "Philipp Korber <philipp@korber.dev>", "Yann Leretaille <yann@leretaille.com"]
 license = "Apache-2.0"
 
 description = "Library for parsing, formatting and validating international phone numbers."
