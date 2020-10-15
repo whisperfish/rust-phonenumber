@@ -633,9 +633,7 @@ fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, error
 fn text_check_regex<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, error::LoadMetadata> {
 	let regex_source = text(reader, name)?;
 	// check regular expression syntax
-	if let Err(err) = regex_syntax::Parser::new().parse(&regex_source) {
-		return Err(error::LoadMetadata::RegexSyntax(err));
-	}
+	check_regex(&regex_source)?;
 	Ok(regex_source)
 }
 
