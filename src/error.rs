@@ -26,8 +26,8 @@ pub enum Metadata {
 	MismatchedTag(String),
 
 	/// A required value was missing.
-    #[error("{phase}: missing value: {name:?}")]
-    #[allow(unused)] // This is unused in the build script
+	#[error("{phase}: missing value: {name:?}")]
+	#[allow(unused)] // This is unused in the build script
 	MissingValue {
 		phase: String,
 		name:  String,
@@ -61,38 +61,38 @@ pub enum Metadata {
 pub enum Parse {
 	/// This generally indicates the string passed in had less than 3 digits in
 	/// it.
-    #[error("not a number")]
-    #[allow(unused)] // This is unused in the build script
+	#[error("not a number")]
+	#[allow(unused)] // This is unused in the build script
 	NoNumber,
 
 	/// The country code supplied did not belong to a supported country or
 	/// non-geographical entity.
-    #[error("invalid country code")]
-    #[allow(unused)] // This is unused in the build script
+	#[error("invalid country code")]
+	#[allow(unused)] // This is unused in the build script
 	InvalidCountryCode,
 
 	/// This indicates the string started with an international dialing prefix,
 	/// but after this was stripped from the number, had less digits than any
 	/// valid phone number (including country code) could have.
-    #[error("the number is too short after IDD")]
-    #[allow(unused)] // This is unused in the build script
+	#[error("the number is too short after IDD")]
+	#[allow(unused)] // This is unused in the build script
 	TooShortAfterIdd,
 
 	/// This indicates the string, after any country code has been stripped, had
 	/// less digits than any valid phone number could have.
-    #[error("the number is too short after the country code")]
-    #[allow(unused)] // This is unused in the build script
+	#[error("the number is too short after the country code")]
+	#[allow(unused)] // This is unused in the build script
 	TooShortNsn,
 
 	/// This indicates the string had more digits than any valid phone number
 	/// could have.
-    #[error("the number is too long")]
-    #[allow(unused)] // This is unused in the build script
-    TooLong,
+	#[error("the number is too long")]
+	#[allow(unused)] // This is unused in the build script
+	TooLong,
 
-    /// A integer parts of a number is malformed, normally this should be caught by the parsing regexes.
-    #[error("malformed integer part in phone number: {0}")]
-    MalformedInteger(#[from] std::num::ParseIntError),
+	/// A integer parts of a number is malformed, normally this should be caught by the parsing regexes.
+	#[error("malformed integer part in phone number: {0}")]
+	MalformedInteger(#[from] std::num::ParseIntError),
 }
 
 
@@ -100,35 +100,35 @@ pub enum Parse {
 #[derive(Error, Debug)]
 pub enum LoadMetadata {
 
-    /// Parsing XML failed, the XML is malformed.
-    #[error("Malformed Metadata XML: {0}")]
-    Xml(#[from] xml::Error),
+	/// Parsing XML failed, the XML is malformed.
+	#[error("Malformed Metadata XML: {0}")]
+	Xml(#[from] xml::Error),
 
-    /// Parsing UTF-8 string from XML failed.
-    #[error("Non UTF-8 string in Metadata XML: {0}")]
-    Utf8(#[from] std::str::Utf8Error),
+	/// Parsing UTF-8 string from XML failed.
+	#[error("Non UTF-8 string in Metadata XML: {0}")]
+	Utf8(#[from] std::str::Utf8Error),
 
-    /// Metadata Error
-    #[error("{0}")]
-    Metadata(#[from] Metadata),
+	/// Metadata Error
+	#[error("{0}")]
+	Metadata(#[from] Metadata),
 
-    /// Malformed integer in Metadata XML database
-    #[error("Malformed integer in Metadata XML: {0}")]
-    Integer(#[from] std::num::ParseIntError),
+	/// Malformed integer in Metadata XML database
+	#[error("Malformed integer in Metadata XML: {0}")]
+	Integer(#[from] std::num::ParseIntError),
 
-    /// Malformed boolean in Metadata XML database
-    #[error("Malformed boolean in Metadata XML: {0}")]
-    Bool(#[from] std::str::ParseBoolError),
+	/// Malformed boolean in Metadata XML database
+	#[error("Malformed boolean in Metadata XML: {0}")]
+	Bool(#[from] std::str::ParseBoolError),
 
-    /// I/O-Error while reading Metadata XML database
-    #[error("I/O-Error in Metadata XML: {0}")]
-    Io(#[from] std::io::Error),
+	/// I/O-Error while reading Metadata XML database
+	#[error("I/O-Error in Metadata XML: {0}")]
+	Io(#[from] std::io::Error),
 
-    /// Malformed Regex in Metadata XML database
-    #[error("Malformed Regex: {0}")]
+	/// Malformed Regex in Metadata XML database
+	#[error("Malformed Regex: {0}")]
 	Regex(#[from] regex::Error),
 	
 	#[error("Malformed Regex: {0}")]
-    RegexSyntax(#[from] regex_syntax::Error),
+	RegexSyntax(#[from] regex_syntax::Error),
 
 }
