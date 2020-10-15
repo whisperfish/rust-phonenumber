@@ -70,7 +70,7 @@ pub use crate::carrier::Carrier;
 mod phone_number;
 pub use crate::phone_number::{PhoneNumber, Type};
 
-mod parser;
+pub mod parser;
 pub use crate::parser::{parse, parse_with};
 
 mod formatter;
