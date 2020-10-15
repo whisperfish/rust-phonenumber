@@ -21,6 +21,8 @@ use crate::xml::events::attributes::Attribute;
 
 use crate::error;
 
+use regex_syntax;
+
 /// Temporary defaults for `Format` and `Descriptor`.
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct Defaults {
@@ -188,7 +190,7 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 				meta.country_code = Some(value.parse()?),
 
 			("internationalPrefix", value) =>
-				meta.international_prefix = Some(value.into()),
+				meta.international_prefix = Some(check_regex(value)?.into()),
 
 			("preferredInternationalPrefix", value) =>
 				meta.preferred_international_prefix = Some(value.into()),
@@ -200,7 +202,7 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 				meta.preferred_extension_prefix = Some(value.into()),
 
 			("nationalPrefixForParsing", value) =>
-				meta.national_prefix_for_parsing = Some(value.into()),
+				meta.national_prefix_for_parsing = Some(check_regex(value)?.into()),
 
 			("nationalPrefixTransformRule", value) =>
 				meta.national_prefix_transform_rule = Some(value.into()),
@@ -209,7 +211,7 @@ fn territory<'a, R: BufRead>(reader: &mut Reader<R>, e: &events::BytesStart<'a>)
 				meta.main_country_for_code = value.parse()?,
 
 			("leadingDigits", value) =>
-				meta.leading_digits = Some(value.into()),
+				meta.leading_digits = Some(check_regex(value)?.into()),
 
 			("mobileNumberPortableRegion", value) =>
 				meta.mobile_number_portable = value.parse()?,
@@ -354,7 +356,7 @@ fn descriptor<R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8]) 
 			Event::Start(ref e) => {
 				match e.name() {
 					name @ b"nationalNumberPattern" =>
-						descriptor.national_number = Some(text(reader, name)?),
+						descriptor.national_number = Some(text_check_regex(reader, name)?),
 
 					name @ b"exampleNumber" =>
 						descriptor.example = Some(text(reader, name)?),
@@ -481,7 +483,7 @@ fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], 
 
 		match (str::from_utf8(key)?, str::from_utf8(&value)?) {
 			("pattern", value) =>
-				format.pattern = Some(value.into()),
+				format.pattern = Some(check_regex(value)?.into()),
 
 			("nationalPrefixFormattingRule", value) =>
 				format.national_prefix_formatting_rule = Some(value.into()),
@@ -510,7 +512,7 @@ fn format<'a, R: BufRead>(reader: &mut Reader<R>, meta: &Metadata, name: &[u8], 
 			Event::Start(ref e) => {
 				match e.name() {
 					name @ b"leadingDigits" =>
-						format.leading_digits.push(text(reader, name)?),
+						format.leading_digits.push(text_check_regex(reader, name)?),
 
 					name @ b"format" => {
 						let text = text(reader, name)?;
@@ -627,3 +629,21 @@ fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, error
 		}
 	}
 }
+
+fn text_check_regex<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, error::LoadMetadata> {
+	let regex_source = text(reader, name)?;
+	// check regular expression syntax
+	if let Err(err) = regex_syntax::Parser::new().parse(&regex_source) {
+		return Err(error::LoadMetadata::RegexSyntax(err));
+	}
+	Ok(regex_source)
+}
+
+fn check_regex(regex_source: &str) -> Result<&str, error::LoadMetadata> {
+	// check regular expression syntax
+	if let Err(err) = regex_syntax::Parser::new().parse(regex_source) {
+		return Err(error::LoadMetadata::RegexSyntax(err));
+	}
+	Ok(regex_source)
+}
+

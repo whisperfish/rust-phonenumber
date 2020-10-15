@@ -23,6 +23,7 @@ extern crate nom;
 
 extern crate regex;
 extern crate regex_cache;
+extern crate regex_syntax;
 extern crate fnv;
 extern crate quick_xml as xml;
 extern crate itertools;

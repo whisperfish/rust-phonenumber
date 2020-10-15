@@ -33,7 +33,7 @@ lazy_static! {
 	/// The Google provided metadata database, used as default.
 	pub static ref DEFAULT: Database =
 		Database::from(bincode::options()
-		.with_varint_encoding().deserialize(DATABASE).unwrap()).unwrap();
+		.with_varint_encoding().deserialize(DATABASE).unwrap(), false).unwrap();
 }
 
 /// Representation of a database of metadata for phone number.
@@ -48,16 +48,16 @@ pub struct Database {
 impl Database {
 	/// Load a database from the given file.
 	pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, error::LoadMetadata> {
-		Database::from(loader::load(BufReader::new(File::open(path)?))?)
+		Database::from(loader::load(BufReader::new(File::open(path)?))?, false)
 	}
 
 	/// Parse a database from the given string.
 	pub fn parse<S: AsRef<str>>(content: S) -> Result<Self, error::LoadMetadata> {
-		Database::from(loader::load(Cursor::new(content.as_ref()))?)
+		Database::from(loader::load(Cursor::new(content.as_ref()))?, false)
 	}
 
 	/// Create a database from a loaded database.
-	pub fn from(meta: Vec<loader::Metadata>) -> Result<Self, error::LoadMetadata> {
+	pub fn from(meta: Vec<loader::Metadata>, check_regex: bool) -> Result<Self, error::LoadMetadata> {
 		fn tranpose<T, E>(value: Option<Result<T, E>>) -> Result<Option<T>, E> {
 			match value {
 				None =>
@@ -73,8 +73,15 @@ impl Database {
 
 		let cache = Arc::new(Mutex::new(RegexCache::new(100)));
 		let regex = |value: String| -> Result<CachedRegex, error::LoadMetadata> {
-			Ok(CachedRegexBuilder::new(cache.clone(), &value)
-				.ignore_whitespace(true).build()?)
+			if check_regex {
+				Ok(CachedRegexBuilder::new(cache.clone(), &value)
+					.ignore_whitespace(true).build()?)
+			} else {
+				// the regex can be added to the cache without a syntax check as the syntax 
+				// has already been checked by the metadata loader at build time
+				Ok(CachedRegexBuilder::new(cache.clone(), &value)
+					.ignore_whitespace(true).build_unchecked())
+			}
 		};
 
 		let descriptor = |desc: loader::Descriptor| -> Result<super::Descriptor, error::LoadMetadata> {

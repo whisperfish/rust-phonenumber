@@ -5,6 +5,7 @@ use std::env;
 
 extern crate thiserror;
 extern crate regex;
+extern crate regex_syntax;
 extern crate quick_xml as xml;
 
 extern crate serde;
@@ -21,6 +22,8 @@ mod loader;
 mod error;
 
 fn main() {
+	println!("cargo:rerun-if-changed=assets/PhoneNumberMetadata.xml");
+
 	let metadata = loader::load(BufReader::new(
 		File::open("assets/PhoneNumberMetadata.xml")
 			.expect("could not open metadata file")))

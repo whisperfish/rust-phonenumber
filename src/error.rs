@@ -126,6 +126,9 @@ pub enum LoadMetadata {
 
     /// Malformed Regex in Metadata XML database
     #[error("Malformed Regex: {0}")]
-    Regex(#[from] regex::Error),
+	Regex(#[from] regex::Error),
+	
+	#[error("Malformed Regex: {0}")]
+    RegexSyntax(#[from] regex_syntax::Error),
 
 }

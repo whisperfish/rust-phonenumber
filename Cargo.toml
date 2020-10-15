@@ -1,6 +1,6 @@
 [package]
 name    = "phonenumber"
-version = "0.3.1+8.12.9"
+version = "0.3.2+8.12.9"
 edition = "2018"
 
 authors = ["meh. <meh@1aim.com>"]
@@ -13,7 +13,8 @@ readme = "README.md"
 
 [dependencies]
 regex       = "1.3.9"
-regex-cache = { path = "../rust-regex-cache" }
+regex-syntax = "0.6"
+regex-cache = "~0.2.1"
 lazy_static = "1.4.0"
 fnv         = "1.0"
 thiserror   = "1.0.20"
@@ -30,6 +31,7 @@ bincode      = "1.3.1"
 quick-xml    = "0.18.1"
 thiserror    = "1.0.20"
 regex        = "1.3.9"
+regex-syntax = "0.6"
 serde        = "1.0"
 serde_derive = "1.0"
 bincode      = "1.3.1"

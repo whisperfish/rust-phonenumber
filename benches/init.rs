@@ -15,7 +15,7 @@ fn bincode_deserialize_database(db_raw: &[u8]) -> Vec<loader::Metadata> {
 }
 
 fn parse_database(db_decoded: Vec<loader::Metadata>) -> Database {
-    Database::from(db_decoded).unwrap()
+    Database::from(db_decoded, false).unwrap()
 }
 
 fn first_query(db: &Database) -> PhoneNumber {
@@ -31,7 +31,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     group.bench_function("deserialize binencoded database", |b| b.iter(|| bincode_deserialize_database(black_box(DATABASE_BINFILE))));
 
     let db_decoded = bincode_deserialize_database(DATABASE_BINFILE);
-    group.bench_function("parse database", |b| b.iter(|| parse_database(black_box(db_decoded.to_vec()))));
+    group.bench_function("parse database (unchecked)", |b| b.iter(|| parse_database(black_box(db_decoded.to_vec()))));
 
     let db = parse_database(db_decoded.to_vec());
     group.bench_function("first query", |b| { db.cache().lock().unwrap().clear(); b.iter(|| first_query(black_box(&db))) });
