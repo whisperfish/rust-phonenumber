@@ -166,11 +166,13 @@ pub fn source_for(database: &Database, code: u16, national: &str) -> Option<Eith
 	let regions = try_opt!(None; database.region(&code));
 
 	if regions.len() == 1 {
-		if regions[0] == "001" {
-			return Some(Right(code));
-		}
-		else {
-			return Some(Left(regions[0].parse().unwrap()));
+		return if regions[0] == "001" {
+			Some(Right(code))
+		} else {
+			match regions[0].parse() {
+				Ok(value) => Some(Left(value)),
+				Err(_) => None,
+			}
 		}
 	}
 
