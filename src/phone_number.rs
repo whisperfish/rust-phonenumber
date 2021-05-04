@@ -28,7 +28,7 @@ use crate::validator;
 use crate::error;
 
 /// A phone number.
-#[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize, Hash, Debug)]
 pub struct PhoneNumber {
 	/// The country calling code for this number, as defined by the International
 	/// Telecommunication Union (ITU). For example, this would be 1 for NANPA

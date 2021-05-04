@@ -16,7 +16,7 @@ use std::ops::Deref;
 use std::fmt;
 
 /// A phone number carrier.
-#[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize, Hash, Debug)]
 pub struct Carrier(pub(crate) String);
 
 impl<T: Into<String>> From<T> for Carrier {
