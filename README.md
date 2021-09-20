@@ -9,7 +9,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-phonenumber = "0.1"
+phonenumber = "0.3"
 ```
 
 Example
