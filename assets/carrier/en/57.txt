@@ -189,14 +189,7 @@
 573147|Claro
 573148|Claro
 57315|Movistar
-573162|Movistar
-573163|Movistar
-573164|Movistar
-573165|Movistar
-573166|Movistar
-573167|Movistar
-573168|Movistar
-573169|Movistar
+57316|Movistar
 57317|Movistar
 57318|Movistar
 573192|Movistar
@@ -228,6 +221,7 @@
 573233|Claro
 573234|Claro
 573235|Claro
+57324|Tigo
 57330|Movistar
 5733300|Setroc Mobile
 5733301|Setroc Mobile
@@ -269,3 +263,4 @@
 573507|Avantel
 573508|Avantel
 57351|Avantel
+579|Movistar
