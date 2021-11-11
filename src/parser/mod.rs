@@ -95,6 +95,12 @@ mod test {
 	use crate::national_number::NationalNumber;
 	use crate::country;
 
+    #[test]
+    fn panic_issue_43() {
+        let res = parser::parse(None, " 2 22#:");
+        assert!(res.is_err());
+    }
+
 	#[test]
 	fn parse() {
 		let mut number = PhoneNumber {

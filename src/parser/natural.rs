@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use nom::{IResult};
+use nom::error::ErrorKind;
 
 use crate::consts;
 use crate::parser::helper::*;
@@ -20,6 +21,15 @@ use crate::parser::helper::*;
 pub fn phone_number(i: &str) -> IResult<&str, Number> {
 	let (_, i)    = try_parse!(i, extract);
 	let extension = consts::EXTN_PATTERN.captures(&i);
+
+    if let Some(c) = extension.as_ref() {
+        match (c.get(0), c.get(2)) {
+            (Some(_), Some(_)) => {}
+            _ => {
+                return Err(nom::Err::Failure(("invalid phone number", ErrorKind::Eof)));
+            }
+        }
+    }
 
 	Ok(("", Number {
 		national: extension.as_ref()
