@@ -18,7 +18,7 @@ use crate::consts;
 use crate::parser::helper::*;
 
 pub fn phone_number(i: &str) -> IResult<&str, Number> {
-	let (_, i)    = try_parse!(i, extract);
+	let (_, i)    = extract(i)?;
 	let extension = consts::EXTN_PATTERN.captures(&i);
 
 	Ok(("", Number {

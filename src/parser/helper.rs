@@ -64,7 +64,7 @@ pub struct Number<'a> {
 	pub carrier:   Option<Cow<'a, str>>,
 }
 
-pub fn eof(i: &str) -> IResult<&str, ()> {
+pub fn ieof(i: &str) -> IResult<&str, ()> {
 	if i.is_empty() {
 		Ok((i, ()))
 	}
