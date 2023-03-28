@@ -13,54 +13,53 @@
 // limitations under the License.
 
 use crate::parser::helper::*;
-use nom::{IResult, combinator::*, multi::*, branch::*};
+use nom::{branch::*, combinator::*, multi::*, IResult};
 
 pub fn phone_number(i: &str) -> IResult<&str, &str> {
-	parse! { i => recognize(alt((short, long))) }
-
+    parse! { i => recognize(alt((short, long))) }
 }
 
 fn short(i: &str) -> IResult<&str, ()> {
-	parse! { i =>
-		count(digit, 2);
-		eof;
-	};
+    parse! { i =>
+        count(digit, 2);
+        eof;
+    };
 
-	Ok((i, ()))
+    Ok((i, ()))
 }
 
 fn long(i: &str) -> IResult<&str, ()> {
-	parse! { i =>
-		many0(plus);
-		many0(alt((punctuation, star)));
-		count(digit, 3);
-		many0(digit);
-		many0(alt((punctuation, star, digit, alpha)));
-		eof;
-	};
+    parse! { i =>
+        many0(plus);
+        many0(alt((punctuation, star)));
+        count(digit, 3);
+        many0(digit);
+        many0(alt((punctuation, star, digit, alpha)));
+        eof;
+    };
 
-	Ok((i, ()))
+    Ok((i, ()))
 }
 
 #[cfg(test)]
 mod test {
-	use super::*;
+    use super::*;
 
-	#[test]
-	fn phone() {
-		assert!(!phone_number("1").is_ok());
-		// Only one or two digits before strange non-possible punctuation.
-		assert!(!phone_number("1+1+1").is_ok());
-		assert!(!phone_number("80+0").is_ok());
-		// Two digits is viable.
-		assert!(phone_number("00").is_ok());
-		assert!(phone_number("111").is_ok());
-		// Alpha numbers.
-		assert!(phone_number("0800-4-pizza").is_ok());
-		assert!(phone_number("0800-4-PIZZA").is_ok());
-		// We need at least three digits before any alpha characters.
-		assert!(!phone_number("08-PIZZA").is_ok());
-		assert!(!phone_number("8-PIZZA").is_ok());
-		assert!(!phone_number("12. March").is_ok());
-	}
+    #[test]
+    fn phone() {
+        assert!(!phone_number("1").is_ok());
+        // Only one or two digits before strange non-possible punctuation.
+        assert!(!phone_number("1+1+1").is_ok());
+        assert!(!phone_number("80+0").is_ok());
+        // Two digits is viable.
+        assert!(phone_number("00").is_ok());
+        assert!(phone_number("111").is_ok());
+        // Alpha numbers.
+        assert!(phone_number("0800-4-pizza").is_ok());
+        assert!(phone_number("0800-4-PIZZA").is_ok());
+        // We need at least three digits before any alpha characters.
+        assert!(!phone_number("08-PIZZA").is_ok());
+        assert!(!phone_number("8-PIZZA").is_ok());
+        assert!(!phone_number("12. March").is_ok());
+    }
 }

@@ -17,75 +17,66 @@ use thiserror::Error;
 /// Metadata loading errors.
 #[derive(Error, Clone, Debug)]
 pub enum Metadata {
-	/// EOF was reached before the parsing was complete.
-	#[error("unexpected end of file")]
-	UnexpectedEof,
+    /// EOF was reached before the parsing was complete.
+    #[error("unexpected end of file")]
+    UnexpectedEof,
 
-	/// A mismatched tag was met.
-	#[error("mismatched tag: {0:?}")]
-	MismatchedTag(String),
+    /// A mismatched tag was met.
+    #[error("mismatched tag: {0:?}")]
+    MismatchedTag(String),
 
-	/// A required value was missing.
+    /// A required value was missing.
     #[error("{phase}: missing value: {name:?}")]
     #[allow(unused)] // This is unused in the build script
-	MissingValue {
-		phase: String,
-		name:  String,
-	},
+    MissingValue { phase: String, name: String },
 
-	/// An element was not handled.
-	#[error("{phase}: unhandled element: {name:?}")]
-	UnhandledElement {
-		phase: String,
-		name:  String
-	},
+    /// An element was not handled.
+    #[error("{phase}: unhandled element: {name:?}")]
+    UnhandledElement { phase: String, name: String },
 
-	/// An attribute was not handled.
-	#[error("{phase}: unhandled attribute: {name:?}={value:?}")]
-	UnhandledAttribute {
-		phase: String,
-		name:  String,
-		value: String,
-	},
+    /// An attribute was not handled.
+    #[error("{phase}: unhandled attribute: {name:?}={value:?}")]
+    UnhandledAttribute {
+        phase: String,
+        name: String,
+        value: String,
+    },
 
-	/// An event was not handled.
-	#[error("{phase}: unhandled event: {event:?}")]
-	UnhandledEvent {
-		phase: String,
-		event: String,
-	}
+    /// An event was not handled.
+    #[error("{phase}: unhandled event: {event:?}")]
+    UnhandledEvent { phase: String, event: String },
 }
 
 /// Parsing errors.
 #[derive(Error, Clone, Debug)]
 pub enum Parse {
-	/// This generally indicates the string passed in had less than 3 digits in
-	/// it.
+    /// This generally indicates the string passed in had less than 3 digits in
+    /// it.
     #[error("not a number")]
     #[allow(unused)] // This is unused in the build script
-	NoNumber,
+    NoNumber,
 
-	/// The country code supplied did not belong to a supported country or
-	/// non-geographical entity.
+    /// The country code supplied did not belong to a supported country or
+    /// non-geographical entity.
     #[error("invalid country code")]
     #[allow(unused)] // This is unused in the build script
-	InvalidCountryCode,
+    InvalidCountryCode,
 
-	/// This indicates the string started with an international dialing prefix,
-	/// but after this was stripped from the number, had less digits than any
-	/// valid phone number (including country code) could have.
+    /// This indicates the string started with an international dialing prefix,
+    /// but after this was stripped from the number, had less digits than any
+    /// valid phone number (including country code) could have.
     #[error("the number is too short after IDD")]
     #[allow(unused)] // This is unused in the build script
-	TooShortAfterIdd,
+    TooShortAfterIdd,
 
-	/// This indicates the string, after any country code has been stripped, had
-	/// less digits than any valid phone number could have.
+    /// This indicates the string, after any country code has been stripped, had
+    /// less digits than any valid phone number could have.
     #[error("the number is too short after the country code")]
     #[allow(unused)] // This is unused in the build script
-	TooShortNsn,
+    TooShortNsn,
 
-	/// This indicates the string had more digits than any valid phone number
-	/// could have.
+    /// This indicates the string had more digits than any valid phone number
+    /// could have.
     #[error("the number is too long")]
     #[allow(unused)] // This is unused in the build script
     TooLong,
@@ -95,11 +86,9 @@ pub enum Parse {
     MalformedInteger(#[from] std::num::ParseIntError),
 }
 
-
 /// Loading of Database) Error
 #[derive(Error, Debug)]
 pub enum LoadMetadata {
-
     /// Parsing XML failed, the XML is malformed.
     #[error("Malformed Metadata XML: {0}")]
     Xml(#[from] xml::Error),
@@ -127,5 +116,4 @@ pub enum LoadMetadata {
     /// Malformed Regex in Metadata XML database
     #[error("Malformed Regex: {0}")]
     Regex(#[from] regex::Error),
-
 }

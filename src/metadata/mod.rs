@@ -19,7 +19,7 @@ mod descriptor;
 pub use self::descriptor::Descriptor;
 
 mod metadata;
-pub use self::metadata::{Metadata, Descriptors};
+pub use self::metadata::{Descriptors, Metadata};
 
 mod database;
 pub use self::database::{Database, DEFAULT as DATABASE};

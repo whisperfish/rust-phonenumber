@@ -12,35 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::ops::Deref;
 use std::fmt;
+use std::ops::Deref;
 
 /// A phone number extension.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 pub struct Extension(pub(crate) String);
 
 impl<T: Into<String>> From<T> for Extension {
-	fn from(value: T) -> Extension {
-		Extension(value.into())
-	}
+    fn from(value: T) -> Extension {
+        Extension(value.into())
+    }
 }
 
 impl Deref for Extension {
-	type Target = str;
+    type Target = str;
 
-	fn deref(&self) -> &str {
-		&self.0
-	}
+    fn deref(&self) -> &str {
+        &self.0
+    }
 }
 
 impl AsRef<str> for Extension {
-	fn as_ref(&self) -> &str {
-		&self.0
-	}
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
 }
 
 impl fmt::Display for Extension {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}", self.0)
-	}
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
 }

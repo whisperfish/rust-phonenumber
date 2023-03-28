@@ -12,42 +12,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use nom::{IResult};
+use nom::IResult;
 
 use crate::consts;
 use crate::parser::helper::*;
 
 pub fn phone_number(i: &str) -> IResult<&str, Number> {
-	let (_, i)    = try_parse!(i, extract);
-	let extension = consts::EXTN_PATTERN.captures(&i);
+    let (_, i) = try_parse!(i, extract);
+    let extension = consts::EXTN_PATTERN.captures(&i);
 
-	Ok(("", Number {
-		national: extension.as_ref()
-			.map(|c| &i[.. c.get(0).unwrap().start()])
-			.unwrap_or(&i)
-			.into(),
+    Ok((
+        "",
+        Number {
+            national: extension
+                .as_ref()
+                .map(|c| &i[..c.get(0).unwrap().start()])
+                .unwrap_or(&i)
+                .into(),
 
-		extension: extension.as_ref()
-			.map(|c| c.get(2).unwrap().as_str())
-			.map(Into::into),
+            extension: extension
+                .as_ref()
+                .map(|c| c.get(2).unwrap().as_str())
+                .map(Into::into),
 
-		.. Default::default()
-	}))
+            ..Default::default()
+        },
+    ))
 }
 
 #[cfg(test)]
 mod test {
-	use crate::parser::natural;
-	use crate::parser::helper::*;
+    use crate::parser::helper::*;
+    use crate::parser::natural;
 
-	#[test]
-	fn phone_number() {
-		assert_eq!(natural::phone_number("650 253 0000 extn. 4567").unwrap().1,
-			Number {
-				national:  "650 253 0000".into(),
-				extension: Some("4567".into()),
+    #[test]
+    fn phone_number() {
+        assert_eq!(
+            natural::phone_number("650 253 0000 extn. 4567").unwrap().1,
+            Number {
+                national: "650 253 0000".into(),
+                extension: Some("4567".into()),
 
-				.. Default::default()
-			});
-	}
+                ..Default::default()
+            }
+        );
+    }
 }

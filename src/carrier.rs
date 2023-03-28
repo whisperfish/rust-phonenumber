@@ -12,35 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::ops::Deref;
 use std::fmt;
+use std::ops::Deref;
 
 /// A phone number carrier.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 pub struct Carrier(pub(crate) String);
 
 impl<T: Into<String>> From<T> for Carrier {
-	fn from(value: T) -> Carrier {
-		Carrier(value.into())
-	}
+    fn from(value: T) -> Carrier {
+        Carrier(value.into())
+    }
 }
 
 impl Deref for Carrier {
-	type Target = str;
+    type Target = str;
 
-	fn deref(&self) -> &str {
-		&self.0
-	}
+    fn deref(&self) -> &str {
+        &self.0
+    }
 }
 
 impl AsRef<str> for Carrier {
-	fn as_ref(&self) -> &str {
-		&self.0
-	}
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
 }
 
 impl fmt::Display for Carrier {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}", self.0)
-	}
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
 }
