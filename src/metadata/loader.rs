@@ -99,10 +99,10 @@ fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, error::
     let mut result = Vec::new();
 
     loop {
-        match reader.read_event(&mut buffer)? {
+        match reader.read_event_into(&mut buffer)? {
             Event::Text(_) | Event::Comment(_) | Event::DocType(_) => (),
 
-            Event::Start(ref e) => match e.name() {
+            Event::Start(ref e) => match e.name().into_inner() {
                 b"phoneNumberMetadata" => continue,
 
                 b"territories" => result.extend(territories(reader)?),
@@ -110,11 +110,16 @@ fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, error::
                 name => ignore(reader, name)?,
             },
 
-            Event::End(ref e) if e.name() != b"phoneNumberMetadata" => {
-                return Err(error::Metadata::MismatchedTag(str::from_utf8(e.name())?.into()).into())
+            Event::End(ref e) if e.name().into_inner() != b"phoneNumberMetadata" => {
+                return Err(error::Metadata::MismatchedTag(
+                    str::from_utf8(e.name().into_inner())?.into(),
+                )
+                .into())
             }
 
-            Event::End(ref e) if e.name() == b"phoneNumberMetadata" => return Ok(result),
+            Event::End(ref e) if e.name().into_inner() == b"phoneNumberMetadata" => {
+                return Ok(result)
+            }
 
             event => {
                 return Err(error::Metadata::UnhandledEvent {
@@ -132,19 +137,22 @@ fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, erro
     let mut result = Vec::new();
 
     loop {
-        match reader.read_event(&mut buffer)? {
+        match reader.read_event_into(&mut buffer)? {
             Event::Text(_) | Event::Comment(_) => (),
 
-            Event::Start(ref e) => match e.name() {
+            Event::Start(ref e) => match e.name().into_inner() {
                 b"territory" => result.push(territory(reader, e)?),
 
                 name => ignore(reader, name)?,
             },
 
-            Event::End(ref e) if e.name() == b"territories" => return Ok(result),
+            Event::End(ref e) if e.name().into_inner() == b"territories" => return Ok(result),
 
             Event::End(ref e) => {
-                return Err(error::Metadata::MismatchedTag(str::from_utf8(e.name())?.into()).into())
+                return Err(error::Metadata::MismatchedTag(
+                    str::from_utf8(e.name().into_inner())?.into(),
+                )
+                .into())
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -168,9 +176,9 @@ fn territory<'a, R: BufRead>(
     let mut meta = Metadata::default();
 
     for attr in e.attributes() {
-        let Attribute { key, value } = attr?;
+        let Attribute { key, value } = attr.map_err(xml::Error::InvalidAttr)?;
 
-        match (str::from_utf8(key)?, str::from_utf8(&value)?) {
+        match (str::from_utf8(key.into_inner())?, str::from_utf8(&value)?) {
             ("id", value) => meta.id = Some(value.into()),
 
             ("countryCode", value) => meta.country_code = Some(value.parse()?),
@@ -225,10 +233,10 @@ fn territory<'a, R: BufRead>(
     }
 
     loop {
-        match reader.read_event(&mut buffer)? {
+        match reader.read_event_into(&mut buffer)? {
             Event::Text(_) | Event::Comment(_) => (),
 
-            Event::Start(ref e) => match e.name() {
+            Event::Start(ref e) => match e.name().into_inner() {
                 name @ b"references" | name @ b"areaCodeOptional" => ignore(reader, name)?,
 
                 name @ b"generalDesc" => meta.general = Some(descriptor(reader, &meta, name)?),
@@ -277,10 +285,13 @@ fn territory<'a, R: BufRead>(
                 }
             },
 
-            Event::End(ref e) if e.name() == b"territory" => return Ok(meta),
+            Event::End(ref e) if e.name().into_inner() == b"territory" => return Ok(meta),
 
             Event::End(ref e) => {
-                return Err(error::Metadata::MismatchedTag(str::from_utf8(e.name())?.into()).into())
+                return Err(error::Metadata::MismatchedTag(
+                    str::from_utf8(e.name().into_inner())?.into(),
+                )
+                .into())
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -328,10 +339,10 @@ fn descriptor<R: BufRead>(
     }
 
     loop {
-        match reader.read_event(&mut buffer)? {
+        match reader.read_event_into(&mut buffer)? {
             Event::Text(_) | Event::Comment(_) => (),
 
-            Event::Start(ref e) => match e.name() {
+            Event::Start(ref e) => match e.name().into_inner() {
                 name @ b"nationalNumberPattern" => {
                     descriptor.national_number = Some(text(reader, name)?)
                 }
@@ -347,12 +358,12 @@ fn descriptor<R: BufRead>(
                 }
             },
 
-            Event::Empty(ref e) => match e.name() {
+            Event::Empty(ref e) => match e.name().into_inner() {
                 b"possibleLengths" => {
                     for attr in e.attributes() {
-                        let Attribute { key, value } = attr?;
+                        let Attribute { key, value } = attr.map_err(xml::Error::InvalidAttr)?;
 
-                        match (str::from_utf8(key)?, str::from_utf8(&value)?) {
+                        match (str::from_utf8(key.into_inner())?, str::from_utf8(&value)?) {
                             ("national", value) => descriptor.possible_length = lengths(value)?,
 
                             ("localOnly", value) => {
@@ -380,10 +391,13 @@ fn descriptor<R: BufRead>(
                 }
             },
 
-            Event::End(ref e) if e.name() == name => return Ok(descriptor),
+            Event::End(ref e) if e.name().into_inner() == name => return Ok(descriptor),
 
             Event::End(ref e) => {
-                return Err(error::Metadata::MismatchedTag(str::from_utf8(e.name())?.into()).into())
+                return Err(error::Metadata::MismatchedTag(
+                    str::from_utf8(e.name().into_inner())?.into(),
+                )
+                .into())
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -409,10 +423,10 @@ fn formats<R: BufRead>(
     let mut international = Vec::new();
 
     loop {
-        match reader.read_event(&mut buffer)? {
+        match reader.read_event_into(&mut buffer)? {
             Event::Text(_) | Event::Comment(_) => (),
 
-            Event::Start(ref e) => match e.name() {
+            Event::Start(ref e) => match e.name().into_inner() {
                 name @ b"numberFormat" => {
                     let (natl, intl) = format(reader, meta, name, e)?;
 
@@ -432,10 +446,15 @@ fn formats<R: BufRead>(
                 }
             },
 
-            Event::End(ref e) if e.name() == name => return Ok((national, international)),
+            Event::End(ref e) if e.name().into_inner() == name => {
+                return Ok((national, international))
+            }
 
             Event::End(ref e) => {
-                return Err(error::Metadata::MismatchedTag(str::from_utf8(e.name())?.into()).into())
+                return Err(error::Metadata::MismatchedTag(
+                    str::from_utf8(e.name().into_inner())?.into(),
+                )
+                .into())
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -462,12 +481,10 @@ fn format<'a, R: BufRead>(
     let mut format = meta.defaults.format.clone();
     let mut international = None;
 
-    println!("{:?}", format);
-
     for attr in e.attributes() {
-        let Attribute { key, value } = attr?;
+        let Attribute { key, value } = attr.map_err(xml::Error::InvalidAttr)?;
 
-        match (str::from_utf8(key)?, str::from_utf8(&value)?) {
+        match (str::from_utf8(key.into_inner())?, str::from_utf8(&value)?) {
             ("pattern", value) => format.pattern = Some(value.into()),
 
             ("nationalPrefixFormattingRule", value) => {
@@ -492,10 +509,10 @@ fn format<'a, R: BufRead>(
     }
 
     loop {
-        match reader.read_event(&mut buffer)? {
+        match reader.read_event_into(&mut buffer)? {
             Event::Text(_) | Event::Comment(_) => (),
 
-            Event::Start(ref e) => match e.name() {
+            Event::Start(ref e) => match e.name().into_inner() {
                 name @ b"leadingDigits" => format.leading_digits.push(text(reader, name)?),
 
                 name @ b"format" => {
@@ -524,7 +541,7 @@ fn format<'a, R: BufRead>(
                 }
             },
 
-            Event::End(ref e) if e.name() == name => {
+            Event::End(ref e) if e.name().into_inner() == name => {
                 let international = international.map(|v| {
                     let mut format = format.clone();
                     format.format = Some(v);
@@ -535,7 +552,10 @@ fn format<'a, R: BufRead>(
             }
 
             Event::End(ref e) => {
-                return Err(error::Metadata::MismatchedTag(str::from_utf8(e.name())?.into()).into())
+                return Err(error::Metadata::MismatchedTag(
+                    str::from_utf8(e.name().into_inner())?.into(),
+                )
+                .into())
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -555,17 +575,20 @@ fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<(), error::
     let mut buffer = Vec::new();
 
     loop {
-        match reader.read_event(&mut buffer)? {
+        match reader.read_event_into(&mut buffer)? {
             Event::Text(_) | Event::Comment(_) | Event::Empty(_) => (),
 
-            Event::Start(ref e) => match e.name() {
+            Event::Start(ref e) => match e.name().into_inner() {
                 name => ignore(reader, name)?,
             },
 
-            Event::End(ref e) if e.name() == name => return Ok(()),
+            Event::End(ref e) if e.name().into_inner() == name => return Ok(()),
 
             Event::End(ref e) => {
-                return Err(error::Metadata::MismatchedTag(str::from_utf8(e.name())?.into()).into())
+                return Err(error::Metadata::MismatchedTag(
+                    str::from_utf8(e.name().into_inner())?.into(),
+                )
+                .into())
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -586,13 +609,16 @@ fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, error
     let mut result = String::new();
 
     loop {
-        match reader.read_event(&mut buffer)? {
+        match reader.read_event_into(&mut buffer)? {
             Event::Text(ref e) => result.push_str(str::from_utf8(e)?),
 
-            Event::End(ref e) if e.name() == name => return Ok(result),
+            Event::End(ref e) if e.name().into_inner() == name => return Ok(result),
 
             Event::End(ref e) => {
-                return Err(error::Metadata::MismatchedTag(str::from_utf8(e.name())?.into()).into())
+                return Err(error::Metadata::MismatchedTag(
+                    str::from_utf8(e.name().into_inner())?.into(),
+                )
+                .into())
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),

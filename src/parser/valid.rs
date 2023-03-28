@@ -22,7 +22,7 @@ pub fn phone_number(i: &str) -> IResult<&str, &str> {
 fn short(i: &str) -> IResult<&str, ()> {
     parse! { i =>
         count(digit, 2);
-        eof;
+        ieof;
     };
 
     Ok((i, ()))
@@ -35,7 +35,7 @@ fn long(i: &str) -> IResult<&str, ()> {
         count(digit, 3);
         many0(digit);
         many0(alt((punctuation, star, digit, alpha)));
-        eof;
+        ieof;
     };
 
     Ok((i, ()))

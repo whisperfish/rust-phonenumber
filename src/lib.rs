@@ -17,9 +17,8 @@
 #[macro_use]
 extern crate lazy_static;
 
-extern crate thiserror;
-#[macro_use]
 extern crate nom;
+extern crate thiserror;
 
 extern crate either;
 extern crate fnv;
