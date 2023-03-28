@@ -1,4 +1,4 @@
-# Copyright (C) 2017 The Libphonenumber Authors
+# Copyright (C) 2021 The Libphonenumber Authors
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Source: www.arcep.fr
+# https://www.itu.int/oth/T0202000077/en
 
-50840|Globaltel
-50842|Orange
-50843|Diabolocom
-50844|Globaltel
-50850|Keyyo
-50855|SPM Telecom
-50856|Kav El International
+96121|Beirut
+96124|Metn
+96125|Chouf
+96126|North Lebanon
+96127|South Lebanon
+96128|Bekaa
+96129|Jbeil & Keserwan
