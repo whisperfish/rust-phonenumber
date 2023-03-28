@@ -39,9 +39,6 @@ extern crate doc_comment;
 #[cfg(test)]
 doctest!("../README.md");
 
-#[macro_use]
-mod helper;
-
 /// Errors for various parts of the crate.
 mod error;
 pub use crate::error::{Metadata as MetadataError, Parse as ParseError};

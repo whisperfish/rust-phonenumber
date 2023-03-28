@@ -187,11 +187,11 @@ impl PhoneNumber {
     /// use phonenumber::{self, country, Mode};
     ///
     /// let number = phonenumber::parse(Some(country::DE), "301/23456").unwrap()
-    /// 	.format().mode(Mode::National).to_string();
+    ///     .format().mode(Mode::National).to_string();
     ///
     /// assert_eq!("030 123456", number);
     /// ```
-    pub fn format<'n>(&'n self) -> formatter::Formatter<'n, 'static, 'static> {
+    pub fn format(&self) -> formatter::Formatter<'_, 'static, 'static> {
         formatter::format(self)
     }
 
@@ -206,10 +206,8 @@ impl PhoneNumber {
     /// Get the metadata that applies to this phone number from the given
     /// database.
     pub fn metadata<'a>(&self, database: &'a Database) -> Option<&'a Metadata> {
-        match try_opt!(None; validator::source_for(database, self.code.value(), &self.national.to_string()))
-        {
+        match validator::source_for(database, self.code.value(), &self.national.to_string())? {
             Left(region) => database.by_id(region.as_ref()),
-
             Right(code) => database.by_code(&code).and_then(|m| m.into_iter().next()),
         }
     }
@@ -231,7 +229,7 @@ impl<'a> Country<'a> {
     }
 
     pub fn id(&self) -> Option<country::Id> {
-        self.0.metadata(&*DATABASE).map(|m| m.id().parse().unwrap())
+        self.0.metadata(&DATABASE).map(|m| m.id().parse().unwrap())
     }
 }
 

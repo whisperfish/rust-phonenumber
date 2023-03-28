@@ -27,7 +27,7 @@ fn main() {
     .expect("failed to load metadata");
 
     let mut out = BufWriter::new(
-        File::create(&Path::new(&env::var("OUT_DIR").unwrap()).join("database.bin"))
+        File::create(Path::new(&env::var("OUT_DIR").unwrap()).join("database.bin"))
             .expect("could not create database file"),
     );
 

@@ -70,9 +70,9 @@ impl Code {
     }
 }
 
-impl Into<u16> for Code {
-    fn into(self) -> u16 {
-        self.value
+impl From<Code> for u16 {
+    fn from(code: Code) -> u16 {
+        code.value
     }
 }
 

@@ -18,6 +18,7 @@ pub use self::format::Format;
 mod descriptor;
 pub use self::descriptor::Descriptor;
 
+#[allow(clippy::module_inception)]
 mod metadata;
 pub use self::metadata::{Descriptors, Metadata};
 

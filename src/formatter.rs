@@ -74,9 +74,9 @@ impl<'n, 'd, 'f> Formatter<'n, 'd, 'f> {
 }
 
 /// Create a new `Formatter` for the given phone number.
-pub fn format<'n>(number: &'n PhoneNumber) -> Formatter<'n, 'static, 'static> {
+pub fn format(number: &PhoneNumber) -> Formatter<'_, 'static, 'static> {
     Formatter {
-        number: number,
+        number,
         database: None,
         mode: Mode::E164,
         format: None,
@@ -90,7 +90,7 @@ pub fn format_with<'d, 'n>(
     number: &'n PhoneNumber,
 ) -> Formatter<'n, 'd, 'static> {
     Formatter {
-        number: number,
+        number,
         database: Some(database),
         mode: Mode::E164,
         format: None,
@@ -99,12 +99,14 @@ pub fn format_with<'d, 'n>(
 
 impl<'n, 'd, 'f> fmt::Display for Formatter<'n, 'd, 'f> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let db = self.database.unwrap_or(&*DATABASE);
+        let db = self.database.unwrap_or(&DATABASE);
 
         // If the country code is invalid, return an error.
-        let meta = try_opt!(Err(fmt::Error);
-			db.by_code(&self.number.country().code()).map(|m|
-				m.into_iter().next().unwrap()));
+        let meta = db
+            .by_code(&self.number.country().code())
+            .map(|m| m.into_iter().next())
+            .flatten()
+            .ok_or(fmt::Error)?;
 
         let national = self.number.national().to_string();
         let formatter = self.format.or_else(|| {
@@ -212,18 +214,16 @@ fn formatter<'a>(number: &str, formats: &'a [Format]) -> Option<&'a Format> {
             || leading
                 .last()
                 .unwrap()
-                .find(&number)
+                .find(number)
                 .map(|m| m.start() == 0)
                 .unwrap_or(false)
+                && format
+                    .pattern()
+                    .find(number)
+                    .map(|m| m.start() == 0 && m.end() == number.len())
+                    .unwrap_or(false)
         {
-            if format
-                .pattern()
-                .find(&number)
-                .map(|m| m.start() == 0 && m.end() == number.len())
-                .unwrap_or(false)
-            {
-                return Some(format);
-            }
+            return Some(format);
         }
     }
 
@@ -243,13 +243,13 @@ fn replace(
             national,
             &*if let Some(transform) = transform {
                 let first = consts::FIRST_GROUP
-                    .captures(&formatter.format())
+                    .captures(formatter.format())
                     .unwrap()
                     .get(1)
                     .unwrap()
                     .as_str();
                 let format = transform.replace(*consts::NP, meta.national_prefix().unwrap_or(""));
-                let format = format.replace(*consts::FG, &*format!("${}", first));
+                let format = format.replace(*consts::FG, &format!("${}", first));
                 let format = format.replace(*consts::CC, carrier.unwrap_or(""));
 
                 consts::FIRST_GROUP.replace(formatter.format(), &*format)

@@ -6,7 +6,7 @@ use phonenumber::Mode;
 fn main() {
     let mut args = env::args().skip(1).collect::<Vec<_>>();
 
-    if args.len() < 1 {
+    if args.is_empty() {
         panic!("not enough arguments");
     }
 

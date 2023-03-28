@@ -50,9 +50,9 @@ impl NationalNumber {
     }
 }
 
-impl Into<u64> for NationalNumber {
-    fn into(self) -> u64 {
-        self.value
+impl From<NationalNumber> for u64 {
+    fn from(n: NationalNumber) -> u64 {
+        n.value
     }
 }
 

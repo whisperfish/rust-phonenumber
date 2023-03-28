@@ -115,7 +115,7 @@ pub fn ignore_plus(i: &str) -> IResult<&str, &str> {
 /// x302 and (530) 583-6985 x2303. We remove the second extension so that the
 /// first number is parsed correctly.
 pub fn extract(value: &str) -> IResult<&str, &str> {
-    let (mut result, start) = if let Some(index) = consts::VALID_START_CHAR.find(&value) {
+    let (mut result, start) = if let Some(index) = consts::VALID_START_CHAR.find(value) {
         (&value[index.start()..], index.start())
     } else {
         return Err(nom::Err::Error(make_error(value, ErrorKind::RegexpMatch)));
@@ -130,7 +130,7 @@ pub fn extract(value: &str) -> IResult<&str, &str> {
     }
 
     if result.is_empty() {
-        return Err(nom::Err::Error(make_error(value, ErrorKind::RegexpMatch)));
+        Err(nom::Err::Error(make_error(value, ErrorKind::RegexpMatch)))
     } else {
         Ok((&value[start + result.len()..], result))
     }
@@ -153,7 +153,7 @@ pub fn country_code<'a>(
         // from the number already.
         country::Source::Plus | country::Source::Idd | country::Source::Number => {
             if number.national.len() <= consts::MIN_LENGTH_FOR_NSN {
-                return Err(error::Parse::TooShortNsn.into());
+                return Err(error::Parse::TooShortNsn);
             }
 
             // If the prefix was already extracted, check it is valid.
@@ -161,7 +161,7 @@ pub fn country_code<'a>(
                 let prefix = number.prefix.as_ref().unwrap().parse()?;
 
                 if database.by_code(&prefix).is_none() {
-                    return Err(error::Parse::InvalidCountryCode.into());
+                    return Err(error::Parse::InvalidCountryCode);
                 } else {
                     return Ok(number);
                 }
@@ -169,7 +169,7 @@ pub fn country_code<'a>(
                 // Check the possible country code does not start with a 0 since those
                 // are invalid.
                 if number.national.starts_with('0') {
-                    return Err(error::Parse::InvalidCountryCode.into());
+                    return Err(error::Parse::InvalidCountryCode);
                 }
 
                 // Try to find the first available country code.
@@ -206,7 +206,7 @@ pub fn country_code<'a>(
         }
     }
 
-    Err(error::Parse::InvalidCountryCode.into())
+    Err(error::Parse::InvalidCountryCode)
 }
 
 /// Strip the IDD from a `Number`, update the country code source, and
@@ -309,15 +309,11 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
             return number;
         }
 
-        if groups > 0 && last.is_some() {
-            number.carrier = Some(last.unwrap().into());
-        }
+        number.carrier = last.filter(|_| groups > 0).map(Into::into);
 
         number.national = trim(number.national, end);
-    } else {
-        let transformed = parsing
-            .replace(&number.national, &**transform.unwrap())
-            .into_owned();
+    } else if let Some(transform) = transform {
+        let transformed = parsing.replace(&number.national, transform).into_owned();
 
         if viable && !meta.descriptors.general.is_match(&transformed) {
             return number;
@@ -351,7 +347,7 @@ pub fn normalize<'a>(mut number: Number<'a>, mappings: &FnvHashMap<char, char>) 
                         string.push(ch);
                     }
 
-                    while let Some((_, ch)) = chars.next() {
+                    for (_, ch) in chars.by_ref() {
                         if let Some(ch) = ch.as_dec_digit() {
                             string.push(ch);
                         } else if let Some(&ch) = mappings.get(&ch) {
@@ -385,6 +381,7 @@ pub fn trim(value: Cow<str>, start: usize) -> Cow<str> {
     }
 }
 
+#[allow(clippy::wrong_self_convention)]
 pub trait AsCharExt {
     fn is_wide_digit(self) -> bool;
     fn is_punctuation(self) -> bool;
@@ -397,8 +394,7 @@ pub trait AsCharExt {
 
 impl<T: AsChar> AsCharExt for T {
     fn is_wide_digit(self) -> bool {
-        let ch = self.as_char();
-        ch >= '０' && ch <= '９'
+        self.as_char().is_ascii_digit()
     }
 
     fn is_punctuation(self) -> bool {
@@ -527,7 +523,7 @@ mod test {
             helper::extract("Num-\u{FF11}\u{FF12}\u{FF13}").unwrap().1
         );
         // If not possible number present, return empty string.
-        assert!(!helper::extract("Num-....").is_ok());
+        assert!(helper::extract("Num-....").is_err());
         // Leading brackets are stripped - these are not used when parsing.
         assert_eq!(
             "650) 253-0000",
@@ -561,7 +557,7 @@ mod test {
                 ..Default::default()
             },
             helper::country_code(
-                &*DATABASE,
+                &DATABASE,
                 Some(country::US),
                 Number {
                     national: "011112-3456789".into(),
@@ -581,7 +577,7 @@ mod test {
                 ..Default::default()
             },
             helper::country_code(
-                &*DATABASE,
+                &DATABASE,
                 Some(country::US),
                 Number {
                     national: "+6423456789".into(),
@@ -601,7 +597,7 @@ mod test {
                 ..Default::default()
             },
             helper::country_code(
-                &*DATABASE,
+                &DATABASE,
                 Some(country::US),
                 Number {
                     national: "+80012345678".into(),
@@ -621,7 +617,7 @@ mod test {
                 ..Default::default()
             },
             helper::country_code(
-                &*DATABASE,
+                &DATABASE,
                 Some(country::US),
                 Number {
                     national: "2345-6789".into(),
@@ -633,7 +629,7 @@ mod test {
         );
 
         assert!(helper::country_code(
-            &*DATABASE,
+            &DATABASE,
             Some(country::US),
             Number {
                 national: "0119991123456789".into(),
@@ -652,7 +648,7 @@ mod test {
                 ..Default::default()
             },
             helper::country_code(
-                &*DATABASE,
+                &DATABASE,
                 Some(country::US),
                 Number {
                     national: "(1 610) 619 4466".into(),
@@ -672,7 +668,7 @@ mod test {
                 ..Default::default()
             },
             helper::country_code(
-                &*DATABASE,
+                &DATABASE,
                 Some(country::IT),
                 Number {
                     national: "393298888888".into(),

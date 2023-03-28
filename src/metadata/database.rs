@@ -89,7 +89,7 @@ impl Database {
                                 name: "national_number".into(),
                             })
                         })
-                        .and_then(&regex)?,
+                        .and_then(regex)?,
 
                     possible_length: desc.possible_length,
                     possible_local_length: desc.possible_local_length,
@@ -107,7 +107,7 @@ impl Database {
                             name: "pattern".into(),
                         })
                     })
-                    .and_then(&regex)?,
+                    .and_then(regex)?,
 
                 format: format.format.ok_or_else(|| {
                     error::LoadMetadata::from(error::Metadata::MissingValue {
@@ -139,21 +139,21 @@ impl Database {
                         })
                     })?)?,
 
-                    fixed_line: tranpose(meta.fixed_line.map(&descriptor))?,
-                    mobile: tranpose(meta.mobile.map(&descriptor))?,
-                    toll_free: tranpose(meta.toll_free.map(&descriptor))?,
-                    premium_rate: tranpose(meta.premium_rate.map(&descriptor))?,
-                    shared_cost: tranpose(meta.shared_cost.map(&descriptor))?,
-                    personal_number: tranpose(meta.personal_number.map(&descriptor))?,
-                    voip: tranpose(meta.voip.map(&descriptor))?,
-                    pager: tranpose(meta.pager.map(&descriptor))?,
-                    uan: tranpose(meta.uan.map(&descriptor))?,
-                    emergency: tranpose(meta.emergency.map(&descriptor))?,
-                    voicemail: tranpose(meta.voicemail.map(&descriptor))?,
-                    short_code: tranpose(meta.short_code.map(&descriptor))?,
-                    standard_rate: tranpose(meta.standard_rate.map(&descriptor))?,
-                    carrier: tranpose(meta.carrier.map(&descriptor))?,
-                    no_international: tranpose(meta.no_international.map(&descriptor))?,
+                    fixed_line: tranpose(meta.fixed_line.map(descriptor))?,
+                    mobile: tranpose(meta.mobile.map(descriptor))?,
+                    toll_free: tranpose(meta.toll_free.map(descriptor))?,
+                    premium_rate: tranpose(meta.premium_rate.map(descriptor))?,
+                    shared_cost: tranpose(meta.shared_cost.map(descriptor))?,
+                    personal_number: tranpose(meta.personal_number.map(descriptor))?,
+                    voip: tranpose(meta.voip.map(descriptor))?,
+                    pager: tranpose(meta.pager.map(descriptor))?,
+                    uan: tranpose(meta.uan.map(descriptor))?,
+                    emergency: tranpose(meta.emergency.map(descriptor))?,
+                    voicemail: tranpose(meta.voicemail.map(descriptor))?,
+                    short_code: tranpose(meta.short_code.map(descriptor))?,
+                    standard_rate: tranpose(meta.standard_rate.map(descriptor))?,
+                    carrier: tranpose(meta.carrier.map(descriptor))?,
+                    no_international: tranpose(meta.no_international.map(descriptor))?,
                 },
 
                 id: meta.id.ok_or_else(|| {
@@ -170,13 +170,11 @@ impl Database {
                     })
                 })?,
 
-                international_prefix: tranpose(meta.international_prefix.map(&regex))?,
+                international_prefix: tranpose(meta.international_prefix.map(regex))?,
                 preferred_international_prefix: meta.preferred_international_prefix,
                 national_prefix: meta.national_prefix,
                 preferred_extension_prefix: meta.preferred_extension_prefix,
-                national_prefix_for_parsing: tranpose(
-                    meta.national_prefix_for_parsing.map(&regex),
-                )?,
+                national_prefix_for_parsing: tranpose(meta.national_prefix_for_parsing.map(regex))?,
                 national_prefix_transform_rule: meta.national_prefix_transform_rule,
 
                 formats: meta
@@ -191,7 +189,7 @@ impl Database {
                     .collect::<Result<_, _>>()?,
 
                 main_country_for_code: meta.main_country_for_code,
-                leading_digits: tranpose(meta.leading_digits.map(&regex))?,
+                leading_digits: tranpose(meta.leading_digits.map(regex))?,
                 mobile_number_portable: meta.mobile_number_portable,
             })
         };
@@ -220,9 +218,9 @@ impl Database {
 
         Ok(Database {
             cache: cache.clone(),
-            by_id: by_id,
-            by_code: by_code,
-            regions: regions,
+            by_id,
+            by_code,
+            regions,
         })
     }
 

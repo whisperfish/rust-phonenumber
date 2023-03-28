@@ -168,9 +168,9 @@ fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, erro
     }
 }
 
-fn territory<'a, R: BufRead>(
+fn territory<R: BufRead>(
     reader: &mut Reader<R>,
-    e: &events::BytesStart<'a>,
+    e: &events::BytesStart<'_>,
 ) -> Result<Metadata, error::LoadMetadata> {
     let mut buffer = Vec::new();
     let mut meta = Metadata::default();
@@ -470,11 +470,11 @@ fn formats<R: BufRead>(
     }
 }
 
-fn format<'a, R: BufRead>(
+fn format<R: BufRead>(
     reader: &mut Reader<R>,
     meta: &Metadata,
     name: &[u8],
-    e: &events::BytesStart<'a>,
+    e: &events::BytesStart<'_>,
 ) -> Result<(Format, Option<Format>), error::LoadMetadata> {
     let mut buffer = Vec::new();
 
@@ -578,9 +578,10 @@ fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<(), error::
         match reader.read_event_into(&mut buffer)? {
             Event::Text(_) | Event::Comment(_) | Event::Empty(_) => (),
 
-            Event::Start(ref e) => match e.name().into_inner() {
-                name => ignore(reader, name)?,
-            },
+            Event::Start(ref e) => {
+                let name = e.name().into_inner();
+                ignore(reader, name)?
+            }
 
             Event::End(ref e) if e.name().into_inner() == name => return Ok(()),
 

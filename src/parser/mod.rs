@@ -35,7 +35,7 @@ pub fn parse<S: AsRef<str>>(
     country: Option<country::Id>,
     string: S,
 ) -> Result<PhoneNumber, error::Parse> {
-    parse_with(&*DATABASE, country, string)
+    parse_with(&DATABASE, country, string)
 }
 
 /// Parse a phone number using a specific `Database`.
@@ -71,11 +71,11 @@ pub fn parse_with<S: AsRef<str>>(
     }
 
     if number.national.len() < consts::MIN_LENGTH_FOR_NSN {
-        return Err(error::Parse::TooShortNsn.into());
+        return Err(error::Parse::TooShortNsn);
     }
 
     if number.national.len() > consts::MAX_LENGTH_FOR_NSN {
-        return Err(error::Parse::TooLong.into());
+        return Err(error::Parse::TooLong);
     }
 
     Ok(PhoneNumber {
