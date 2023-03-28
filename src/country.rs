@@ -14,6 +14,7 @@
 
 //! Country related types.
 
+use crate::error;
 use std::str;
 
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
@@ -329,9 +330,9 @@ pub enum Id {
 pub use self::Id::*;
 
 impl str::FromStr for Id {
-    type Err = ();
+    type Err = error::Parse;
 
-    fn from_str(value: &str) -> Result<Id, ()> {
+    fn from_str(value: &str) -> Result<Id, error::Parse> {
         match value {
             "AC" => Ok(Id::AC),
             "AD" => Ok(Id::AD),
@@ -578,7 +579,7 @@ impl str::FromStr for Id {
             "ZA" => Ok(Id::ZA),
             "ZM" => Ok(Id::ZM),
             "ZW" => Ok(Id::ZW),
-            _ => Err(()),
+            _ => Err(error::Parse::InvalidCountryCode),
         }
     }
 }
