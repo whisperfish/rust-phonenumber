@@ -29,6 +29,7 @@
 7708|Altel
 774|Tele2
 7760|Kulan
+7761|Tele2
 7762|Nursat
 7763|Arna
 7764|2Day Telecom
@@ -133,6 +134,8 @@
 79010134|Tele2
 79010135|Tele2
 79010136|Tele2
+79010138|Multiregional Transit Telecom (MTT)
+79010139|Multiregional Transit Telecom (MTT)
 7901014|Tele2
 7901015|Tele2
 7901016|Tele2
@@ -174,6 +177,7 @@
 7901150|Tele2
 7901151|Sberbank-Telecom
 7901152|MTS
+7901155|Tele2
 7901156|Tele2
 7901157|Tele2
 7901158|Apex Telecom

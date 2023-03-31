@@ -59,16 +59,29 @@
 124272|BaTelCo
 124273|aliv
 12428|aliv
-124623|LIME
-124624|LIME
-124625|LIME
+124623|Cable & Wireless
+124624|Cable & Wireless
+124625|Cable & Wireless
 1246256|Digicel
 1246257|Digicel
 1246258|Digicel
 1246259|Digicel
 124626|Digicel
 124628|Cable & Wireless
+124635|Cable & Wireless
+1246360|Cable & Wireless
+1246361|Cable & Wireless
+1246362|Cable & Wireless
+1246363|Cable & Wireless
+1246364|Cable & Wireless
+1246365|Cable & Wireless
+1246366|Cable & Wireless
+1246446|Neptune Communications
 124645|Sunbeach Communications
+12465211|Digicel
+12465214|LIME
+12465217|KW Telecommunications
+1246522|Ozone
 124669|Ozone
 12468|Digicel
 1264469|Cable & Wireless
@@ -123,6 +136,7 @@
 134554|Digicel
 134555|Digicel
 1345649|Digicel
+134582|Logic Communications
 1345919|Cable & Wireless
 1345930|LIME
 1345936|Cable & Wireless
@@ -139,6 +153,7 @@
 144159|Digicel Bermuda
 14417|Cellular One
 14418|Cellular One
+14419|Deltronics
 1473402|Affordable Island Communications
 147341|Digicel Grenada
 147342|Digicel Grenada
@@ -168,7 +183,13 @@
 166434|Cable & Wireless
 166439|Digicel
 1670284|PTI PACIFICA
-167148|GTA
+1671480|GTA
+1671482|GTA
+1671483|GTA
+1671486|GTA
+1671487|GTA
+1671488|GTA
+1671489|GTA
 167174|PTI PACIFICA
 167183|i CAN_GSM
 167184|i CAN_GSM
@@ -484,9 +505,8 @@
 180997|Orange
 180998|Orange
 180999|Tricom
-1868263|Digicel
-1868264|Digicel
-1868265|Digicel
+186825|Digicel
+186826|Digicel
 1868266|bmobile
 1868267|bmobile
 1868268|bmobile
@@ -495,7 +515,11 @@
 186828|bmobile
 186829|bmobile
 18683|Digicel
-18684|bmobile
+186843|Digicel
+186846|bmobile
+186847|bmobile
+186848|bmobile
+186849|bmobile
 1868620|bmobile
 1868678|bmobile
 186868|bmobile
@@ -517,6 +541,7 @@
 1869764|Digicel
 1869765|Digicel
 1869766|Digicel
+187620|Cable & Wireless
 1876210|Cable & Wireless
 187622|Cable & Wireless
 187623|Cable & Wireless
@@ -566,14 +591,10 @@
 187647|Digicel
 187648|Digicel
 187649|Digicel
+187650|Digicel
 1876501|Cable & Wireless
-1876503|Digicel
-1876504|Digicel
-1876505|Digicel
-1876506|Digicel
-1876507|Digicel
-1876508|Digicel
-1876509|Digicel
+1876502|C&W
+187651|C&W
 1876515|Cable & Wireless
 1876517|Cable & Wireless
 1876519|Cable & Wireless
@@ -589,15 +610,8 @@
 1876557|Digicel
 1876558|Digicel
 1876559|Digicel
-1876560|Digicel
-1876561|Digicel
-1876562|Digicel
-1876564|Digicel
-1876565|Digicel
-1876566|Digicel
-1876567|Digicel
-1876568|Digicel
-1876569|Digicel
+187656|Digicel
+1876563|C&W
 187657|Digicel
 187658|Digicel
 187659|Digicel
