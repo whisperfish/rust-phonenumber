@@ -1,39 +1,39 @@
 [package]
-name    = "phonenumber"
-version = "0.3.1+8.12.9"
+name = "phonenumber"
+version = "0.3.2+8.13.9"
 edition = "2021"
 rust-version = "1.58.0"
 
-authors = ["meh. <meh@1aim.com>"]
+authors = ["Gabriel Féron <g@leirbag.net>", "Ruben De Smet <ruben.de.smet@rubdos.be>", "meh. <meh@1aim.com>"]
 license = "Apache-2.0"
 
 description = "Library for parsing, formatting and validating international phone numbers."
-repository  = "https://github.com/1aim/rust-phonenumber"
-keywords    = ["phonenumber", "phone", "number", "parser", "formatter"]
+repository = "https://github.com/whisperfish/rust-phonenumber"
+keywords = ["phonenumber", "phone", "number", "parser", "formatter"]
 readme = "README.md"
 
 [dependencies]
-regex       = "1.7"
+regex = "1.7"
 regex-cache = "0.2"
 lazy_static = "1.4"
-fnv         = "1.0"
-thiserror   = "1.0"
-quick-xml   = "0.28"
-itertools   = "0.10"
-either      = "1.8"
-nom         = "7.1"
+fnv = "1.0"
+thiserror = "1.0"
+quick-xml = "0.28"
+itertools = "0.10"
+either = "1.8"
+nom = "7.1"
 
-serde        = "1.0"
+serde = "1.0"
 serde_derive = "1.0"
-bincode      = "1.3"
+bincode = "1.3"
 
 [build-dependencies]
-quick-xml    = "0.28"
-thiserror    = "1.0"
-regex        = "1.7"
-serde        = "1.0"
+quick-xml = "0.28"
+thiserror = "1.0"
+regex = "1.7"
+serde = "1.0"
 serde_derive = "1.0"
-bincode      = "1.3"
+bincode = "1.3"
 
 [dev-dependencies]
-doc-comment  = "0.3"
+doc-comment = "0.3"
