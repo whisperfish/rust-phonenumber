@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use nom::error::ErrorKind;
 use nom::IResult;
 
 use crate::consts;
@@ -20,6 +21,12 @@ use crate::parser::helper::*;
 pub fn phone_number(i: &str) -> IResult<&str, Number> {
     let (_, i) = extract(i)?;
     let extension = consts::EXTN_PATTERN.captures(i);
+
+    if let Some(c) = extension.as_ref() {
+        if c.get(0).is_none() || c.get(2).is_none() {
+            return Err(nom::Err::Failure(nom::error::Error::new(i, ErrorKind::Eof)));
+        }
+    }
 
     Ok((
         "",

@@ -286,4 +286,10 @@ mod test {
             parser::parse(Some(country::BR), "012 3121286979").unwrap()
         );
     }
+
+    #[test]
+    fn issue_43() {
+        let res = parser::parse(None, " 2 22#:");
+        assert!(res.is_err());
+    }
 }
