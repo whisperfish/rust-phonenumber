@@ -104,8 +104,7 @@ impl<'n, 'd, 'f> fmt::Display for Formatter<'n, 'd, 'f> {
         // If the country code is invalid, return an error.
         let meta = db
             .by_code(&self.number.country().code())
-            .map(|m| m.into_iter().next())
-            .flatten()
+            .and_then(|m| m.into_iter().next())
             .ok_or(fmt::Error)?;
 
         let national = self.number.national().to_string();
