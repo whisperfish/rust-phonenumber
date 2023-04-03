@@ -1,19 +1,22 @@
-phonenumber [![Crates.io](https://img.shields.io/crates/v/phonenumber.svg)](https://crates.io/crates/phonenumber) [![phonenumber](https://docs.rs/phonenumber/badge.svg)](https://docs.rs/phonenumber) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Build Status](https://travis-ci.org/1aim/rust-phonenumber.svg?branch=master)](https://travis-ci.org/1aim/rust-phonenumber)
-===========
-Rust version of [libphonenumber](https://github.com/googlei18n/libphonenumber)
-by Google.
+# phonenumber
 
-Usage
------
+![CI Build](https://github.com/whisperfish/presage/workflows/Build/badge.svg)
+[![Crates.io](https://img.shields.io/crates/v/phonenumber.svg)](https://crates.io/crates/phonenumber)
+[![phonenumber](https://docs.rs/phonenumber/badge.svg)](https://docs.rs/phonenumber)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+Rust version of [libphonenumber](https://github.com/googlei18n/libphonenumber).
+
+## Usage
+
 Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-phonenumber = "0.1"
+phonenumber = "0.3"
 ```
+## Example
 
-Example
--------
 The following example parses, validates and formats the given phone number.
 
 ```rust,no_run
