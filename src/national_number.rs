@@ -19,7 +19,25 @@ use std::fmt;
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 pub struct NationalNumber {
     pub(crate) value: u64,
+}
 
+impl NationalNumber {
+    pub fn new(value: u64, zeros: u8) -> Self {
+        // E.164 specifies a maximum of 15 decimals, which corresponds to slightly over 48.9 bits.
+        // 56 bits ought to cut it here.
+        assert!(value < (1 << 56), "number too long");
+        Self {
+            value: ((zeros as u64) << 56) | value,
+        }
+    }
+
+    /// The number without any leading zeroes.
+    pub fn value(&self) -> u64 {
+        self.value & 0x00ffffffffffffff
+    }
+
+    /// The number of leading zeroes.
+    ///
     /// In some countries, the national (significant) number starts with one or
     /// more "0"s without this being a national prefix or trunk code of some
     /// kind.  For example, the leading zero in the national (significant) number
@@ -36,18 +54,8 @@ pub struct NationalNumber {
     ///
     /// Clients who use the parsing or conversion functionality of the i18n phone
     /// number libraries will have these fields set if necessary automatically.
-    pub(crate) zeros: u8,
-}
-
-impl NationalNumber {
-    /// The number without any leading zeroes.
-    pub fn value(&self) -> u64 {
-        self.value
-    }
-
-    /// The number of leading zeroes.
     pub fn zeros(&self) -> u8 {
-        self.zeros
+        (self.value >> 56) as u8
     }
 }
 
@@ -59,10 +67,10 @@ impl From<NationalNumber> for u64 {
 
 impl fmt::Display for NationalNumber {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for _ in 0..self.zeros {
+        for _ in 0..self.zeros() {
             write!(f, "0")?;
         }
 
-        write!(f, "{}", self.value)
+        write!(f, "{}", self.value())
     }
 }
