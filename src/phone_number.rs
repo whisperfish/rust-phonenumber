@@ -244,7 +244,7 @@ impl<'a> Deref for Country<'a> {
 #[cfg(test)]
 mod test {
     use crate::country::{self, *};
-    use crate::{parser, PhoneNumber};
+    use crate::{parser, Mode, PhoneNumber};
     use anyhow::Context;
     use rstest::rstest;
     use rstest_reuse::{self, *};
@@ -275,6 +275,22 @@ mod test {
                 "Phone number {number} has no associated country code id"
             ))?
         );
+
+        Ok(())
+    }
+
+    #[apply(phone_numbers)]
+    #[ignore]
+    // Format-parse roundtrip
+    fn round_trip_parsing(
+        #[case] number: PhoneNumber,
+        #[case] _country: country::Id,
+        #[values(Mode::International, Mode::E164)] mode: Mode,
+    ) -> anyhow::Result<()> {
+        let formatted = number.format().mode(mode).to_string();
+        parser::parse(None, &formatted).with_context(|| {
+            format!("parsing {number} after formatting in {mode:?} mode as {formatted}")
+        })?;
 
         Ok(())
     }
