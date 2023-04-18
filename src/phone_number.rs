@@ -244,27 +244,34 @@ impl<'a> Deref for Country<'a> {
 #[cfg(test)]
 mod test {
     use crate::country::{self, *};
-    use crate::parser;
+    use crate::{parser, PhoneNumber};
     use anyhow::Context;
     use rstest::rstest;
     use rstest_reuse::{self, *};
 
+    fn parsed(number: &str) -> PhoneNumber {
+        parser::parse(None, number)
+            .with_context(|| format!("parsing {number}"))
+            .unwrap()
+    }
+
     #[template]
     #[rstest]
-    #[case("+61406823897", AU)]
-    #[case("+34666777888", ES)]
-    #[case("+13459492311", KY)]
-    #[case("+16137827274", CA)]
-    #[case("+1 520 878 2491", US)]
-    fn phone_numbers(#[case] number: &str, #[case] country: country::Id) {}
+    #[case(parsed("+61406823897"), AU)]
+    #[case(parsed("+32474091150"), BE)]
+    #[case(parsed("+34666777888"), ES)]
+    #[case(parsed("+13459492311"), KY)]
+    #[case(parsed("+16137827274"), CA)]
+    #[case(parsed("+1 520 878 2491"), US)]
+    #[case(parsed("+1-520-878-2491"), US)]
+    fn phone_numbers(#[case] number: PhoneNumber, #[case] country: country::Id) {}
 
     #[apply(phone_numbers)]
-    fn country_id(#[case] number: &str, #[case] country: country::Id) -> anyhow::Result<()> {
-        let pn = parser::parse(None, number).with_context(|| format!("parsing {number}"))?;
+    fn country_id(#[case] number: PhoneNumber, #[case] country: country::Id) -> anyhow::Result<()> {
         assert_eq!(
             country,
-            pn.country().id().ok_or_else(|| anyhow::anyhow!(
-                "Phone number {pn} (parsed from {number}) has no associated country code id"
+            number.country().id().ok_or_else(|| anyhow::anyhow!(
+                "Phone number {number} has no associated country code id"
             ))?
         );
 
