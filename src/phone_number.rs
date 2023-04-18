@@ -294,9 +294,14 @@ mod test {
         };
 
         let formatted = number.format().mode(mode).to_string();
-        parser::parse(country_hint, &formatted).with_context(|| {
+        let parsed = parser::parse(country_hint, &formatted).with_context(|| {
             format!("parsing {number} after formatting in {mode:?} mode as {formatted}")
         })?;
+
+        // impl Eq for PhoneNumber does not consider differently parsed phone numbers to be equal.
+        // E.g., parsing 047409110 with BE country hint is the same phone number as +32474091150,
+        // but Eq considers them different.
+        assert_eq!(number, parsed);
 
         Ok(())
     }
