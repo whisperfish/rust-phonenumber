@@ -37,3 +37,6 @@ thiserror = "1.0"
 
 [dev-dependencies]
 doc-comment = "0.3"
+rstest = "0.17"
+rstest_reuse = "0.5"
+anyhow = "1"

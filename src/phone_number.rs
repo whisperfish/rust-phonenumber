@@ -243,45 +243,31 @@ impl<'a> Deref for Country<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::country;
+    use crate::country::{self, *};
     use crate::parser;
+    use anyhow::Context;
+    use rstest::rstest;
+    use rstest_reuse::{self, *};
 
-    #[test]
-    fn country_id() {
+    #[template]
+    #[rstest]
+    #[case("+61406823897", AU)]
+    #[case("+34666777888", ES)]
+    #[case("+13459492311", KY)]
+    #[case("+16137827274", CA)]
+    #[case("+1 520 878 2491", US)]
+    fn phone_numbers(#[case] number: &str, #[case] country: country::Id) {}
+
+    #[apply(phone_numbers)]
+    fn country_id(#[case] number: &str, #[case] country: country::Id) -> anyhow::Result<()> {
+        let pn = parser::parse(None, number).with_context(|| format!("parsing {number}"))?;
         assert_eq!(
-            country::AU,
-            parser::parse(None, "+61406823897")
-                .unwrap()
-                .country()
-                .id()
-                .unwrap()
+            country,
+            pn.country().id().ok_or_else(|| anyhow::anyhow!(
+                "Phone number {pn} (parsed from {number}) has no associated country code id"
+            ))?
         );
 
-        assert_eq!(
-            country::ES,
-            parser::parse(None, "+34666777888")
-                .unwrap()
-                .country()
-                .id()
-                .unwrap()
-        );
-
-        assert_eq!(
-            country::KY,
-            parser::parse(None, "+13459492311")
-                .unwrap()
-                .country()
-                .id()
-                .unwrap()
-        );
-
-        assert_eq!(
-            country::CA,
-            parser::parse(None, "+16137827274")
-                .unwrap()
-                .country()
-                .id()
-                .unwrap()
-        );
+        Ok(())
     }
 }
