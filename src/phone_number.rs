@@ -284,11 +284,17 @@ mod test {
     // Format-parse roundtrip
     fn round_trip_parsing(
         #[case] number: PhoneNumber,
-        #[case] _country: country::Id,
-        #[values(Mode::International, Mode::E164)] mode: Mode,
+        #[case] country: country::Id,
+        #[values(Mode::International, Mode::E164, Mode::Rfc3966, Mode::National)] mode: Mode,
     ) -> anyhow::Result<()> {
+        let country_hint = if mode == Mode::National {
+            Some(country)
+        } else {
+            None
+        };
+
         let formatted = number.format().mode(mode).to_string();
-        parser::parse(None, &formatted).with_context(|| {
+        parser::parse(country_hint, &formatted).with_context(|| {
             format!("parsing {number} after formatting in {mode:?} mode as {formatted}")
         })?;
 
