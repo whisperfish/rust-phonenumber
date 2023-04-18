@@ -264,6 +264,7 @@ mod test {
     #[case(parsed("+16137827274"), CA)]
     #[case(parsed("+1 520 878 2491"), US)]
     #[case(parsed("+1-520-878-2491"), US)]
+    // #[case(parsed("+1 520-878-2491"), US)]
     fn phone_numbers(#[case] number: PhoneNumber, #[case] country: country::Id) {}
 
     #[apply(phone_numbers)]
