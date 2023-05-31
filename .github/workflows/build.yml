@@ -41,6 +41,12 @@ jobs:
           command: test
           args: --all-targets
 
+      - name: Generate code coverage
+        uses: actions-rs/grcov@v0.1
+
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
+
   rustfmt:
     name: rustfmt
     runs-on: ubuntu-latest
