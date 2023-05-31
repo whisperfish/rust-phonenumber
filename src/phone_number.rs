@@ -250,10 +250,7 @@ mod test {
     fn country_id() {
         assert_eq!(
             None,
-            parser::parse(None, "+80012340000")
-                .unwrap()
-                .country()
-                .id()
+            parser::parse(None, "+80012340000").unwrap().country().id()
         );
 
         assert_eq!(
