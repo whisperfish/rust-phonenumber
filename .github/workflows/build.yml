@@ -15,17 +15,27 @@ concurrency:
 
 jobs:
   build_and_test:
-    name: cargo build
+    name: cargo test
     runs-on: ubuntu-latest
     env:
       RUSTFLAGS: -D warnings
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: ["stable", "beta"]
+        coverage: [false]
+        include:
+          - toolchain: "nightly"
+            coverage: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      
-      - name: Setup Rust toolchain
-        run: rustup install stable
-      
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+
       - name: Configure CI cache
         uses: Swatinem/rust-cache@v2
 
@@ -34,7 +44,7 @@ jobs:
         with:
           command: build
           args: --all-targets
-      
+
       - name: Run tests
         uses: actions-rs/cargo@v1
         with:
@@ -43,9 +53,11 @@ jobs:
 
       - name: Generate code coverage
         uses: actions-rs/grcov@v0.1
+        if: ${{ matrix.coverage }}
 
       - name: Upload coverage reports to Codecov with GitHub Action
         uses: codecov/codecov-action@v3
+        if: ${{ matrix.coverage }}
 
   rustfmt:
     name: rustfmt
