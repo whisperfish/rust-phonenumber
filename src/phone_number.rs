@@ -221,6 +221,14 @@ impl PhoneNumber {
     pub fn is_valid_with(&self, database: &Database) -> bool {
         validator::is_valid_with(database, self)
     }
+
+    /// Determine the [`Type`] of the phone number.
+    pub fn number_type(&self, database: &Database) -> Type {
+        match self.metadata(database) {
+            Some(metatdata) => validator::number_type(metatdata, &self.national.value.to_string()),
+            None => Type::Unknown,
+        }
+    }
 }
 
 impl<'a> Country<'a> {
