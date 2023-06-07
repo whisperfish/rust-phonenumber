@@ -229,7 +229,7 @@ impl<'a> Country<'a> {
     }
 
     pub fn id(&self) -> Option<country::Id> {
-        self.0.metadata(&DATABASE).map(|m| m.id().parse().unwrap())
+        self.0.metadata(&DATABASE).and_then(|m| m.id().parse().ok())
     }
 }
 
@@ -248,6 +248,11 @@ mod test {
 
     #[test]
     fn country_id() {
+        assert_eq!(
+            None,
+            parser::parse(None, "+80012340000").unwrap().country().id()
+        );
+
         assert_eq!(
             country::AU,
             parser::parse(None, "+61406823897")
