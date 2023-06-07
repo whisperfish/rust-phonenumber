@@ -225,7 +225,7 @@ impl PhoneNumber {
     /// Determine the [`Type`] of the phone number.
     pub fn number_type(&self, database: &Database) -> Type {
         match self.metadata(database) {
-            Some(metatdata) => validator::number_type(metatdata, &self.national.value.to_string()),
+            Some(metadata) => validator::number_type(metadata, &self.national.value.to_string()),
             None => Type::Unknown,
         }
     }
