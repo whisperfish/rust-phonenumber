@@ -221,6 +221,14 @@ impl PhoneNumber {
     pub fn is_valid_with(&self, database: &Database) -> bool {
         validator::is_valid_with(database, self)
     }
+
+    /// Determine the [`Type`] of the phone number.
+    pub fn number_type(&self, database: &Database) -> Type {
+        match self.metadata(database) {
+            Some(metadata) => validator::number_type(metadata, &self.national.value.to_string()),
+            None => Type::Unknown,
+        }
+    }
 }
 
 impl<'a> Country<'a> {
@@ -244,7 +252,9 @@ impl<'a> Deref for Country<'a> {
 #[cfg(test)]
 mod test {
     use crate::country;
+    use crate::metadata::DATABASE;
     use crate::parser;
+    use crate::Type;
 
     #[test]
     fn country_id() {
@@ -287,6 +297,30 @@ mod test {
                 .country()
                 .id()
                 .unwrap()
+        );
+    }
+
+    #[test]
+    fn number_type() {
+        assert_eq!(
+            Type::FixedLine,
+            parser::parse(None, "+441212345678")
+                .unwrap()
+                .number_type(&DATABASE)
+        );
+
+        assert_eq!(
+            Type::Mobile,
+            parser::parse(None, "+34612345678")
+                .unwrap()
+                .number_type(&DATABASE)
+        );
+
+        assert_eq!(
+            Type::PremiumRate,
+            parser::parse(None, "+611900123456")
+                .unwrap()
+                .number_type(&DATABASE)
         );
     }
 }
