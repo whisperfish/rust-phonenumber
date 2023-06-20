@@ -221,6 +221,14 @@ impl PhoneNumber {
     pub fn is_valid_with(&self, database: &Database) -> bool {
         validator::is_valid_with(database, self)
     }
+
+    /// Determine the [`Type`] of the phone number.
+    pub fn number_type(&self, database: &Database) -> Type {
+        match self.metadata(database) {
+            Some(metadata) => validator::number_type(metadata, &self.national.value.to_string()),
+            None => Type::Unknown,
+        }
+    }
 }
 
 impl<'a> Country<'a> {
@@ -229,7 +237,7 @@ impl<'a> Country<'a> {
     }
 
     pub fn id(&self) -> Option<country::Id> {
-        self.0.metadata(&DATABASE).map(|m| m.id().parse().unwrap())
+        self.0.metadata(&DATABASE).and_then(|m| m.id().parse().ok())
     }
 }
 
@@ -244,6 +252,8 @@ impl<'a> Deref for Country<'a> {
 #[cfg(test)]
 mod test {
     use crate::country::{self, *};
+    use crate::metadata::DATABASE;
+    use crate::Type;
     use crate::{parser, Mode, PhoneNumber};
     use anyhow::Context;
     use rstest::rstest;
@@ -257,27 +267,26 @@ mod test {
 
     #[template]
     #[rstest]
-    #[case(parsed("+61406823897"), AU)]
-    #[case(parsed("+32474091150"), BE)]
-    #[case(parsed("+34666777888"), ES)]
-    #[case(parsed("+13459492311"), KY)]
-    #[case(parsed("+16137827274"), CA)]
-    #[case(parsed("+1 520 878 2491"), US)]
-    #[case(parsed("+1-520-878-2491"), US)]
+    #[case(parsed("+80012340000"), None)]
+    #[case(parsed("+61406823897"), Some(AU))]
+    #[case(parsed("+32474091150"), Some(BE))]
+    #[case(parsed("+34666777888"), Some(ES))]
+    #[case(parsed("+13459492311"), Some(KY))]
+    #[case(parsed("+16137827274"), Some(CA))]
+    #[case(parsed("+1 520 878 2491"), Some(US))]
+    #[case(parsed("+1-520-878-2491"), Some(US))]
     // Case for issues
     // https://github.com/whisperfish/rust-phonenumber/issues/46 and
     // https://github.com/whisperfish/rust-phonenumber/issues/47
     // #[case(parsed("+1 520-878-2491"), US)]
-    fn phone_numbers(#[case] number: PhoneNumber, #[case] country: country::Id) {}
+    fn phone_numbers(#[case] number: PhoneNumber, #[case] country: Option<country::Id>) {}
 
     #[apply(phone_numbers)]
-    fn country_id(#[case] number: PhoneNumber, #[case] country: country::Id) -> anyhow::Result<()> {
-        assert_eq!(
-            country,
-            number.country().id().ok_or_else(|| anyhow::anyhow!(
-                "Phone number {number} has no associated country code id"
-            ))?
-        );
+    fn country_id(
+        #[case] number: PhoneNumber,
+        #[case] country: Option<country::Id>,
+    ) -> anyhow::Result<()> {
+        assert_eq!(country, number.country().id());
 
         Ok(())
     }
@@ -287,11 +296,11 @@ mod test {
     // Format-parse roundtrip
     fn round_trip_parsing(
         #[case] number: PhoneNumber,
-        #[case] country: country::Id,
+        #[case] country: Option<country::Id>,
         #[values(Mode::International, Mode::E164, Mode::Rfc3966, Mode::National)] mode: Mode,
     ) -> anyhow::Result<()> {
         let country_hint = if mode == Mode::National {
-            Some(country)
+            country
         } else {
             None
         };
@@ -307,5 +316,29 @@ mod test {
         assert_eq!(number, parsed);
 
         Ok(())
+    }
+
+    #[test]
+    fn number_type() {
+        assert_eq!(
+            Type::FixedLine,
+            parser::parse(None, "+441212345678")
+                .unwrap()
+                .number_type(&DATABASE)
+        );
+
+        assert_eq!(
+            Type::Mobile,
+            parser::parse(None, "+34612345678")
+                .unwrap()
+                .number_type(&DATABASE)
+        );
+
+        assert_eq!(
+            Type::PremiumRate,
+            parser::parse(None, "+611900123456")
+                .unwrap()
+                .number_type(&DATABASE)
+        );
     }
 }
