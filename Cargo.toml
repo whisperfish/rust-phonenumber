@@ -40,3 +40,8 @@ doc-comment = "0.3"
 rstest = ">= 0.13, <=0.18"
 rstest_reuse = "0.6"
 anyhow = "1"
+criterion = "0.5"
+
+[[bench]]
+name = "parsing"
+harness = false
