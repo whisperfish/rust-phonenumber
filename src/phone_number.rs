@@ -267,24 +267,33 @@ mod test {
 
     #[template]
     #[rstest]
-    #[case(parsed("+80012340000"), None)]
-    #[case(parsed("+61406823897"), Some(AU))]
-    #[case(parsed("+32474091150"), Some(BE))]
-    #[case(parsed("+34666777888"), Some(ES))]
-    #[case(parsed("+13459492311"), Some(KY))]
-    #[case(parsed("+16137827274"), Some(CA))]
-    #[case(parsed("+1 520 878 2491"), Some(US))]
-    #[case(parsed("+1-520-878-2491"), Some(US))]
+    #[case(parsed("+80012340000"), None, Type::TollFree)]
+    #[case(parsed("+61406823897"), Some(AU), Type::Mobile)]
+    #[case(parsed("+611900123456"), Some(AU), Type::PremiumRate)]
+    #[case(parsed("+32474091150"), Some(BE), Type::Mobile)]
+    #[case(parsed("+34666777888"), Some(ES), Type::Mobile)]
+    #[case(parsed("+34612345678"), Some(ES), Type::Mobile)]
+    #[case(parsed("+441212345678"), Some(GB), Type::FixedLine)]
+    #[case(parsed("+13459492311"), Some(KY), Type::FixedLine)]
+    #[case(parsed("+16137827274"), Some(CA), Type::FixedLineOrMobile)]
+    #[case(parsed("+1 520 878 2491"), Some(US), Type::FixedLineOrMobile)]
+    #[case(parsed("+1-520-878-2491"), Some(US), Type::FixedLineOrMobile)]
     // Case for issues
     // https://github.com/whisperfish/rust-phonenumber/issues/46 and
     // https://github.com/whisperfish/rust-phonenumber/issues/47
     // #[case(parsed("+1 520-878-2491"), US)]
-    fn phone_numbers(#[case] number: PhoneNumber, #[case] country: Option<country::Id>) {}
+    fn phone_numbers(
+        #[case] number: PhoneNumber,
+        #[case] country: Option<country::Id>,
+        #[case] r#type: Type,
+    ) {
+    }
 
     #[apply(phone_numbers)]
     fn country_id(
         #[case] number: PhoneNumber,
         #[case] country: Option<country::Id>,
+        #[case] _type: Type,
     ) -> anyhow::Result<()> {
         assert_eq!(country, number.country().id());
 
@@ -297,6 +306,7 @@ mod test {
     fn round_trip_parsing(
         #[case] number: PhoneNumber,
         #[case] country: Option<country::Id>,
+        #[case] _type: Type,
         #[values(Mode::International, Mode::E164, Mode::Rfc3966, Mode::National)] mode: Mode,
     ) -> anyhow::Result<()> {
         let country_hint = if mode == Mode::National {
@@ -318,27 +328,12 @@ mod test {
         Ok(())
     }
 
-    #[test]
-    fn number_type() {
-        assert_eq!(
-            Type::FixedLine,
-            parser::parse(None, "+441212345678")
-                .unwrap()
-                .number_type(&DATABASE)
-        );
-
-        assert_eq!(
-            Type::Mobile,
-            parser::parse(None, "+34612345678")
-                .unwrap()
-                .number_type(&DATABASE)
-        );
-
-        assert_eq!(
-            Type::PremiumRate,
-            parser::parse(None, "+611900123456")
-                .unwrap()
-                .number_type(&DATABASE)
-        );
+    #[apply(phone_numbers)]
+    fn number_type(
+        #[case] number: PhoneNumber,
+        #[case] _country: Option<country::Id>,
+        #[case] r#type: Type,
+    ) {
+        assert_eq!(r#type, number.number_type(&DATABASE));
     }
 }
