@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::carrier::Carrier;
+use std::borrow::Borrow;
+
 use crate::consts;
 use crate::country;
 use crate::error;
@@ -89,7 +90,10 @@ pub fn parse_with<S: AsRef<str>>(
         )?,
 
         extension: number.extension.map(|s| Extension(s.into_owned())),
-        carrier: number.carrier.map(|s| Carrier(s.into_owned())),
+        carrier: number.carrier.and_then(|s| {
+            let s: &str = s.borrow();
+            s.try_into().ok()
+        }),
     })
 }
 
