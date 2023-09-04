@@ -266,7 +266,7 @@ mod test {
                 national: NationalNumber::new(3121286979, 0).unwrap(),
 
                 extension: None,
-                carrier: Some("12".into()),
+                carrier: "12".try_into().ok(),
             },
             parser::parse(Some(country::BR), "012 3121286979").unwrap()
         );
