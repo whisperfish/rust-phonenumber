@@ -44,13 +44,7 @@ pub fn phone_number(i: &str) -> IResult<&str, Number> {
                     params
                         .as_ref()
                         .and_then(|m| m.get("phone-context"))
-                        .map(|&s| {
-                            if s.as_bytes().get(0) == Some(&b'+') {
-                                &s[1..]
-                            } else {
-                                s
-                            }
-                        })
+                        .map(|&s| s.strip_prefix('+').unwrap_or(s))
                 })
                 .map(|cs| cs.into()),
 
