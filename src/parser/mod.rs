@@ -292,4 +292,10 @@ mod test {
         let res = parser::parse(None, " 2 22#:");
         assert!(res.is_err());
     }
+
+    #[test]
+    fn advisory_1() {
+        let res = parser::parse(None, ".;phone-context=");
+        assert!(res.is_err(), "{res:?}");
+    }
 }

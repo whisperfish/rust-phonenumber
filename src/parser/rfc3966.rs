@@ -173,9 +173,8 @@ mod test {
     }
 
     #[test]
-    fn vuln0() {
-        // Just make sure these don't panic.
+    fn advisory_1() {
+        // Just make sure this does not panic.
         let _ = rfc3966::phone_number(".;phone-context=");
-        let _ = crate::parse(None, ".;phone-context=");
     }
 }
