@@ -218,4 +218,10 @@ mod test {
 			carrier:   Some("12".into()),
 		}, parser::parse(Some(country::BR), "012 3121286979").unwrap());
 	}
+
+    #[test]
+    fn advisory_1() {
+        let res = parser::parse(None, ".;phone-context=");
+        assert!(res.is_err(), "{res:?}");
+    }
 }

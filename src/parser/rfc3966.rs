@@ -135,4 +135,9 @@ mod test {
 				.. Default::default()
 			});
 	}
+
+    fn advisory_1() {
+        // Just make sure this does not panic.
+        let _ = rfc3966::phone_number(".;phone-context=");
+    }
 }
