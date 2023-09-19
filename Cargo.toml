@@ -1,13 +1,13 @@
 [package]
 name    = "phonenumber"
-version = "0.2.4+8.11.3"
+version = "0.2.5+8.11.3"
 edition = "2018"
 
-authors = ["meh. <meh@1aim.com>"]
+authors = ["Gabriel Féron <g@leirbag.net>", "Ruben De Smet <ruben.de.smet@rubdos.be>", "meh. <meh@1aim.com>"]
 license = "Apache-2.0"
 
 description = "Library for parsing, formatting and validating international phone numbers."
-repository  = "https://github.com/1aim/rust-phonenumber"
+repository = "https://github.com/whisperfish/rust-phonenumber"
 keywords    = ["phonenumber", "phone", "number", "parser", "formatter"]
 readme = "README.md"
 
