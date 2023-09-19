@@ -44,7 +44,7 @@ pub fn phone_number(i: &str) -> IResult<&str, Number> {
                     params
                         .as_ref()
                         .and_then(|m| m.get("phone-context"))
-                        .map(|&s| if s.as_bytes()[0] == b'+' { &s[1..] } else { s })
+                        .map(|&s| s.strip_prefix('+').unwrap_or(s))
                 })
                 .map(|cs| cs.into()),
 
@@ -164,5 +164,11 @@ mod test {
                 ..Default::default()
             }
         );
+    }
+
+    #[test]
+    fn advisory_1() {
+        // Just make sure this does not panic.
+        let _ = rfc3966::phone_number(".;phone-context=");
     }
 }
