@@ -44,7 +44,7 @@ pub fn parse_with<S: AsRef<str>>(
     country: Option<country::Id>,
     string: S,
 ) -> Result<PhoneNumber, error::Parse> {
-    fn phone_number(i: &str) -> IResult<&str, helper::Number> {
+    fn phone_number(i: &str) -> IResult<&str, helper::Number<'_>> {
         parse! { i => alt((rfc3966::phone_number, natural::phone_number)) }
     }
 

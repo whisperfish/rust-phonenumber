@@ -57,7 +57,7 @@ impl From<NationalNumber> for u64 {
 }
 
 impl fmt::Display for NationalNumber {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for _ in 0..self.zeros {
             write!(f, "0")?;
         }

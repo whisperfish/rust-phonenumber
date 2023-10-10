@@ -4,13 +4,6 @@ use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
 extern crate quick_xml as xml;
-extern crate regex;
-extern crate thiserror;
-
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate bincode;
 
 use bincode::Options;
 

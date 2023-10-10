@@ -20,6 +20,7 @@ use crate::xml::events::{self, Event};
 use crate::xml::Reader;
 
 use crate::error;
+use serde_derive::{Deserialize, Serialize};
 
 /// Temporary defaults for `Format` and `Descriptor`.
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
