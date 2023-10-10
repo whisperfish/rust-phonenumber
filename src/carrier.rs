@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::Deref;
 

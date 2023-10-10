@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::error;
+use quick_xml::events::attributes::Attribute;
+use quick_xml::events::{self, Event};
+use quick_xml::Reader;
+use serde_derive::{Deserialize, Serialize};
 use std::io::BufRead;
 use std::str;
-
-use crate::xml::events::attributes::Attribute;
-use crate::xml::events::{self, Event};
-use crate::xml::Reader;
-
-use crate::error;
 
 /// Temporary defaults for `Format` and `Descriptor`.
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]
@@ -176,7 +175,7 @@ fn territory<R: BufRead>(
     let mut meta = Metadata::default();
 
     for attr in e.attributes() {
-        let Attribute { key, value } = attr.map_err(xml::Error::InvalidAttr)?;
+        let Attribute { key, value } = attr.map_err(quick_xml::Error::InvalidAttr)?;
 
         match (str::from_utf8(key.into_inner())?, str::from_utf8(&value)?) {
             ("id", value) => meta.id = Some(value.into()),
@@ -361,7 +360,8 @@ fn descriptor<R: BufRead>(
             Event::Empty(ref e) => match e.name().into_inner() {
                 b"possibleLengths" => {
                     for attr in e.attributes() {
-                        let Attribute { key, value } = attr.map_err(xml::Error::InvalidAttr)?;
+                        let Attribute { key, value } =
+                            attr.map_err(quick_xml::Error::InvalidAttr)?;
 
                         match (str::from_utf8(key.into_inner())?, str::from_utf8(&value)?) {
                             ("national", value) => descriptor.possible_length = lengths(value)?,
@@ -482,7 +482,7 @@ fn format<R: BufRead>(
     let mut international = None;
 
     for attr in e.attributes() {
-        let Attribute { key, value } = attr.map_err(xml::Error::InvalidAttr)?;
+        let Attribute { key, value } = attr.map_err(quick_xml::Error::InvalidAttr)?;
 
         match (str::from_utf8(key.into_inner())?, str::from_utf8(&value)?) {
             ("pattern", value) => format.pattern = Some(value.into()),
