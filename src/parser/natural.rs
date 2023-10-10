@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use nom::error::ErrorKind;
-use nom::IResult;
-
 use crate::consts;
 use crate::parser::helper::*;
+use nom::error::ErrorKind;
+use nom::IResult;
 
 pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
     let (_, i) = extract(i)?;
