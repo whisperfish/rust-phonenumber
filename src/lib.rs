@@ -14,27 +14,8 @@
 
 #![recursion_limit = "1024"]
 
-#[macro_use]
-extern crate lazy_static;
-
-extern crate nom;
-extern crate thiserror;
-
-extern crate either;
-extern crate fnv;
-extern crate itertools;
-extern crate quick_xml as xml;
-extern crate regex;
-extern crate regex_cache;
-
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate bincode;
-
 #[cfg(test)]
-#[macro_use]
-extern crate doc_comment;
+use doc_comment::doctest;
 
 #[cfg(test)]
 use rstest_reuse;

@@ -29,7 +29,7 @@ use crate::metadata::loader;
 
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
-lazy_static! {
+lazy_static::lazy_static! {
     /// The Google provided metadata database, used as default.
     pub static ref DEFAULT: Database =
         Database::from(bincode::options()
