@@ -14,17 +14,11 @@
 
 #![recursion_limit = "1024"]
 
-extern crate quick_xml as xml;
-
-#[macro_use]
-extern crate serde_derive;
-
-#[cfg(test)]
-#[macro_use]
-extern crate doc_comment;
-
 #[cfg(test)]
 use rstest_reuse;
+
+#[cfg(test)]
+use doc_comment::doctest;
 
 #[cfg(test)]
 doctest!("../README.md");

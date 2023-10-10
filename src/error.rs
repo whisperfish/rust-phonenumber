@@ -91,7 +91,7 @@ pub enum Parse {
 pub enum LoadMetadata {
     /// Parsing XML failed, the XML is malformed.
     #[error("Malformed Metadata XML: {0}")]
-    Xml(#[from] xml::Error),
+    Xml(#[from] quick_xml::Error),
 
     /// Parsing UTF-8 string from XML failed.
     #[error("Non UTF-8 string in Metadata XML: {0}")]

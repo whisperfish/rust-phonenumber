@@ -3,8 +3,6 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
-extern crate quick_xml as xml;
-
 use bincode::Options;
 
 #[path = "src/metadata/loader.rs"]
