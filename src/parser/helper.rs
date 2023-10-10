@@ -369,7 +369,7 @@ pub fn normalize<'a>(mut number: Number<'a>, mappings: &FnvHashMap<char, char>) 
     number
 }
 
-pub fn trim(value: Cow<str>, start: usize) -> Cow<str> {
+pub fn trim(value: Cow<'_, str>, start: usize) -> Cow<'_, str> {
     match value {
         Cow::Borrowed(value) => Cow::Borrowed(&value[start..]),
 

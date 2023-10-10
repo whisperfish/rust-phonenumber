@@ -19,6 +19,9 @@ use std::io::{BufReader, Cursor};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
+use once_cell::sync::Lazy;
+
+use bincode;
 use bincode::Options;
 use fnv::FnvHashMap;
 use regex_cache::{CachedRegex, CachedRegexBuilder, RegexCache};
@@ -29,12 +32,16 @@ use crate::Metadata;
 
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
-lazy_static::lazy_static! {
-    /// The Google provided metadata database, used as default.
-    pub static ref DEFAULT: Database =
-        Database::from(bincode::options()
-        .with_varint_encoding().deserialize(DATABASE).unwrap()).unwrap();
-}
+/// The Google provided metadata database, used as default.
+pub static DEFAULT: Lazy<Database> = Lazy::new(|| {
+    Database::from(
+        bincode::options()
+            .with_varint_encoding()
+            .deserialize(DATABASE)
+            .unwrap(),
+    )
+    .unwrap()
+});
 
 /// Representation of a database of metadata for phone number.
 #[derive(Clone, Debug)]
