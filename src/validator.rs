@@ -106,7 +106,7 @@ pub fn is_valid_with(database: &Database, number: &PhoneNumber) -> bool {
         .unwrap_or(false)
 }
 
-pub fn length(meta: &Metadata, number: &ParseNumber, kind: Type) -> Validation {
+pub fn length(meta: &Metadata, number: &ParseNumber<'_>, kind: Type) -> Validation {
     let desc = if let Some(desc) = meta.descriptors().get(kind) {
         desc
     } else {

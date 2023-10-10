@@ -98,7 +98,7 @@ pub fn format_with<'d, 'n>(
 }
 
 impl<'n, 'd, 'f> fmt::Display for Formatter<'n, 'd, 'f> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let db = self.database.unwrap_or(&DATABASE);
 
         // If the country code is invalid, return an error.
@@ -247,9 +247,9 @@ fn replace(
                     .get(1)
                     .unwrap()
                     .as_str();
-                let format = transform.replace(*consts::NP, meta.national_prefix().unwrap_or(""));
-                let format = format.replace(*consts::FG, &format!("${}", first));
-                let format = format.replace(*consts::CC, carrier.unwrap_or(""));
+                let format = transform.replace(consts::NP, meta.national_prefix().unwrap_or(""));
+                let format = format.replace(consts::FG, &format!("${}", first));
+                let format = format.replace(consts::CC, carrier.unwrap_or(""));
 
                 consts::FIRST_GROUP.replace(formatter.format(), &*format)
             } else {

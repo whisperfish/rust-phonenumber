@@ -148,14 +148,14 @@ impl FromStr for PhoneNumber {
 }
 
 impl fmt::Display for PhoneNumber {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.format())
     }
 }
 
 impl PhoneNumber {
     /// Get information about the country for the phone number.
-    pub fn country(&self) -> Country {
+    pub fn country(&self) -> Country<'_> {
         Country(self)
     }
 
@@ -251,7 +251,7 @@ impl<'a> Deref for Country<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::country::{self, *};
+    use crate::country::{self, Id::*};
     use crate::metadata::DATABASE;
     use crate::Type;
     use crate::{parser, Mode, PhoneNumber};
