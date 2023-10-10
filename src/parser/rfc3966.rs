@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::parser::helper::*;
 use fnv::FnvHashMap;
 use nom::{
     self,
@@ -22,8 +23,6 @@ use nom::{
     multi::*,
     AsChar, IResult,
 };
-
-use crate::parser::helper::*;
 
 pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
     parse! { i =>

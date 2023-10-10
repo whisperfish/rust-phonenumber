@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use either::*;
-
 use crate::consts;
 use crate::country;
 use crate::metadata::{Database, Metadata, DATABASE};
 use crate::parser;
 use crate::parser::helper::Number as ParseNumber;
 use crate::phone_number::{PhoneNumber, Type};
+use either::*;
 
 /// Possible outcomes when testing if a `PhoneNumber` is possible.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]

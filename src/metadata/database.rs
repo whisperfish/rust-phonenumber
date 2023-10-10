@@ -12,22 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::error;
+use crate::metadata::loader;
+use bincode;
+use bincode::Options;
+use fnv::FnvHashMap;
+use once_cell::sync::Lazy;
+use regex_cache::{CachedRegex, CachedRegexBuilder, RegexCache};
 use std::borrow::Borrow;
 use std::fs::File;
 use std::hash::Hash;
 use std::io::{BufReader, Cursor};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
-
-use once_cell::sync::Lazy;
-
-use bincode;
-use bincode::Options;
-use fnv::FnvHashMap;
-use regex_cache::{CachedRegex, CachedRegexBuilder, RegexCache};
-
-use crate::error;
-use crate::metadata::loader;
 
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 

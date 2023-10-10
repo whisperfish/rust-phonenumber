@@ -21,7 +21,6 @@ use crate::metadata::{Database, DATABASE};
 use crate::national_number::NationalNumber;
 use crate::phone_number::{PhoneNumber, Type};
 use crate::validator::{self, Validation};
-
 use nom::{branch::alt, IResult};
 
 #[macro_use]
