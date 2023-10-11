@@ -311,7 +311,9 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
 
         number.national = trim(number.national, end);
     } else if let Some(transform) = transform {
-        let transformed = parsing.replace(&number.national, transform).into_owned();
+        let transformed = parsing
+            .replace(&number.national, transform.as_str())
+            .into_owned();
 
         if viable && !meta.descriptors.general.is_match(&transformed) {
             return number;

@@ -2,7 +2,7 @@
 name = "phonenumber"
 version = "0.3.3+8.13.9"
 edition = "2021"
-rust-version = "1.65"  # because of regex 1.7
+rust-version = "1.62"  # because of Sailfish OS
 
 authors = ["Gabriel Féron <g@leirbag.net>", "Ruben De Smet <ruben.de.smet@rubdos.be>", "meh. <meh@1aim.com>"]
 license = "Apache-2.0"
@@ -16,12 +16,12 @@ readme = "README.md"
 bincode = "1.3"
 either = "1.9"
 fnv = "1.0"
-itertools = ">=0.10, <=0.11"
+itertools = "0.11"
 nom = "7.1"
 once_cell = "1.18.0"
 quick-xml = "0.30"
-regex = "1.7"
-regex-cache = "0.2"
+regex = "<=1.9"  # latest for rust 1.62
+regex-cache = "<=0.1"  # latest for rust 1.62
 serde = "1.0"
 serde_derive = "1.0"
 strum = { version = "0.25", features = ["derive"] }
@@ -30,7 +30,7 @@ thiserror = "1.0"
 [build-dependencies]
 bincode = "1.3"
 quick-xml = "0.30"
-regex = "1.7"
+regex = "<=1.9"  # latest for rust 1.62
 serde = "1.0"
 serde_derive = "1.0"
 thiserror = "1.0"

@@ -15,10 +15,10 @@
 #![recursion_limit = "1024"]
 
 #[cfg(test)]
-use rstest_reuse;
+use doc_comment::doctest;
 
 #[cfg(test)]
-use doc_comment::doctest;
+use rstest_reuse;
 
 #[cfg(test)]
 doctest!("../README.md");
