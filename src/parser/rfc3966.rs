@@ -167,6 +167,6 @@ mod test {
     #[test]
     fn advisory_1() {
         // Just make sure this does not panic.
-        rfc3966::phone_number(".;phone-context=").unwrap();
+        drop(rfc3966::phone_number(".;phone-context="));
     }
 }
