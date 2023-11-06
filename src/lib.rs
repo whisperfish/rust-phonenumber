@@ -18,7 +18,6 @@
 extern crate lazy_static;
 
 extern crate nom;
-extern crate thiserror;
 
 extern crate either;
 extern crate fnv;

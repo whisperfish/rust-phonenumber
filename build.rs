@@ -5,7 +5,6 @@ use std::path::Path;
 
 extern crate quick_xml as xml;
 extern crate regex;
-extern crate thiserror;
 
 extern crate serde;
 #[macro_use]
