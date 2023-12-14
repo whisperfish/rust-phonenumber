@@ -1,6 +1,5 @@
 use std::env;
 
-extern crate phonenumber;
 use phonenumber::Mode;
 
 fn main() {

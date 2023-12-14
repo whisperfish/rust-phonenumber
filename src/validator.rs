@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use either::*;
-
 use crate::consts;
 use crate::country;
 use crate::metadata::{Database, Metadata, DATABASE};
 use crate::parser;
 use crate::parser::helper::Number as ParseNumber;
 use crate::phone_number::{PhoneNumber, Type};
+use either::*;
 
 /// Possible outcomes when testing if a `PhoneNumber` is possible.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -106,7 +105,7 @@ pub fn is_valid_with(database: &Database, number: &PhoneNumber) -> bool {
         .unwrap_or(false)
 }
 
-pub fn length(meta: &Metadata, number: &ParseNumber, kind: Type) -> Validation {
+pub fn length(meta: &Metadata, number: &ParseNumber<'_>, kind: Type) -> Validation {
     let desc = if let Some(desc) = meta.descriptors().get(kind) {
         desc
     } else {

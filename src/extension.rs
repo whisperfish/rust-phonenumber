@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 use std::ops::Deref;
 
@@ -40,7 +41,7 @@ impl AsRef<str> for Extension {
 }
 
 impl fmt::Display for Extension {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }

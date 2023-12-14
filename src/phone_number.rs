@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use either::*;
-use std::fmt;
-use std::ops::Deref;
-use std::str::FromStr;
-
 use crate::carrier::Carrier;
 use crate::country;
 use crate::error;
@@ -26,6 +21,11 @@ use crate::metadata::{Database, Metadata, DATABASE};
 use crate::national_number::NationalNumber;
 use crate::parser;
 use crate::validator;
+use either::*;
+use serde_derive::{Deserialize, Serialize};
+use std::fmt;
+use std::ops::Deref;
+use std::str::FromStr;
 
 /// A phone number.
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
@@ -148,14 +148,14 @@ impl FromStr for PhoneNumber {
 }
 
 impl fmt::Display for PhoneNumber {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.format())
     }
 }
 
 impl PhoneNumber {
     /// Get information about the country for the phone number.
-    pub fn country(&self) -> Country {
+    pub fn country(&self) -> Country<'_> {
         Country(self)
     }
 
@@ -251,7 +251,7 @@ impl<'a> Deref for Country<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::country::{self, *};
+    use crate::country::{self, Id::*};
     use crate::metadata::DATABASE;
     use crate::Type;
     use crate::{parser, Mode, PhoneNumber};

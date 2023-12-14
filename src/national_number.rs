@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 
 /// The national number part of a phone number.
@@ -57,7 +58,7 @@ impl From<NationalNumber> for u64 {
 }
 
 impl fmt::Display for NationalNumber {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for _ in 0..self.zeros {
             write!(f, "0")?;
         }
