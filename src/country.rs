@@ -14,9 +14,9 @@
 
 //! Country related types.
 
-use strum::{AsRefStr, EnumString};
-
+use serde_derive::{Deserialize, Serialize};
 use std::str;
+use strum::{AsRefStr, EnumString};
 
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 pub struct Code {
