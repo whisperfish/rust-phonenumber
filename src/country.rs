@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Needed because of re-export of Id::*
-#![allow(unused_qualifications)]
-
 //! Country related types.
 
 use serde_derive::{Deserialize, Serialize};
@@ -326,4 +323,4 @@ pub enum Id {
     ZW,
 }
 
-pub use self::Id::*;
+pub use Id::*;
