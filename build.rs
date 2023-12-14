@@ -12,10 +12,12 @@ mod loader;
 mod error;
 
 fn main() {
+    let pnm_path = "assets/PhoneNumberMetadata.xml";
     let metadata = loader::load(BufReader::new(
-        File::open("assets/PhoneNumberMetadata.xml").expect("could not open metadata file"),
+        File::open(pnm_path).expect("could not open metadata file"),
     ))
     .expect("failed to load metadata");
+    println!("cargo:rerun-if-changed={pnm_path}");
 
     let mut out = BufWriter::new(
         File::create(Path::new(&env::var("OUT_DIR").unwrap()).join("database.bin"))
