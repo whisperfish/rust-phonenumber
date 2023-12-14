@@ -24,9 +24,14 @@ jobs:
       matrix:
         toolchain: ["stable", "beta"]
         coverage: [false]
+        tests: [true]
         include:
           - toolchain: "nightly"
             coverage: true
+            tests: true
+          - toolchain: "1.58.0"
+            coverage: false
+            tests: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -39,22 +44,30 @@ jobs:
       - name: Configure CI cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Build
+      - name: Build all targets
         uses: actions-rs/cargo@v1
+        if: ${{ matrix.tests }}
         with:
           command: build
           args: --all-targets
 
+      - name: Build
+        uses: actions-rs/cargo@v1
+        if: ${{ !matrix.tests }}
+        with:
+          command: build
+          args: --lib --all-features
+
       - name: Run tests
         uses: actions-rs/cargo@v1
-        if: ${{ !matrix.coverage }}
+        if: ${{ !matrix.coverage && matrix.tests }}
         with:
           command: test
           args: --all-targets --no-fail-fast
 
       - name: Run tests
         uses: actions-rs/cargo@v1
-        if: ${{ matrix.coverage }}
+        if: ${{ matrix.coverage && matrix.tests }}
         with:
           command: test
           args: --all-targets --no-fail-fast
