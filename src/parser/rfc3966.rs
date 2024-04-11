@@ -14,7 +14,6 @@
 
 use fnv::FnvHashMap;
 use nom::{
-    self,
     bytes::complete::*,
     character::complete::*,
     combinator::*,

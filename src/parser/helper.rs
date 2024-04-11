@@ -13,7 +13,6 @@
 // limitations under the License.
 
 use nom::{
-    self,
     character::complete::*,
     combinator::*,
     error::{make_error, ErrorKind},
@@ -384,10 +383,6 @@ pub fn trim(value: Cow<str>, start: usize) -> Cow<str> {
 #[allow(clippy::wrong_self_convention)]
 pub trait AsCharExt {
     fn is_wide_digit(self) -> bool;
-    fn is_punctuation(self) -> bool;
-    fn is_plus(self) -> bool;
-    fn is_start(self) -> bool;
-    fn is_valid(self) -> bool;
 
     fn as_dec_digit(self) -> Option<char>;
 }
@@ -395,27 +390,6 @@ pub trait AsCharExt {
 impl<T: AsChar> AsCharExt for T {
     fn is_wide_digit(self) -> bool {
         self.as_char().is_ascii_digit()
-    }
-
-    fn is_punctuation(self) -> bool {
-        let ch = self.as_char();
-        "-x\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2212}\u{30FC}\u{FF0D}-\u{FF0F} \u{00A0}\u{00AD}\u{200B}\u{2060}\u{3000}()\u{FF08}\u{FF09}\u{FF3B}\u{FF3D}[]/~\u{2053}\u{223C}\u{FF5E}"
-			.chars().any(|c| c == ch)
-    }
-
-    fn is_plus(self) -> bool {
-        let ch = self.as_char();
-        ch == '+' || ch == '\u{FF0B}'
-    }
-
-    fn is_start(self) -> bool {
-        let ch = self.as_char();
-        ch.is_wide_digit() || ch.is_dec_digit() || ch.is_plus()
-    }
-
-    fn is_valid(self) -> bool {
-        let ch = self.as_char();
-        ch.is_start() || ch.is_alpha() || ch.is_punctuation()
     }
 
     fn as_dec_digit(self) -> Option<char> {
@@ -463,10 +437,6 @@ impl<T: AsChar> AsCharExt for T {
 
 #[cfg(test)]
 mod test {
-    use regex_cache::CachedRegex;
-
-    use crate::consts;
-    use crate::country;
     use crate::metadata::DATABASE;
     use crate::parser::helper;
     use crate::parser::helper::*;
