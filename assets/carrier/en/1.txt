@@ -150,10 +150,13 @@
 144159|Digicel Bermuda
 14417|Cellular One
 14418|Cellular One
-14419|Deltronics
+144190|Paradise Mobile
+144192|Deltronics
 1473402|Affordable Island Communications
 147341|Digicel Grenada
 147342|Digicel Grenada
+1473449|C&W
+1473456|C&W
 147352|Affordable Island Communications
 147353|AWS Grenada
 147390|Affordable Island Communications
@@ -504,10 +507,6 @@
 180999|Tricom
 186825|Digicel
 186826|Digicel
-1868266|bmobile
-1868267|bmobile
-1868268|bmobile
-1868269|bmobile
 186827|bmobile
 186828|bmobile
 186829|bmobile

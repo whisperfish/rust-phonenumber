@@ -1,6 +1,6 @@
 [package]
 name = "phonenumber"
-version = "0.3.4+8.13.26"
+version = "0.3.4+8.13.34"
 edition = "2021"
 rust-version = "1.58.0"
 
