@@ -19,7 +19,6 @@ use std::io::{BufReader, Cursor};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use bincode;
 use bincode::Options;
 use fnv::FnvHashMap;
 use regex_cache::{CachedRegex, CachedRegexBuilder, RegexCache};

@@ -257,7 +257,7 @@ mod test {
     use crate::{parser, Mode, PhoneNumber};
     use anyhow::Context;
     use rstest::rstest;
-    use rstest_reuse::{self, *};
+    use rstest_reuse::*;
 
     fn parsed(number: &str) -> PhoneNumber {
         parser::parse(None, number)
