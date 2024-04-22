@@ -25,6 +25,7 @@ use regex_cache::{CachedRegex, CachedRegexBuilder, RegexCache};
 
 use crate::error;
 use crate::metadata::loader;
+use crate::Metadata;
 
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
@@ -257,5 +258,10 @@ impl Database {
         self.regions
             .get(code)
             .map(|m| m.iter().map(AsRef::as_ref).collect())
+    }
+
+    /// Iterator over all `Metadata` entries in this database.
+    pub fn iter(&self) -> impl Iterator<Item = &Arc<Metadata>> {
+        self.by_id.values()
     }
 }
