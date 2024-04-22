@@ -44,7 +44,8 @@ impl NationalNumber {
     /// of an Italian phone number indicates the number is a fixed-line number.
     /// There have been plans to migrate fixed-line numbers to start with the
     /// digit two since December 2000, but it has not happened yet. See
-    /// http://en.wikipedia.org/wiki/%2B39 for more details.
+    /// [Telephone numbers in Italy](http://en.wikipedia.org/wiki/%2B39) for more
+    /// details.
     ///
     /// These fields can be safely ignored (there is no need to set them) for
     /// most countries. Some limited number of countries behave like Italy - for

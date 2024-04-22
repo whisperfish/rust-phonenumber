@@ -70,7 +70,7 @@ impl Metadata {
     /// of "country calling codes" used for non-geographical entities, such as
     /// Universal International Toll Free Number (+800). These are all given the
     /// ID "001", since this is the numeric region code for the world according
-    /// to UN M.49: http://en.wikipedia.org/wiki/UN_M.49
+    /// to [UN M.49](http://en.wikipedia.org/wiki/UN_M.49).
     pub fn id(&self) -> &str {
         &self.id
     }
@@ -128,7 +128,7 @@ impl Metadata {
     /// Fortaleza, Brazil (area code 85) using the long distance carrier Oi
     /// (selection code 31), one would dial 0 31 85 2222 2222. Assuming the only
     /// other possible carrier selection code is 32, the field will contain
-    /// "03[12]".
+    /// `"03\[12\]"`.
     ///
     /// When it is missing from the XML file, this field inherits the value of
     /// national prefix, if that is present.
@@ -141,8 +141,9 @@ impl Metadata {
     /// different ways when dialed in-country and out-of-country (e.g. 0343 15
     /// 555 1212 is exactly the same number as +54 9 343 555 1212).
     ///
-    /// This field is used together with `national_prefix_for_parsing` to transform
-    /// the number into a particular representation for storing in the
+    /// This field is used together with
+    /// [`national_prefix_for_parsing()`](Self::national_prefix_for_parsing) to
+    /// transform the number into a particular representation for storing in the
     /// phonenumber proto buffer in those rare cases.
     pub fn national_prefix_transform_rule(&self) -> Option<&str> {
         self.national_prefix_transform_rule
@@ -169,23 +170,30 @@ impl Metadata {
     /// the prefix 0 and the carrier selection code
     /// 15 (inserted after the area code of 343) is used.
     ///
-    /// Note: this field is populated by setting a value for <intlFormat> inside
-    /// the <numberFormat> tag in the XML file. If <intlFormat> is not set then
-    /// it defaults to the same value as the <format> tag.
+    /// Note: this field is populated by setting a value for `<intlFormat>`
+    /// inside the `<numberFormat>` tag in the XML file. If `<intlFormat>` is
+    /// not set then it defaults to the same value as the `<format>` tag.
     ///
-    /// Examples:
-    ///   To set the <intlFormat> to a different value than the <format>:
-    ///     <numberFormat pattern=....>
-    ///       <format>$1 $2 $3</format>
-    ///       <intlFormat>$1-$2-$3</intlFormat>
-    ///     </numberFormat>
+    /// ## Examples
     ///
-    ///   To have a format only used for national formatting, set <intlFormat> to
-    ///   "NA":
-    ///     <numberFormat pattern=....>
-    ///       <format>$1 $2 $3</format>
-    ///       <intlFormat>NA</intlFormat>
-    ///     </numberFormat>
+    /// To set the `<intlFormat>` to a different value than the `<format>`:
+    ///
+    /// ```xml
+    /// <numberFormat pattern=....>
+    ///     <format>$1 $2 $3</format>
+    ///     <intlFormat>$1-$2-$3</intlFormat>
+    /// </numberFormat>
+    /// ```
+    ///
+    /// To have a format only used for national formatting, set `<intlFormat>` to
+    /// `"NA"`:
+    ///
+    /// ```xml
+    /// <numberFormat pattern=....>
+    ///     <format>$1 $2 $3</format>
+    ///     <intlFormat>NA</intlFormat>
+    /// </numberFormat>
+    /// ```
     pub fn international_formats(&self) -> &[Format] {
         &self.international_formats
     }
