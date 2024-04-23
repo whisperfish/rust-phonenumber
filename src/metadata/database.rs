@@ -261,7 +261,7 @@ impl Database {
     }
 
     /// Iterator over all `Metadata` entries in this database.
-    pub fn iter(&self) -> impl Iterator<Item = &Arc<Metadata>> {
-        self.by_id.values()
+    pub fn iter(&self) -> impl Iterator<Item = &Metadata> {
+        self.by_id.values().map(AsRef::as_ref)
     }
 }
