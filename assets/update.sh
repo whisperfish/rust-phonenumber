@@ -1,5 +1,6 @@
 #!/bin/bash
 set -eu
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd
 
 GIT_REF=v8.13.35
 TMP_CLONE_DIR=$(mktemp -d)
