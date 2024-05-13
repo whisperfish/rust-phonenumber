@@ -1,0 +1,22 @@
+name: Check
+on:
+  pull_request:
+    paths:
+        - assets/**
+
+jobs:
+    check_database_update:
+        name: Check libphonenumber database update
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Update assets
+              run: ./assets/update.sh
+            - name: Check git status
+              run: |
+                if [[ -n "$(git status --porcelain=v2)" ]];
+                then
+                    echo "Found untracked or uncommitted files after updating the libphonenumber database, failing."
+                    exit 1
+                fi
