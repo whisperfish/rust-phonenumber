@@ -96,13 +96,16 @@ pub enum Type {
     PremiumRate,
 
     /// The cost of this call is shared between the caller and the recipient, and
-    /// is hence typically less than PREMIUM_RATE calls. See
-    /// http://en.wikipedia.org/wiki/Shared_Cost_Service for more information.
+    /// is hence typically less than [`PremiumRate`](Self::PremiumRate) calls. See
+    /// [Shared-cost Service](http://en.wikipedia.org/wiki/Shared-cost_service)
+    /// for more information.
     SharedCost,
 
     /// A personal number is associated with a particular person, and may be
-    /// routed to either a MOBILE or FIXED_LINE number. Some more information can
-    /// be found here: http://en.wikipedia.org/wiki/Personal_Numbers
+    /// routed to either a [`Mobile`](Self::Mobile) or
+    /// [`FixedLine`](Self::FixedLine) number. See
+    /// [Personal Numbers](http://en.wikipedia.org/wiki/Personal_Numbers) for more
+    /// information.
     PersonalNumber,
 
     /// Voice over IP numbers. This includes TSoIP (Telephony Service over IP).
