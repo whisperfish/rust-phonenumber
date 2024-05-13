@@ -2,7 +2,7 @@
 set -eu
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd
 
-GIT_REF=v8.13.35
+GIT_REF=v8.13.36
 TMP_CLONE_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_CLONE_DIR"' EXIT
 
