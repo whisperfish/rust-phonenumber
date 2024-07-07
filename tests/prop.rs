@@ -3,7 +3,16 @@ use proptest::prelude::*;
 
 proptest! {
     #[test]
-    fn rfc3966_crash_test(s in "(tel:)?.*;phone-context=\\PC*") {
+    fn rfc3966_crash_test(
+        tel_prefix: bool,
+        use_plus: bool,
+        s: String,
+        phone_context: Option<String>,
+    ) {
+        let context = if let Some(phone_context) = &phone_context { format!(";phone-context={phone_context}") } else { "".to_string() };
+        let tel_prefix = if tel_prefix { "tel:" } else { "" };
+        let plus = if use_plus { "+" } else { "" };
+        let s = format!("{}{}{}{}", tel_prefix, plus, s, context);
         let _ = parse(None, &s);
     }
 

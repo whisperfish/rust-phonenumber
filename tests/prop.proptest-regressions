@@ -4,5 +4,5 @@
 #
 # It is recommended to check this file in to source control so that
 # everyone who runs the test benefits from these saved cases.
-cc b429ed298cc9cdf5ac50cf41cc9bf7819a00f9a8f8f3dab37240e6f4c7f13c88 # shrinks to s = "-;phone-context=Σ"
-cc d2e7fadc2dd4bf597d2ba7e5079c5b0e0d53beab84b45fba0b598226514aa3a3 # shrinks to s = "+3a;phone-context=AAa0a"
+cc f4f1a19cf143c767508ab557480843e4f4093898768fbbea1034d19d4308257d # shrinks to tel_prefix = false, use_plus = true, s = "da", phone_context = Some("A0A0a")
+cc 4ea103e574793bd24b0267cc8a80962299ee50746d69332fbd0b85532fb707e2 # shrinks to tel_prefix = false, use_plus = false, s = "0", phone_context = Some("প")
