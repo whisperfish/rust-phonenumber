@@ -3,15 +3,9 @@ use proptest::prelude::*;
 
 proptest! {
     #[test]
-    fn rfc3966_crash_test(s in "(tel:)?\\PC*;phone-context=\\PC*") {
+    fn rfc3966_crash_test(s in "(tel:)?.*;phone-context=\\PC*") {
         let _ = parse(None, &s);
     }
-
-    #[test]
-    fn rfc3966_crash_test_2(s in ".;phone-context=\\PC*") {
-        let _ = parse(None, &s);
-    }
-
 
     #[test]
     fn doesnt_crash(s in "\\PC*") {
