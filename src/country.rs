@@ -18,7 +18,7 @@ use serde_derive::{Deserialize, Serialize};
 use std::str;
 use strum::{AsRefStr, EnumString};
 
-#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
+#[derive(Copy, Clone, Serialize, Deserialize, Hash, Debug)]
 pub struct Code {
     /// The country code value.
     pub(crate) value: u16,
@@ -26,6 +26,18 @@ pub struct Code {
     /// The source from which the country code is derived.
     pub(crate) source: Source,
 }
+
+impl PartialEq for Code {
+    /// Compare two country codes.
+    ///
+    /// This implementation is necessary because the `source` field is not
+    /// relevant for equality.
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+
+impl Eq for Code {}
 
 /// The source from which the country code is derived. This is not set in the
 /// general parsing method, but in the method that parses and keeps raw_input.
