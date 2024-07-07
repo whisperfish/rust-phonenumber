@@ -236,8 +236,12 @@ impl<'a> Country<'a> {
         self.0.code.value()
     }
 
-    pub fn id(&self) -> Option<country::Id> {
-        self.0.metadata(&DATABASE).and_then(|m| m.id().parse().ok())
+    pub fn id(&self) -> Result<Option<country::Id>, crate::error::Parse> {
+        self.0
+            .metadata(&DATABASE)
+            .map(|m| m.id().parse())
+            .transpose()
+            .map_err(|_e| crate::error::Parse::InvalidCountryCode)
     }
 }
 
