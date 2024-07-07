@@ -15,10 +15,10 @@
 //! Country related types.
 
 use serde_derive::{Deserialize, Serialize};
-use std::str;
+use std::{hash::Hash, str};
 use strum::{AsRefStr, EnumString};
 
-#[derive(Copy, Clone, Serialize, Deserialize, Hash, Debug)]
+#[derive(Copy, Clone, Serialize, Deserialize, Debug)]
 pub struct Code {
     /// The country code value.
     pub(crate) value: u16,
@@ -38,6 +38,16 @@ impl PartialEq for Code {
 }
 
 impl Eq for Code {}
+
+impl Hash for Code {
+    /// Hash the country code.
+    ///
+    /// This implementation is necessary because the `source` field is not
+    /// relevant for hashing, and this should be consistent with Eq/PartialEq.
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.value.hash(state)
+    }
+}
 
 /// The source from which the country code is derived. This is not set in the
 /// general parsing method, but in the method that parses and keeps raw_input.
