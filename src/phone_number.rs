@@ -79,10 +79,10 @@ pub struct Country<'a>(&'a PhoneNumber);
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum Type {
-    ///
+    /// Fixed line numbers.
     FixedLine,
 
-    ///
+    /// Mobile numbers.
     Mobile,
 
     /// In some regions (e.g. the USA), it is impossible to distinguish between
@@ -92,7 +92,7 @@ pub enum Type {
     /// Freephone lines.
     TollFree,
 
-    ///
+    /// Premium rate lines.
     PremiumRate,
 
     /// The cost of this call is shared between the caller and the recipient, and
@@ -111,7 +111,7 @@ pub enum Type {
     /// Voice over IP numbers. This includes TSoIP (Telephony Service over IP).
     Voip,
 
-    ///
+    /// A pager number.
     Pager,
 
     /// Used for "Universal Access Numbers" or "Company Numbers". They may be
@@ -119,22 +119,19 @@ pub enum Type {
     /// company.
     Uan,
 
-    ///
+    /// Emergency numbers.
     Emergency,
 
     /// Used for "Voice Mail Access Numbers".
     Voicemail,
 
-    ///
+    /// An abbreviated number, such as short codes like "10000".
     ShortCode,
 
-    ///
     StandardRate,
 
-    ///
     Carrier,
 
-    ///
     NoInternational,
 
     /// A phone number is of type UNKNOWN when it does not fit any of the known
