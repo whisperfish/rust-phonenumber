@@ -280,4 +280,10 @@ mod test {
         let res = parser::parse(None, ".;phone-context=");
         assert!(res.is_err(), "{res:?}");
     }
+
+    #[test]
+    fn advisory_2() {
+        let res = parser::parse(None, "+dwPAA;phone-context=AA");
+        assert!(res.is_err(), "{res:?}");
+    }
 }
