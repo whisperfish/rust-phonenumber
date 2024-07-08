@@ -328,4 +328,4 @@ pub enum Id {
     ZW,
 }
 
-pub use self::Id::*;
+pub use Id::*;

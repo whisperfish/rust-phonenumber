@@ -21,7 +21,6 @@ use crate::metadata::{Database, DATABASE};
 use crate::national_number::NationalNumber;
 use crate::phone_number::{PhoneNumber, Type};
 use crate::validator::{self, Validation};
-
 use nom::{branch::alt, IResult};
 
 #[macro_use]
@@ -44,7 +43,7 @@ pub fn parse_with<S: AsRef<str>>(
     country: Option<country::Id>,
     string: S,
 ) -> Result<PhoneNumber, error::Parse> {
-    fn phone_number(i: &str) -> IResult<&str, helper::Number> {
+    fn phone_number(i: &str) -> IResult<&str, helper::Number<'_>> {
         parse! { i => alt((rfc3966::phone_number, natural::phone_number)) }
     }
 

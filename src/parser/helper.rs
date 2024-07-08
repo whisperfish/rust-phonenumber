@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::consts;
+use crate::country;
+use crate::error;
+use crate::metadata::{Database, Metadata};
+use crate::phone_number::Type;
+use crate::validator;
+use fnv::FnvHashMap;
 use nom::{
     character::complete::*,
     combinator::*,
@@ -19,17 +26,8 @@ use nom::{
     multi::*,
     AsChar, IResult,
 };
-use std::borrow::Cow;
-
-use fnv::FnvHashMap;
 use regex_cache::CachedRegex;
-
-use crate::consts;
-use crate::country;
-use crate::error;
-use crate::metadata::{Database, Metadata};
-use crate::phone_number::Type;
-use crate::validator;
+use std::borrow::Cow;
 
 macro_rules! parse {
 	($input:ident => ) => ();
@@ -369,7 +367,7 @@ pub fn normalize<'a>(mut number: Number<'a>, mappings: &FnvHashMap<char, char>) 
     number
 }
 
-pub fn trim(value: Cow<str>, start: usize) -> Cow<str> {
+pub fn trim(value: Cow<'_, str>, start: usize) -> Cow<'_, str> {
     match value {
         Cow::Borrowed(value) => Cow::Borrowed(&value[start..]),
 
