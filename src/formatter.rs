@@ -15,7 +15,7 @@
 use crate::{
     consts,
     metadata::{Database, Format, Metadata, DATABASE},
-    phone_number::PhoneNumber,
+    phone_number::PhoneNumber, Carrier,
 };
 use std::{borrow::Cow, fmt};
 
@@ -234,7 +234,7 @@ fn replace(
     meta: &Metadata,
     formatter: &Format,
     transform: Option<&str>,
-    carrier: Option<&str>,
+    carrier: Option<&Carrier>,
 ) -> String {
     formatter
         .pattern()
@@ -249,7 +249,11 @@ fn replace(
                     .as_str();
                 let format = transform.replace(*consts::NP, meta.national_prefix().unwrap_or(""));
                 let format = format.replace(*consts::FG, &format!("${}", first));
-                let format = format.replace(*consts::CC, carrier.unwrap_or(""));
+                let format = if let Some(carrier) = carrier.map(|c| c.to_string()) {
+                    format.replace(*consts::CC, &carrier)
+                } else {
+                    format.replace(*consts::CC, "")
+                };
 
                 consts::FIRST_GROUP.replace(formatter.format(), &*format)
             } else {
