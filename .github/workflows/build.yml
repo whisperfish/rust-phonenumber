@@ -25,7 +25,13 @@ jobs:
         toolchain: ["stable", "beta"]
         coverage: [false]
         tests: [true]
+        proptest_max: [false]
         include:
+          # We run the proptests with the stable toolchain on more iterations
+          - toolchain: "stable"
+            coverage: false
+            tests: true
+            proptest_max: true
           - toolchain: "nightly"
             coverage: true
             tests: true
@@ -60,10 +66,19 @@ jobs:
 
       - name: Run tests
         uses: actions-rs/cargo@v1
-        if: ${{ !matrix.coverage && matrix.tests }}
+        if: ${{ !matrix.coverage && matrix.tests && !matrix.proptest_max }}
         with:
           command: test
           args: --all-targets --no-fail-fast
+
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        if: ${{ !matrix.coverage && matrix.tests && matrix.proptest_max }}
+        env:
+          PROPTEST_CASES: 65536
+        with:
+          command: test
+          args: --all-targets --release --no-fail-fast
 
       - name: Run tests
         uses: actions-rs/cargo@v1
