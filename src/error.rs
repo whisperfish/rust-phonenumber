@@ -48,7 +48,7 @@ pub enum Metadata {
 }
 
 /// Parsing errors.
-#[derive(Error, Clone, Debug)]
+#[derive(Error, Clone, Debug, PartialEq)]
 pub enum Parse {
     /// This generally indicates the string passed in had less than 3 digits in
     /// it.
