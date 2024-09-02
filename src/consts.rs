@@ -15,7 +15,6 @@
 #![allow(unused)]
 
 use fnv::{FnvHashMap, FnvHashSet};
-use itertools::Itertools;
 use once_cell::sync::Lazy;
 use regex::{Regex, RegexBuilder};
 
@@ -248,7 +247,7 @@ pub const PLUS_CHARS: &str = r"\+\x{FF0B}";
 pub static VALID_ALPHA: Lazy<String> = Lazy::new(|| {
     let mut string = String::new();
     let clean = Regex::new(r"[, \[\]]").unwrap();
-    let alpha = ALPHA_MAPPINGS.keys().join("");
+    let alpha = ALPHA_MAPPINGS.keys().collect::<String>();
 
     string.push_str(&clean.replace(&alpha, ""));
     string.push_str(&clean.replace(&alpha.to_lowercase(), ""));
