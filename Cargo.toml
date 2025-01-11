@@ -38,7 +38,7 @@ thiserror = "1.0"
 anyhow = "1"
 criterion = ">=0.4, <=0.5"
 doc-comment = "0.3"
-rstest = "0.21"
+rstest = "0.24"
 rstest_reuse = "0.7"
 proptest = "1.0.0"
 
