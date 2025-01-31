@@ -262,6 +262,7 @@ fn replace(
 #[cfg(test)]
 mod test {
     use crate::country;
+    use crate::error::Parse;
     use crate::formatter::Mode;
     use crate::parser;
 
@@ -376,6 +377,93 @@ mod test {
                 .format()
                 .mode(Mode::International)
                 .to_string()
+        );
+    }
+
+    // TODO: Amend to be() when fixed
+    #[test]
+    fn be1() {
+        assert_eq!(
+            "+375800111111",
+            parser::parse(Some(country::BY), "+375800111111")
+                .unwrap()
+                .format()
+                .to_string()
+        );
+    }
+
+    #[test]
+    fn be2() {
+        assert_eq!(
+            "+375800111111",
+            parser::parse(None, "+375800111111")
+                .unwrap()
+                .format()
+                .to_string()
+        );
+    }
+
+    // TODO: Amend to ru() when fixed
+    #[test]
+    fn ru1() {
+        assert_eq!(
+            "+78005553535",
+            parser::parse(Some(country::RU), "+78005553535")
+                .unwrap()
+                .format()
+                .to_string()
+        );
+    }
+
+    #[test]
+    fn ru2() {
+        assert_eq!(
+            "+78005553535",
+            parser::parse(Some(country::RU), "8005553535")
+                .unwrap()
+                .format()
+                .to_string()
+        );
+    }
+
+    #[test]
+    fn ru3() {
+        assert_eq!(
+            "+78005553535",
+            parser::parse(None, "+78005553535")
+                .unwrap()
+                .format()
+                .to_string()
+        );
+    }
+
+    // TODO: Amend to it() when fixed
+    #[test]
+    fn it1() {
+        assert_eq!(
+            Parse::InvalidCountryCode,
+            parser::parse(None, "3912312312").unwrap_err()
+        );
+    }
+
+    #[test]
+    fn it2() {
+        assert_eq!(
+            "+39 391 2312312",
+            parser::parse(Some(country::IT), "3912312312")
+                .unwrap()
+                .format()
+                .mode(Mode::International)
+                .to_string()
+        );
+    }
+
+    #[test]
+    fn it3() {
+        // Looks like valid, but should be invalid?
+        assert_eq!(
+            Parse::NoNumber, // placeholder error
+            parser::parse(None, "+3912312312").unwrap_err()
         );
     }
 }
