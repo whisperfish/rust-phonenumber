@@ -22,6 +22,7 @@
 8524615|China Unicom
 8524616|China Unicom
 8524617|China Mobile
+8524618|China Mobile
 8524619|China Telecom Global Limited
 8524620|China Mobile
 8524621|China Mobile
@@ -63,9 +64,20 @@
 852470|Hutchison Telecom
 852471|Hutchison Telecom
 852472|China Mobile
+8524726|Hutchison Telecom
+8524727|Hutchison Telecom
+8524728|Hutchison Telecom
+8524729|Hutchison Telecom
+8524730|Hutchison Telecom
+8524731|SmarTone
+8524732|SmarTone
+8524733|SmarTone
+8524734|SmarTone
 8524740|China Mobile
 8524741|China Mobile
 8524742|China Mobile
+8524743|HKT
+8524744|HKT
 8524748|China Telecom Global Limited
 852475|Hutchison Telecom
 852476|China Mobile
@@ -110,6 +122,7 @@
 852532|HKT
 852533|3
 852534|China Mobile
+852535|Hutchison Telecom
 852536|HKT
 852537|China Mobile
 852538|China Unicom
@@ -256,7 +269,12 @@
 852663|China Unicom
 852664|China Mobile
 852665|HKT
-852666|China Unicom
+8526660|China Unicom
+8526661|China Unicom
+8526662|China Unicom
+8526663|China Unicom
+8526664|HKT
+8526665|HKT
 852667|China Mobile
 852668|3
 852669|HKT
@@ -299,7 +317,15 @@
 8527076|China Mobile
 8527077|Hutchison Telecom
 8527078|Hutchison Telecom
-852708|HKT
+8527080|HKT
+8527081|HKT
+8527082|HKT
+8527083|HKT
+8527084|HKT
+8527085|SmarTone
+8527086|SmarTone
+8527087|SmarTone
+8527088|SmarTone
 852709|Hutchison Telecom
 852840|China Mobile
 852841|Hutchison Telecom

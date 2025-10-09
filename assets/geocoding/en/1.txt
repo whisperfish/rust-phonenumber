@@ -3384,6 +3384,7 @@
 1256971|Huntsville, AL
 1256974|Moulton, AL
 1256997|Fort Payne, AL
+1257|British Colombia
 1260|Indiana
 1260244|Columbia City, IN
 1260248|Columbia City, IN
@@ -19386,6 +19387,7 @@
 1682647|Fort Worth, TX
 1682885|Fort Worth, TX
 1683|Ontario
+1686|Virginia
 1689|Florida
 1701|North Dakota
 1701221|Bismarck, ND
@@ -22771,6 +22773,7 @@
 1742|Ontario
 1743|North Carolina
 1747|California
+1748|Colorado
 1753|Ontario
 1754|Florida
 1757|Virginia
@@ -32132,6 +32135,7 @@
 1973992|Livingston, NJ
 1973993|Morristown, NJ
 1973994|Livingston, NJ
+1975|Missouri
 1978|Massachusetts
 1978208|Lawrence, MA
 1978232|Beverly, MA
