@@ -26,6 +26,16 @@ proptest! {
         let _ = parse(None, &s);
     }
 
+    // Issue #83: `parse` returns an error when parsing "+1 650-253-0000".
+    // Reason: the number was parsed using RFC 3966 rules, incorrectly parsing the prefix as
+    // "+1 650". A space should not be allowed in an RFC 3966 number, and the regex based parser
+    // should be used instead.
+    #[test]
+    fn parse_mixed_spaces_and_dashes(s in "\\+1[ -]650[ -]253[ -]0000") {
+        let parsed = parse(None, &s).unwrap();
+        prop_assert_eq!(parsed.country().id(), phonenumber::country::US.into());
+    }
+
     #[test]
     fn parse_belgian_phonenumbers(s in "\\+32[0-9]{8,9}") {
         let parsed = parse(None, &s).expect("valid Belgian number");
