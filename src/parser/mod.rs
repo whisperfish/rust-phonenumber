@@ -107,10 +107,7 @@ pub fn parse_with<S: AsRef<str>>(
             source: number.country,
         },
 
-        national: NationalNumber::new(
-            number.national.parse()?,
-            number.national.chars().take_while(|&c| c == '0').count() as u8,
-        )?,
+        national: number.national.parse()?,
 
         extension: number.extension.map(|s| Extension(s.into_owned())),
         carrier: number.carrier.map(|s| Carrier(s.into_owned())),
