@@ -29,7 +29,7 @@ pub struct Code {
 
 /// The source from which the country code is derived. This is not set in the
 /// general parsing method, but in the method that parses and keeps raw_input.
-#[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Hash, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Serialize, Deserialize, Hash, Debug, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum Source {
     /// The country code is derived based on a phone number with a leading "+",
@@ -51,13 +51,8 @@ pub enum Source {
     /// format (without country code). For example, this would be set when
     /// parsing the French number "01 42 68 53 00", when the default country is
     /// supplied as France.
+    #[default]
     Default,
-}
-
-impl Default for Source {
-    fn default() -> Self {
-        Source::Default
-    }
 }
 
 impl Code {
