@@ -2,7 +2,7 @@
 name = "phonenumber"
 version = "0.3.6+8.13.36"
 edition = "2021"
-rust-version = "1.58.0"
+rust-version = "1.76.0"
 
 authors = ["Gabriel Féron <g@leirbag.net>", "Ruben De Smet <ruben.de.smet@rubdos.be>", "meh. <meh@1aim.com>"]
 license = "Apache-2.0"
