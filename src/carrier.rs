@@ -18,7 +18,8 @@ use std::fmt;
 use crate::ParseError;
 
 /// A phone number carrier.
-/// see: https://en.wikipedia.org/wiki/Mobile_country_code#National_operators
+///
+/// See: https://en.wikipedia.org/wiki/Mobile_country_code#National_operators
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 pub struct Carrier {
     pub mcc: u16, // always 3 digits
