@@ -24,6 +24,11 @@ use nom::{
 };
 
 pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
+    // Per RFC3966, spaces are not allowed as separators.
+    if i.contains(' ') {
+        return Err(nom::Err::Error(make_error(i, ErrorKind::Tag)));
+    }
+
     parse! { i =>
         opt(tag_no_case("Tel:"));
         let prefix = opt(prefix);
