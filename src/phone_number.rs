@@ -282,11 +282,12 @@ mod test {
     #[case(parsed("+16137827274"), Some(CA), Type::FixedLineOrMobile)]
     #[case(parsed("+1 520 878 2491"), Some(US), Type::FixedLineOrMobile)]
     #[case(parsed("+1-520-878-2491"), Some(US), Type::FixedLineOrMobile)]
+    #[case(parsed("+1 520-878-2491"), Some(US), Type::FixedLineOrMobile)]
+    #[case(parsed("+1 800 723 3456"), Some(US), Type::TollFree)] // issue #46
+    #[case(parsed("+1 800-723-3456"), Some(US), Type::TollFree)] // issue #46
+    #[case(parsed("+1-800-723-3456"), Some(US), Type::TollFree)] // issue #46
+    #[case(parsed("+1 520-878-2491"), Some(US), Type::FixedLineOrMobile)] // issue #47
     #[case(parsed("+330631966543"), Some(FR), Type::Mobile)]
-    // Case for issues
-    // https://github.com/whisperfish/rust-phonenumber/issues/46 and
-    // https://github.com/whisperfish/rust-phonenumber/issues/47
-    // #[case(parsed("+1 520-878-2491"), US)]
     fn phone_numbers(
         #[case] number: PhoneNumber,
         #[case] country: Option<country::Id>,
