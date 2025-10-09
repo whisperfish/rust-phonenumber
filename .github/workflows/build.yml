@@ -80,25 +80,20 @@ jobs:
           command: test
           args: --all-targets --release --no-fail-fast
 
-      - name: Run tests
-        uses: actions-rs/cargo@v1
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
         if: ${{ matrix.coverage && matrix.tests }}
-        with:
-          command: test
-          args: --all-targets --no-fail-fast
-        env:
-          CARGO_INCREMENTAL: '0'
-          LLVM_PROFILE_FILE: "phonenumber-%p-%m.profraw"
-          RUSTFLAGS: '-Cinstrument-coverage -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
-          RUSTDOCFLAGS: '-Cinstrument-coverage -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
 
-      - name: Generate code coverage
-        uses: actions-rs/grcov@v0.1
-        if: ${{ matrix.coverage }}
+      - name: Run tests with coverage
+        run: cargo llvm-cov --all-features --all-targets --lcov --output-path lcov.info
+        if: ${{ matrix.coverage && matrix.tests }}
 
       - name: Upload coverage reports to Codecov with GitHub Action
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         if: ${{ matrix.coverage }}
+        with:
+          files: lcov.info
+          fail_ci_if_error: true
 
   rustfmt:
     name: rustfmt
