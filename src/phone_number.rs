@@ -149,7 +149,7 @@ impl FromStr for PhoneNumber {
 
 impl fmt::Display for PhoneNumber {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.format())
+        self.format().fmt(f)
     }
 }
 
