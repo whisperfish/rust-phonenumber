@@ -27,7 +27,7 @@ proptest! {
     }
 
     // Issue #83: `parse` returns an error when parsing "+1 650-253-0000".
-    // Reason: the number was parsed using RFC 3966 rules, incorretly parsing the prefix as 
+    // Reason: the number was parsed using RFC 3966 rules, incorrectly parsing the prefix as
     // "+1 650". A space should not be allowed in an RFC 3966 number, and the regex based parser
     // should be used instead.
     #[test]
