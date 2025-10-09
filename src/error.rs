@@ -49,6 +49,8 @@ pub enum Metadata {
 
 /// Parsing errors.
 #[derive(Error, Clone, Debug)]
+// This module is used in build.rs, and only some public items are used there.
+#[allow(dead_code)]
 pub enum Parse {
     /// This generally indicates the string passed in had less than 3 digits in
     /// it.
