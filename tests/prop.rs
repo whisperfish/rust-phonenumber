@@ -36,6 +36,14 @@ proptest! {
         prop_assert_eq!(parsed.country().id(), phonenumber::country::US.into());
     }
 
+    // Issue #82: same problem as issue #83. In this case, the prefix was parsed as "+687 11",
+    // which does not fit in a u16. However, the correct country code is "+687".
+    #[test]
+    fn issue82(s in "\\+687 11[ .]11[ .]11") {
+        let parsed = parse(None, &s).unwrap();
+        prop_assert_eq!(parsed.country().id(), phonenumber::country::NC.into());
+    }
+
     #[test]
     fn parse_belgian_phonenumbers(s in "\\+32[0-9]{8,9}") {
         let parsed = parse(None, &s).expect("valid Belgian number");
