@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Rust version of [libphonenumber](https://github.com/googlei18n/libphonenumber).
-We currently require 1.70.0 as minimum supported Rust version (MSRV).
+We currently require 1.76.0 as minimum supported Rust version (MSRV).
 
 ## Usage
 
