@@ -53,6 +53,30 @@ pub fn parse_with<S: AsRef<str>>(
     // Normalize the number and extract country code.
     number = helper::country_code(database, country, number)?;
 
+    let country = if country.is_none() {
+        // If no country was supplied, try to determine it from the number.
+        // We need to determine the country to be able to strip the national prefix if present.
+        let code = country::Code {
+            value: number.prefix.clone().map(|p| p.parse()).unwrap_or(Ok(0))?,
+            source: number.country,
+        };
+
+        let national = NationalNumber::new(
+            number.national.parse()?,
+            number.national.chars().take_while(|&c| c == '0').count() as u8,
+        )?;
+
+        use either::{Left, Right};
+        match validator::source_for(database, code.value(), &national.value().to_string()) {
+            Some(Left(region)) => database.by_id(region.as_ref()),
+            Some(Right(code)) => database.by_code(&code).and_then(|m| m.into_iter().next()),
+            None => None,
+        }
+        .and_then(|m| m.id().parse().ok())
+    } else {
+        country
+    };
+
     // Extract carrier and strip national prefix if present.
     if let Some(meta) = country.and_then(|c| database.by_id(c.as_ref())) {
         let mut potential = helper::national_number(meta, number.clone());
