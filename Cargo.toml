@@ -2,7 +2,7 @@
 name = "phonenumber"
 version = "0.3.8+9.0.15"
 edition = "2021"
-rust-version = "1.58.0"
+rust-version = "1.76.0"
 
 authors = ["Gabriel Féron <g@leirbag.net>", "Ruben De Smet <ruben.de.smet@rubdos.be>", "meh. <meh@1aim.com>"]
 license = "Apache-2.0"
@@ -18,28 +18,28 @@ either = "1.11"
 fnv = "1"
 once_cell = "1"
 nom = "7.1"
-quick-xml = ">=0.28, <= 0.37"
+quick-xml = ">=0.28, <= 0.38"
 regex = "1.7"
 regex-cache = "0.2"
 serde = "1.0"
 serde_derive = "1.0"
 strum = { version = ">=0.24, <=0.26", features = ["derive"] }
-thiserror = "1.0"
+thiserror = "2.0"
 
 [build-dependencies]
 bincode = "1.3"
-quick-xml = ">=0.28, <=0.37"
+quick-xml = ">=0.28, <=0.38"
 regex = "1.7"
 serde = "1.0"
 serde_derive = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"
 
 [dev-dependencies]
 anyhow = "1"
 criterion = ">=0.4, <=0.5"
 doc-comment = "0.3"
-rstest = ">= 0.13, <=0.19"
-rstest_reuse = "0.6"
+rstest = "0.26"
+rstest_reuse = "0.7"
 proptest = "1.0.0"
 
 [[bench]]

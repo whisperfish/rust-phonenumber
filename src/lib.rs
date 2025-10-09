@@ -18,9 +18,6 @@
 use doc_comment::doctest;
 
 #[cfg(test)]
-use rstest_reuse;
-
-#[cfg(test)]
 doctest!("../README.md");
 
 /// Errors for various parts of the crate.
