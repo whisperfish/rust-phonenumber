@@ -639,16 +639,10 @@
     <!-- http://www.rtr.at/en/tk/E129 -->
     <territory id="AT">
       <generalDesc>
-        <nationalNumberPattern>
-          [1268]\d\d(?:
-            \d(?:
-              \d{2}
-            )?
-          )?
-        </nationalNumberPattern>
+        <nationalNumberPattern>[1268]\d{2,5}</nationalNumberPattern>
       </generalDesc>
       <shortCode>
-        <possibleLengths national="3,4,6"/>
+        <possibleLengths national="[3-6]"/>
         <exampleNumber>112</exampleNumber>
         <nationalNumberPattern>
           1(?:
@@ -671,7 +665,10 @@
             )
           )|
           (?:
-            220|
+            2(?:
+              066|
+              20
+            )|
             61|
             8108[1-3]
           )0
@@ -696,14 +693,15 @@
       <!-- Added yesss! numbers 810810 , 810820 and 810830 based on their website. 
            Added Georg number 610 based on their website. -->
       <carrierSpecific>
-        <possibleLengths national="3,4,6"/>
+        <possibleLengths national="[3-6]"/>
         <exampleNumber>610</exampleNumber>
         <nationalNumberPattern>
+          220\d|
+          610|
           (?:
-            220|
-            810\d\d
-          )\d|
-          610
+            206|
+            810\d
+          )\d\d
         </nationalNumberPattern>
       </carrierSpecific>
       <emergency>
@@ -732,6 +730,11 @@
           )
         </nationalNumberPattern>
       </expandedEmergency>
+      <smsServices>
+        <possibleLengths national="5"/>
+        <exampleNumber>20600</exampleNumber>
+        <nationalNumberPattern>206\d\d</nationalNumberPattern>
+      </smsServices>
     </territory>
 
     <!-- Australia (AU) -->
@@ -3603,7 +3606,7 @@
     <!-- http://en.wikipedia.org/wiki/Telephone_numbers_in_germany -->
     <territory id="DE">
       <generalDesc>
-        <nationalNumberPattern>[13]\d{2,5}</nationalNumberPattern>
+        <nationalNumberPattern>[1-46-8]\d{2,5}</nationalNumberPattern>
       </generalDesc>
       <!-- 118xx short numbers are used for directory services and 1180xx are used for call
            connect services. -->
@@ -3622,7 +3625,26 @@
             )|
             800\d
           )|
-          3311|
+          22(?:
+            044|
+            5(?:
+              43|
+              80
+            )|
+            7700|
+            922
+          )|
+          33(?:
+            11|
+            3[34]
+          )|
+          44844|
+          600\d\d|
+          7(?:
+            0\d{3}|
+            464
+          )|
+          80808|
           118\d\d
         </nationalNumberPattern>
       </shortCode>
@@ -3637,9 +3659,26 @@
         </nationalNumberPattern>
       </tollFree>
       <carrierSpecific>
-        <possibleLengths national="4"/>
+        <possibleLengths national="[4-6]"/>
         <exampleNumber>3310</exampleNumber>
-        <nationalNumberPattern>331\d</nationalNumberPattern>
+        <nationalNumberPattern>
+          (?:
+            33[13]|
+            746
+          )\d|
+          (?:
+            22(?:
+              [059]|
+              7\d
+            )|
+            (?:
+              44|
+              80
+            )8|
+            600|
+            70\d
+          )\d\d
+        </nationalNumberPattern>
       </carrierSpecific>
       <emergency>
         <possibleLengths national="3"/>
@@ -3651,6 +3690,28 @@
         <exampleNumber>116000</exampleNumber>
         <nationalNumberPattern>116\d{3}</nationalNumberPattern>
       </expandedEmergency>
+      <smsServices>
+        <possibleLengths national="[4-6]"/>
+        <exampleNumber>3330</exampleNumber>
+        <nationalNumberPattern>
+          (?:
+            333|
+            746
+          )\d|
+          (?:
+            22(?:
+              [059]|
+              7\d
+            )|
+            (?:
+              44|
+              80
+            )8|
+            600|
+            70\d
+          )\d\d
+        </nationalNumberPattern>
+      </smsServices>
     </territory>
 
     <!-- Djibouti (DJ) -->
@@ -4490,6 +4551,7 @@
     </territory>
 
     <!-- Spain (ES) -->
+    <!-- https://avance.digital.gob.es/es-ES/Servicios/Numeracion/Documents/Presentation_NNP_Spain.pdf -->
     <!-- http://www.minetur.gob.es/telecomunicaciones/es-ES/Servicios/Numeracion/Documents/2012_09_10_Presentation_E164_Numbering_plan_Spain.pdf -->
     <!-- http://www.minetur.gob.es/telecomunicaciones/es-ES/Servicios/Numeracion/Documents/Descripcion_plan_20101216.pdf -->
     <!-- http://www.minetur.gob.es/telecomunicaciones/es-ES/Servicios/Numeracion/Documents/13-01-11_Gu%C3%ADa_Numeracion.pdf -->
@@ -4504,7 +4566,8 @@
         <exampleNumber>010</exampleNumber>
         <nationalNumberPattern>
           0(?:
-            1[0-26]|
+            1[0-267]|
+            2[148]|
             6[0-257]|
             8[058]|
             9[12]
@@ -4571,7 +4634,9 @@
         <exampleNumber>010</exampleNumber>
         <nationalNumberPattern>
           0(?:
-            [16][0-2]|
+            1[0-27]|
+            2[148]|
+            6[0-2]|
             80|
             9[12]
           )|
@@ -6229,12 +6294,16 @@
     <!-- http://en.wikipedia.org/wiki/%2B385 -->
     <territory id="HR">
       <generalDesc>
-        <nationalNumberPattern>[19]\d{1,5}</nationalNumberPattern>
+        <nationalNumberPattern>[016-9]\d{1,5}</nationalNumberPattern>
       </generalDesc>
       <shortCode>
         <possibleLengths national="[2-6]"/>
         <exampleNumber>93</exampleNumber>
         <nationalNumberPattern>
+          (?:
+            06|
+            [6-8]\d{4}
+          )\d|
           1(?:
             1(?:
               2|
@@ -6275,9 +6344,15 @@
            / premium rate. Adding 118XX to premium rate so that products are aware of the
            possibility of premium rate numbers under 118 range. -->
       <premiumRate>
-        <possibleLengths national="5"/>
-        <exampleNumber>11800</exampleNumber>
-        <nationalNumberPattern>118\d\d</nationalNumberPattern>
+        <possibleLengths national="3,5,6"/>
+        <exampleNumber>060</exampleNumber>
+        <nationalNumberPattern>
+          06\d|
+          (?:
+            118|
+            [6-8]\d{3}
+          )\d\d
+        </nationalNumberPattern>
       </premiumRate>
       <!-- Bonbon users can send free SMS to 13977 short code.
            http://www.bonbon.hr/ponuda/pretplata/paketi/ -->
@@ -7752,15 +7827,15 @@
       <generalDesc>
         <nationalNumberPattern>
           [01]\d\d(?:
-            \d{7}
+            \d{5,7}
           )?
         </nationalNumberPattern>
       </generalDesc>
       <shortCode>
-        <possibleLengths national="3,10"/>
+        <possibleLengths national="3,[8-10]"/>
         <exampleNumber>102</exampleNumber>
         <nationalNumberPattern>
-          000[259]\d{6}|
+          000[2569]\d{4,6}|
           1(?:
             0[24]|
             1[089]|
@@ -7782,9 +7857,9 @@
       <!-- As per confirmations from the carrier (NTTDocomo), these are SMS only short codes,
            which are used to interact with respective companies i.e. after scanning the code. -->
       <smsServices>
-        <possibleLengths national="10"/>
-        <exampleNumber>0002000000</exampleNumber>
-        <nationalNumberPattern>000[259]\d{6}</nationalNumberPattern>
+        <possibleLengths national="[8-10]"/>
+        <exampleNumber>00020000</exampleNumber>
+        <nationalNumberPattern>000[2569]\d{4,6}</nationalNumberPattern>
       </smsServices>
     </territory>
 
@@ -9767,7 +9842,7 @@
     </territory>
 
     <!-- Mauritius (MU) -->
-    <!-- http://www.icta.mu/telecommunications/numbering.htm -->
+    <!-- https://www.icta.mu/telecom-numbering/ -->
     <territory id="MU">
       <generalDesc>
         <nationalNumberPattern>[189]\d{2,4}</nationalNumberPattern>
@@ -10560,7 +10635,7 @@
               [59]
             )|
             7[57]|
-            8[5-9]\d|
+            8\d\d|
             90
           )
         </nationalNumberPattern>
@@ -11904,7 +11979,7 @@
     </territory>
 
     <!-- Sweden (SE) -->
-    <!-- http://www.pts.se/upload/Ovrigt/Tele/Nummerfragor/Nrplansammanst%C3%A4llning-2013-07-05.pdf -->
+    <!-- https://pts.se/en/internet-and-telephony/numbering-and-addressing/ -->
     <!-- http://www.etiskaradet.se/sidor/om-sms-tjanster.aspx -->
     <territory id="SE">
       <generalDesc>
@@ -13967,7 +14042,7 @@
     <!-- http://en.wikipedia.org/wiki/Telephone_numbers_in_Uruguay -->
     <territory id="UY">
       <generalDesc>
-        <nationalNumberPattern>[129]\d{2,4}</nationalNumberPattern>
+        <nationalNumberPattern>[19]\d{2,4}</nationalNumberPattern>
       </generalDesc>
       <shortCode>
         <possibleLengths national="[3-5]"/>
@@ -13980,7 +14055,6 @@
             787|
             997\d?
           )|
-          21997|
           911
         </nationalNumberPattern>
       </shortCode>
