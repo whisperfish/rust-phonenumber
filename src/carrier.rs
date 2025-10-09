@@ -23,6 +23,7 @@ use crate::ParseError;
 pub struct Carrier {
     pub mcc: u16, // always 3 digits
     pub mnc: u16, // 2 or 3 digits
+    pub mnc_3: bool,
 }
 
 impl TryFrom<&str> for Carrier {
@@ -38,13 +39,18 @@ impl TryFrom<&str> for Carrier {
                 .get(3..)
                 .and_then(|c| c.parse().ok())
                 .ok_or(ParseError::InvalidNetworkCode)?,
+            mnc_3: value.len() == 6,
         })
     }
 }
 
 impl fmt::Display for Carrier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}{}", self.mcc, self.mnc)
+        if self.mnc_3 {
+            write!(f, "{:03}{:03}", self.mcc, self.mnc)
+        } else {
+            write!(f, "{:03}{:02}", self.mcc, self.mnc)
+        }
     }
 }
 
@@ -55,7 +61,21 @@ mod test {
 
     #[test]
     fn test_mobile_network_codes() {
-        assert_eq!(Carrier { mcc: 336, mnc: 1 }, "336001".try_into().unwrap());
-        assert_eq!(Carrier { mcc: 336, mnc: 35 }, "33635".try_into().unwrap());
+        assert_eq!(
+            Carrier {
+                mcc: 336,
+                mnc: 1,
+                mnc_3: true
+            },
+            "336001".try_into().unwrap()
+        );
+        assert_eq!(
+            Carrier {
+                mcc: 336,
+                mnc: 35,
+                mnc_3: false
+            },
+            "33635".try_into().unwrap()
+        );
     }
 }
