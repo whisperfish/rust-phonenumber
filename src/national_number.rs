@@ -18,7 +18,7 @@ use std::fmt;
 /// The national number part of a phone number.
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 pub struct NationalNumber {
-    pub(crate) value: u64,
+    value: u64,
 }
 
 impl NationalNumber {

@@ -206,7 +206,11 @@ impl PhoneNumber {
     /// Get the metadata that applies to this phone number from the given
     /// database.
     pub fn metadata<'a>(&self, database: &'a Database) -> Option<&'a Metadata> {
-        match validator::source_for(database, self.code.value(), &self.national.to_string())? {
+        match validator::source_for(
+            database,
+            self.code.value(),
+            &self.national.value().to_string(),
+        )? {
             Left(region) => database.by_id(region.as_ref()),
             Right(code) => database.by_code(&code).and_then(|m| m.into_iter().next()),
         }
@@ -225,7 +229,7 @@ impl PhoneNumber {
     /// Determine the [`Type`] of the phone number.
     pub fn number_type(&self, database: &Database) -> Type {
         match self.metadata(database) {
-            Some(metadata) => validator::number_type(metadata, &self.national.value.to_string()),
+            Some(metadata) => validator::number_type(metadata, &self.national.value().to_string()),
             None => Type::Unknown,
         }
     }
@@ -278,10 +282,12 @@ mod test {
     #[case(parsed("+16137827274"), Some(CA), Type::FixedLineOrMobile)]
     #[case(parsed("+1 520 878 2491"), Some(US), Type::FixedLineOrMobile)]
     #[case(parsed("+1-520-878-2491"), Some(US), Type::FixedLineOrMobile)]
-    // Case for issues
-    // https://github.com/whisperfish/rust-phonenumber/issues/46 and
-    // https://github.com/whisperfish/rust-phonenumber/issues/47
-    // #[case(parsed("+1 520-878-2491"), US)]
+    #[case(parsed("+1 520-878-2491"), Some(US), Type::FixedLineOrMobile)]
+    #[case(parsed("+1 800 723 3456"), Some(US), Type::TollFree)] // issue #46
+    #[case(parsed("+1 800-723-3456"), Some(US), Type::TollFree)] // issue #46
+    #[case(parsed("+1-800-723-3456"), Some(US), Type::TollFree)] // issue #46
+    #[case(parsed("+1 520-878-2491"), Some(US), Type::FixedLineOrMobile)] // issue #47
+    #[case(parsed("+330631966543"), Some(FR), Type::Mobile)]
     fn phone_numbers(
         #[case] number: PhoneNumber,
         #[case] country: Option<country::Id>,
