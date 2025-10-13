@@ -110,18 +110,44 @@ pub fn parse_with<S: AsRef<str>>(
 
 #[cfg(test)]
 mod test {
-    use crate::country;
+    use crate::country::{self, Source};
+    use crate::metadata::DATABASE;
     use crate::national_number::NationalNumber;
     use crate::parser;
     use crate::phone_number::PhoneNumber;
+    use rstest::*;
 
-    #[test]
-    fn parse() {
-        let mut number = PhoneNumber {
-            code: country::Code {
-                value: 64,
-                source: country::Source::Default,
-            },
+    #[rstest]
+    #[case(Source::Default, country::NZ, "033316005")]
+    #[case(Source::Default, country::NZ, "33316005")]
+    #[case(Source::Default, country::NZ, "03-331 6005")]
+    #[case(Source::Default, country::NZ, "03 331 6005")]
+    #[case(Source::Plus, country::NZ, "tel:03-331-6005;phone-context=+64")]
+    // FIXME: What the fuck is this.
+    // #[case(Source::Plus, country::NZ, "tel:331-6005;phone-context=+64-3")]
+    #[case(Source::Plus, country::NZ, "tel:03-331-6005;phone-context=+64;a=%A1")]
+    #[case(
+        Source::Plus,
+        country::NZ,
+        "tel:03-331-6005;isub=12345;phone-context=+64"
+    )]
+    #[case(Source::Plus, country::NZ, "tel:+64-3-331-6005;isub=12345")]
+    #[case(Source::Plus, country::NZ, "03-331-6005;phone-context=+64")]
+    // Idd
+    #[case(Source::Idd, country::NZ, "0064 3 331 6005")]
+    #[case(Source::Idd, country::US, "01164 3 331 6005")]
+    // Plus
+    #[case(Source::Plus, country::US, "+64 3 331 6005")]
+    #[case(Source::Plus, country::US, "+01164 3 331 6005")]
+    #[case(Source::Plus, country::NZ, "+0064 3 331 6005")]
+    #[case(Source::Plus, country::NZ, "+ 00 64 3 331 6005")]
+    fn parse_1(
+        #[case] source: Source,
+        #[case] country: impl Into<Option<country::Id>>,
+        #[case] number: &'static str,
+    ) {
+        let reference = PhoneNumber {
+            code: country::Code { value: 64, source },
 
             national: NationalNumber::new(33316005, 0).unwrap(),
 
@@ -129,99 +155,35 @@ mod test {
             carrier: None,
         };
 
-        number.code.source = country::Source::Default;
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "033316005").unwrap()
-        );
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "33316005").unwrap()
-        );
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "03-331 6005").unwrap()
-        );
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "03 331 6005").unwrap()
-        );
+        let country = country.into();
+        println!("parsing {} with country {:?}", number, country);
+        let parsed = parser::parse(country, number).unwrap();
+        println!("number type: {:?}", parsed.number_type(&DATABASE));
+        println!("parsed: {:?}", parsed);
 
-        number.code.source = country::Source::Plus;
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "tel:03-331-6005;phone-context=+64").unwrap()
-        );
-        // FIXME: What the fuck is this.
-        // assert_eq!(number, parser::parse(Some(country::NZ), "tel:331-6005;phone-context=+64-3").unwrap());
-        // assert_eq!(number, parser::parse(Some(country::NZ), "tel:331-6005;phone-context=+64-3").unwrap());
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "tel:03-331-6005;phone-context=+64;a=%A1").unwrap()
-        );
-        assert_eq!(
-            number,
-            parser::parse(
-                Some(country::NZ),
-                "tel:03-331-6005;isub=12345;phone-context=+64"
-            )
-            .unwrap()
-        );
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "tel:+64-3-331-6005;isub=12345").unwrap()
-        );
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "03-331-6005;phone-context=+64").unwrap()
-        );
+        assert_eq!(reference, parsed);
+    }
 
-        number.code.source = country::Source::Idd;
+    #[test]
+    fn parse_2() {
         assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "0064 3 331 6005").unwrap()
-        );
-        assert_eq!(
-            number,
-            parser::parse(Some(country::US), "01164 3 331 6005").unwrap()
-        );
+            PhoneNumber {
+                code: country::Code {
+                    value: 64,
+                    source: Source::Number,
+                },
 
-        number.code.source = country::Source::Plus;
-        assert_eq!(
-            number,
-            parser::parse(Some(country::US), "+64 3 331 6005").unwrap()
-        );
+                national: NationalNumber::new(64123456, 0).unwrap(),
 
-        assert_eq!(
-            number,
-            parser::parse(Some(country::US), "+01164 3 331 6005").unwrap()
-        );
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "+0064 3 331 6005").unwrap()
-        );
-        assert_eq!(
-            number,
-            parser::parse(Some(country::NZ), "+ 00 64 3 331 6005").unwrap()
-        );
-
-        let number = PhoneNumber {
-            code: country::Code {
-                value: 64,
-                source: country::Source::Number,
+                extension: None,
+                carrier: None,
             },
-
-            national: NationalNumber::new(64123456, 0).unwrap(),
-
-            extension: None,
-            carrier: None,
-        };
-
-        assert_eq!(
-            number,
             parser::parse(Some(country::NZ), "64(0)64123456").unwrap()
         );
+    }
 
+    #[test]
+    fn parse_3() {
         assert_eq!(
             PhoneNumber {
                 code: country::Code {
@@ -236,7 +198,10 @@ mod test {
             },
             parser::parse(Some(country::DE), "301/23456").unwrap()
         );
+    }
 
+    #[test]
+    fn parse_4() {
         assert_eq!(
             PhoneNumber {
                 code: country::Code {
@@ -251,7 +216,10 @@ mod test {
             },
             parser::parse(Some(country::JP), "+81 *2345").unwrap()
         );
+    }
 
+    #[test]
+    fn parse_5() {
         assert_eq!(
             PhoneNumber {
                 code: country::Code {
@@ -266,7 +234,10 @@ mod test {
             },
             parser::parse(Some(country::NZ), "12").unwrap()
         );
+    }
 
+    #[test]
+    fn parse_6() {
         assert_eq!(
             PhoneNumber {
                 code: country::Code {
