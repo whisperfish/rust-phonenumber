@@ -353,6 +353,7 @@ mod test {
         println!("parsing {} with country {:?}", number, country);
         let parsed = parser::parse(country, number).unwrap();
         println!("number type: {:?}", parsed.number_type(&DATABASE));
+        println!("parsed: {:?}", parsed);
         assert!(validator::is_valid(&parsed) == valid);
     }
 }
