@@ -227,7 +227,12 @@ impl PhoneNumber {
     }
 
     /// Determine the [`Type`] of the phone number.
-    pub fn number_type(&self, database: &Database) -> Type {
+    pub fn number_type(&self) -> Type {
+        self.number_type_with(&DATABASE)
+    }
+
+    /// Determine the [`Type`] of the phone number with the given `Database`.
+    pub fn number_type_with(&self, database: &Database) -> Type {
         match self.metadata(database) {
             Some(metadata) => validator::number_type(metadata, &self.national.value().to_string()),
             None => Type::Unknown,
@@ -256,7 +261,6 @@ impl<'a> Deref for Country<'a> {
 #[cfg(test)]
 mod test {
     use crate::country::{self, Id::*};
-    use crate::metadata::DATABASE;
     use crate::Type;
     use crate::{parser, Mode, PhoneNumber};
     use anyhow::Context;
@@ -340,6 +344,6 @@ mod test {
         #[case] _country: Option<country::Id>,
         #[case] r#type: Type,
     ) {
-        assert_eq!(r#type, number.number_type(&DATABASE));
+        assert_eq!(r#type, number.number_type());
     }
 }
