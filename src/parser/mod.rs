@@ -17,6 +17,7 @@ use crate::consts;
 use crate::country;
 use crate::error;
 use crate::extension::Extension;
+use crate::is_viable;
 use crate::metadata::{Database, DATABASE};
 use crate::national_number::NationalNumber;
 use crate::phone_number::{PhoneNumber, Type};
@@ -49,6 +50,10 @@ pub fn parse_with<S: AsRef<str>>(
 
     // Try to parse the number as RFC3966 or natural language.
     let (_, mut number) = phone_number(string.as_ref()).or(Err(error::Parse::NoNumber))?;
+
+    if !is_viable(&number.national) {
+        return Err(error::Parse::NoNumber);
+    }
 
     // Normalize the number and extract country code.
     number = helper::country_code(database, country, number)?;
@@ -283,6 +288,12 @@ mod test {
     #[test]
     fn advisory_2() {
         let res = parser::parse(None, "+dwPAA;phone-context=AA");
+        assert!(res.is_err(), "{res:?}");
+    }
+
+    #[test]
+    fn email() {
+        let res = parser::parse(Some(country::US), "someletters1110@gmail.com");
         assert!(res.is_err(), "{res:?}");
     }
 }
