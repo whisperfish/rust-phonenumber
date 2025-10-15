@@ -29,11 +29,18 @@ fn short(i: &str) -> IResult<&str, ()> {
 }
 
 fn long(i: &str) -> IResult<&str, ()> {
+    fn first_group(i: &str) -> IResult<&str, ()> {
+        parse! { i =>
+            many0(alt((punctuation, star)));
+            count(digit, 1);
+        };
+        Ok((i, ()))
+    }
+
     parse! { i =>
         many0(plus);
-        many0(alt((punctuation, star)));
-        count(digit, 3);
-        many0(digit);
+        count(first_group, 3);
+        many0(alt((punctuation, star, digit)));
         many0(alt((punctuation, star, digit, alpha)));
         ieof;
     };
@@ -61,5 +68,7 @@ mod test {
         assert!(phone_number("08-PIZZA").is_err());
         assert!(phone_number("8-PIZZA").is_err());
         assert!(phone_number("12. March").is_err());
+        // E-mail addresses are not phone numbers.
+        assert!(phone_number("1110@gmail.com").is_err());
     }
 }
