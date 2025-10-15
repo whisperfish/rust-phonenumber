@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::parser::helper::*;
+use crate::{consts, parser::helper::*};
 use nom::{branch::*, combinator::*, multi::*, IResult};
 
 pub fn phone_number(i: &str) -> IResult<&str, &str> {
@@ -21,7 +21,7 @@ pub fn phone_number(i: &str) -> IResult<&str, &str> {
 
 fn short(i: &str) -> IResult<&str, ()> {
     parse! { i =>
-        count(digit, 2);
+        count(digit, consts::MIN_LENGTH_FOR_NSN);
         ieof;
     };
 
