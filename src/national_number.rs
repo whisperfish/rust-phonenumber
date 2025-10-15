@@ -13,12 +13,23 @@
 // limitations under the License.
 
 use serde_derive::{Deserialize, Serialize};
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 /// The national number part of a phone number.
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
 pub struct NationalNumber {
     value: u64,
+}
+
+impl FromStr for NationalNumber {
+    type Err = crate::error::Parse;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let zeros = s.chars().take_while(|&c| c == '0').count();
+        let value = s[zeros..].parse::<u64>()?;
+
+        NationalNumber::new(value, zeros as u8)
+    }
 }
 
 impl NationalNumber {
