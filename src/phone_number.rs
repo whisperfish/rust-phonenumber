@@ -233,6 +233,11 @@ impl PhoneNumber {
             None => Type::Unknown,
         }
     }
+
+    /// Determine the [`Type`] of the phone number.
+    pub fn number_type_with_default_db(&self) -> Type {
+        self.number_type(&DATABASE)
+    }
 }
 
 impl<'a> Country<'a> {
