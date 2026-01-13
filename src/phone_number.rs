@@ -240,8 +240,12 @@ impl<'a> Country<'a> {
         self.0.code.value()
     }
 
-    pub fn id(&self) -> Option<country::Id> {
-        self.0.metadata(&DATABASE).and_then(|m| m.id().parse().ok())
+    pub fn id(&self) -> Result<Option<country::Id>, crate::error::Parse> {
+        self.0
+            .metadata(&DATABASE)
+            .map(|m| m.id().parse())
+            .transpose()
+            .map_err(|_e| crate::error::Parse::InvalidCountryCode)
     }
 }
 
@@ -301,7 +305,10 @@ mod test {
         #[case] country: Option<country::Id>,
         #[case] _type: Type,
     ) -> anyhow::Result<()> {
-        assert_eq!(country, number.country().id());
+        // Flatten the error into an Option.
+        // XXX: We can't currently distinguish an error case from an unavailable case, given the
+        // current phone number list in rstest above.
+        assert_eq!(country, number.country().id().ok().flatten());
 
         Ok(())
     }
