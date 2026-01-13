@@ -3,8 +3,6 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
-use bincode::Options;
-
 #[path = "src/metadata/loader.rs"]
 mod loader;
 
@@ -24,8 +22,5 @@ fn main() {
             .expect("could not create database file"),
     );
 
-    bincode::options()
-        .with_varint_encoding()
-        .serialize_into(&mut out, &metadata)
-        .expect("failed to serialize database");
+    postcard::to_io(&metadata, &mut out).expect("failed to serialize database");
 }
