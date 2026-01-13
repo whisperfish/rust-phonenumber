@@ -13,11 +13,11 @@ keywords = ["phonenumber", "phone", "number", "parser", "formatter"]
 readme = "README.md"
 
 [dependencies]
-bincode = "1.3"
 either = "1.11"
 fnv = "1"
 once_cell = "1"
 nom = "7.1"
+postcard = "1.1"
 quick-xml = ">=0.28, <= 0.38"
 regex = "1.7"
 regex-cache = "0.2"
@@ -27,7 +27,7 @@ strum = { version = ">=0.24, <=0.27", features = ["derive"] }
 thiserror = "2.0"
 
 [build-dependencies]
-bincode = "1.3"
+postcard = { version = "1.1", features = ["use-std"] }
 quick-xml = ">=0.28, <=0.38"
 regex = "1.7"
 serde = "1.0"
