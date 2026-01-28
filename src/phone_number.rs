@@ -322,8 +322,14 @@ mod test {
         };
 
         let formatted = number.format().mode(mode).to_string();
+
+        if mode == Mode::National && country_hint.is_none() {
+            // If we are in national mode, we need to have a country hint
+            return Ok(());
+        }
+
         let parsed = parser::parse(country_hint, &formatted).with_context(|| {
-            format!("parsing {number} after formatting in {mode:?} mode as {formatted}")
+            format!("parsing {number} with country hint {country_hint:?} after formatting in {mode:?} mode as {formatted}")
         })?;
 
         // impl Eq for PhoneNumber does not consider differently parsed phone numbers to be equal.
@@ -341,5 +347,13 @@ mod test {
         #[case] r#type: Type,
     ) {
         assert_eq!(r#type, number.number_type(&DATABASE));
+    }
+
+    #[test]
+    fn equality() {
+        let a = crate::parse(None, "+32474091150").unwrap();
+        let b = crate::parse(Some(BE), "0474091150").unwrap();
+
+        assert_eq!(a, b);
     }
 }
