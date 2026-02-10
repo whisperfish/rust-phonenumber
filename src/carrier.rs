@@ -14,34 +14,69 @@
 
 use serde_derive::{Deserialize, Serialize};
 use std::fmt;
-use std::ops::Deref;
+
+use crate::ParseError;
 
 /// A phone number carrier.
+///
+/// See: https://en.wikipedia.org/wiki/Mobile_country_code#National_operators
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
-pub struct Carrier(pub(crate) String);
-
-impl<T: Into<String>> From<T> for Carrier {
-    fn from(value: T) -> Carrier {
-        Carrier(value.into())
-    }
+pub struct Carrier {
+    pub mcc: u16, // always 3 digits
+    pub mnc: u16, // 2 or 3 digits
+    pub mnc_3: bool,
 }
 
-impl Deref for Carrier {
-    type Target = str;
+impl TryFrom<&str> for Carrier {
+    type Error = ParseError;
 
-    fn deref(&self) -> &str {
-        &self.0
-    }
-}
-
-impl AsRef<str> for Carrier {
-    fn as_ref(&self) -> &str {
-        &self.0
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            mcc: value
+                .get(0..3)
+                .and_then(|c| c.parse().ok())
+                .ok_or(ParseError::InvalidCountryCode)?,
+            mnc: value
+                .get(3..)
+                .and_then(|c| c.parse().ok())
+                .ok_or(ParseError::InvalidNetworkCode)?,
+            mnc_3: value.len() == 6,
+        })
     }
 }
 
 impl fmt::Display for Carrier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
+        if self.mnc_3 {
+            write!(f, "{:03}{:03}", self.mcc, self.mnc)
+        } else {
+            write!(f, "{:03}{:02}", self.mcc, self.mnc)
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Carrier;
+    use std::convert::TryInto;
+
+    #[test]
+    fn test_mobile_network_codes() {
+        assert_eq!(
+            Carrier {
+                mcc: 336,
+                mnc: 1,
+                mnc_3: true
+            },
+            "336001".try_into().unwrap()
+        );
+        assert_eq!(
+            Carrier {
+                mcc: 336,
+                mnc: 35,
+                mnc_3: false
+            },
+            "33635".try_into().unwrap()
+        );
     }
 }
