@@ -43,6 +43,9 @@ pub use crate::extension::Extension;
 mod carrier;
 pub use crate::carrier::Carrier;
 
+/// Carrier name lookup from libphonenumber prefix data.
+pub mod carrier_mapper;
+
 mod phone_number;
 pub use crate::phone_number::{PhoneNumber, Type};
 

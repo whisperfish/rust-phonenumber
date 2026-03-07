@@ -50,3 +50,15 @@ fn main() {
 	}
 }
 ```
+
+## Carrier name lookup
+
+Look up the carrier name for a phone number using the bundled libphonenumber
+prefix data. Supports multiple languages with automatic fallback.
+
+```rust
+use phonenumber::carrier_mapper;
+
+let number = phonenumber::parse(None, "+33600000000").unwrap();
+assert_eq!(carrier_mapper::name_for_number(&number, "en"), Some("Free Mobile"));
+```
