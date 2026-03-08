@@ -24,7 +24,7 @@ fn build_metadata_database() {
     println!("cargo:rerun-if-changed={pnm_path}");
 
     let mut out = BufWriter::new(
-        File::create(Path::new(&env::var("OUT_DIR").unwrap()).join("database.bin"))
+        File::create(Path::new(&env::var("OUT_DIR").expect("OUT_DIR not set")).join("database.bin"))
             .expect("could not create database file"),
     );
 
@@ -40,38 +40,27 @@ fn build_carrier_data() {
     let mut entries: BTreeMap<String, BTreeMap<String, String>> = BTreeMap::new();
     let mut max_prefix_len: usize = 0;
 
-    if !carrier_dir.is_dir() {
-        // Write empty data if carrier directory is missing.
-        let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("carrier_data.bin");
-        type CarrierEntries = Vec<(String, Vec<(String, String)>)>;
-        let empty: (CarrierEntries, usize) = (Vec::new(), 0);
-        let mut out =
-            BufWriter::new(File::create(&out_path).expect("could not create carrier data file"));
-        postcard::to_io(&empty, &mut out).expect("failed to serialize carrier data");
-        return;
-    }
+    assert!(
+        carrier_dir.is_dir(),
+        "assets/carrier directory is missing — this is a repository bug"
+    );
 
     // Walk each language directory: assets/carrier/en/, assets/carrier/zh/, etc.
     let mut lang_dirs: Vec<_> = fs::read_dir(carrier_dir)
         .expect("could not read carrier directory")
-        .filter_map(|e| e.ok())
+        .map(|e| e.expect("could not read carrier directory entry"))
         .filter(|e| e.path().is_dir())
         .collect();
     lang_dirs.sort_by_key(|e| e.file_name());
 
     for lang_entry in lang_dirs {
-        let lang = lang_entry.file_name().to_string_lossy().to_string();
+        let lang = lang_entry.file_name().to_str().expect("unicode carrier directory").to_string();
         let lang_path = lang_entry.path();
 
         let mut txt_files: Vec<_> = fs::read_dir(&lang_path)
             .unwrap_or_else(|e| panic!("could not read {}: {e}", lang_path.display()))
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "txt")
-                    .unwrap_or(false)
-            })
+            .map(|e| e.unwrap_or_else(|err| panic!("could not read entry in {}: {err}", lang_path.display())))
+            .filter(|e| e.path().extension().is_some_and(|ext| ext == "txt"))
             .map(|e| e.path())
             .collect();
         txt_files.sort();
@@ -87,16 +76,15 @@ fn build_carrier_data() {
                 if line.is_empty() || line.starts_with('#') {
                     continue;
                 }
-                if let Some((prefix, name)) = line.split_once('|') {
-                    let prefix = prefix.trim();
-                    let name = name.trim();
-                    if !prefix.is_empty() && prefix.bytes().all(|b| b.is_ascii_digit()) {
-                        max_prefix_len = max_prefix_len.max(prefix.len());
-                        entries
-                            .entry(prefix.to_string())
-                            .or_default()
-                            .insert(lang.clone(), name.to_string());
-                    }
+                let (prefix, name) = line.split_once('|').expect("line format");
+                let prefix = prefix.trim();
+                let name = name.trim();
+                if !prefix.is_empty() && prefix.bytes().all(|b| b.is_ascii_digit()) {
+                    max_prefix_len = max_prefix_len.max(prefix.len());
+                    entries
+                        .entry(prefix.to_string())
+                        .or_default()
+                        .insert(lang.clone(), name.to_string());
                 }
             }
         }
@@ -111,7 +99,7 @@ fn build_carrier_data() {
         })
         .collect();
 
-    let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("carrier_data.bin");
+    let out_path = Path::new(&env::var("OUT_DIR").expect("OUT_DIR not set")).join("carrier_data.bin");
     let mut out =
         BufWriter::new(File::create(&out_path).expect("could not create carrier data file"));
     postcard::to_io(&(&serializable, max_prefix_len), &mut out)
