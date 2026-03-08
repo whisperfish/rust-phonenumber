@@ -24,8 +24,10 @@ fn build_metadata_database() {
     println!("cargo:rerun-if-changed={pnm_path}");
 
     let mut out = BufWriter::new(
-        File::create(Path::new(&env::var("OUT_DIR").expect("OUT_DIR not set")).join("database.bin"))
-            .expect("could not create database file"),
+        File::create(
+            Path::new(&env::var("OUT_DIR").expect("OUT_DIR not set")).join("database.bin"),
+        )
+        .expect("could not create database file"),
     );
 
     postcard::to_io(&metadata, &mut out).expect("failed to serialize database");
@@ -54,12 +56,20 @@ fn build_carrier_data() {
     lang_dirs.sort_by_key(|e| e.file_name());
 
     for lang_entry in lang_dirs {
-        let lang = lang_entry.file_name().to_str().expect("unicode carrier directory").to_string();
+        let lang = lang_entry
+            .file_name()
+            .to_str()
+            .expect("unicode carrier directory")
+            .to_string();
         let lang_path = lang_entry.path();
 
         let mut txt_files: Vec<_> = fs::read_dir(&lang_path)
             .unwrap_or_else(|e| panic!("could not read {}: {e}", lang_path.display()))
-            .map(|e| e.unwrap_or_else(|err| panic!("could not read entry in {}: {err}", lang_path.display())))
+            .map(|e| {
+                e.unwrap_or_else(|err| {
+                    panic!("could not read entry in {}: {err}", lang_path.display())
+                })
+            })
             .filter(|e| e.path().extension().is_some_and(|ext| ext == "txt"))
             .map(|e| e.path())
             .collect();
@@ -67,9 +77,10 @@ fn build_carrier_data() {
 
         for path in txt_files {
             println!("cargo:rerun-if-changed={}", path.display());
-            let file = BufReader::new(File::open(&path).unwrap_or_else(|e| {
-                panic!("could not open {}: {e}", path.display())
-            }));
+            let file = BufReader::new(
+                File::open(&path)
+                    .unwrap_or_else(|e| panic!("could not open {}: {e}", path.display())),
+            );
             for line in file.lines() {
                 let line = line.expect("could not read line");
                 let line = line.trim();
@@ -99,7 +110,8 @@ fn build_carrier_data() {
         })
         .collect();
 
-    let out_path = Path::new(&env::var("OUT_DIR").expect("OUT_DIR not set")).join("carrier_data.bin");
+    let out_path =
+        Path::new(&env::var("OUT_DIR").expect("OUT_DIR not set")).join("carrier_data.bin");
     let mut out =
         BufWriter::new(File::create(&out_path).expect("could not create carrier data file"));
     postcard::to_io(&(&serializable, max_prefix_len), &mut out)

@@ -191,7 +191,10 @@ mod tests {
 
     #[test]
     fn fr_orange() {
-        assert_eq!(name_for_number(&parsed("+33788000000"), "en"), Some("Orange France"));
+        assert_eq!(
+            name_for_number(&parsed("+33788000000"), "en"),
+            Some("Orange France")
+        );
     }
 
     #[test]
@@ -201,19 +204,28 @@ mod tests {
 
     #[test]
     fn fr_free() {
-        assert_eq!(name_for_number(&parsed("+33600000000"), "en"), Some("Free Mobile"));
+        assert_eq!(
+            name_for_number(&parsed("+33600000000"), "en"),
+            Some("Free Mobile")
+        );
     }
 
     #[test]
     fn fr_bouygues() {
-        assert_eq!(name_for_number(&parsed("+33650000000"), "en"), Some("Bouygues"));
+        assert_eq!(
+            name_for_number(&parsed("+33650000000"), "en"),
+            Some("Bouygues")
+        );
     }
 
     // ---- Overlapping prefixes (longest wins) ----
 
     #[test]
     fn overlap_afone_over_orange() {
-        assert_eq!(name_for_number(&parsed("+33780123456"), "en"), Some("Afone"));
+        assert_eq!(
+            name_for_number(&parsed("+33780123456"), "en"),
+            Some("Afone")
+        );
     }
 
     #[test]
@@ -244,12 +256,18 @@ mod tests {
 
     #[test]
     fn belgium_proximus() {
-        assert_eq!(name_for_number(&parsed("+32470000000"), "en"), Some("Proximus"));
+        assert_eq!(
+            name_for_number(&parsed("+32470000000"), "en"),
+            Some("Proximus")
+        );
     }
 
     #[test]
     fn romania_vodafone() {
-        assert_eq!(name_for_number(&parsed("+40721234567"), "en"), Some("Vodafone"));
+        assert_eq!(
+            name_for_number(&parsed("+40721234567"), "en"),
+            Some("Vodafone")
+        );
     }
 
     #[test]
@@ -267,7 +285,10 @@ mod tests {
 
     #[test]
     fn spain_vodafone() {
-        assert_eq!(name_for_number(&parsed("+34666777888"), "en"), Some("Vodafone"));
+        assert_eq!(
+            name_for_number(&parsed("+34666777888"), "en"),
+            Some("Vodafone")
+        );
     }
 
     #[test]
