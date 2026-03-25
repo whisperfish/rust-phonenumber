@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex_cache::CachedRegex;
+use regex::Regex;
 
 /// Description of a phone number format.
 #[derive(Clone, Debug)]
 pub struct Format {
-    pub(crate) pattern: CachedRegex,
+    pub(crate) pattern: Regex,
     pub(crate) format: String,
 
-    pub(crate) leading_digits: Vec<CachedRegex>,
+    pub(crate) leading_digits: Vec<Regex>,
     pub(crate) national_prefix: Option<String>,
     pub(crate) national_prefix_optional: bool,
     pub(crate) domestic_carrier: Option<String>,
@@ -33,7 +33,7 @@ impl Format {
     ///
     /// Note the presence of the parentheses, which are capturing groups what
     /// specifies the grouping of numbers.
-    pub fn pattern(&self) -> &CachedRegex {
+    pub fn pattern(&self) -> &Regex {
         &self.pattern
     }
 
@@ -63,7 +63,7 @@ impl Format {
     ///
     /// In the case when only one formatting pattern exists, no
     /// leading_digits_pattern is needed.
-    pub fn leading_digits(&self) -> &[CachedRegex] {
+    pub fn leading_digits(&self) -> &[Regex] {
         &self.leading_digits
     }
 

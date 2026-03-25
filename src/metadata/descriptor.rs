@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use regex_cache::CachedRegex;
+use regex::Regex;
 
 /// Description of a phone number to parse.
 #[derive(Clone, Debug)]
 pub struct Descriptor {
-    pub(crate) national_number: CachedRegex,
+    pub(crate) national_number: Regex,
 
     pub(crate) possible_length: Vec<u16>,
     pub(crate) possible_local_length: Vec<u16>,
@@ -29,7 +29,7 @@ impl Descriptor {
     /// The national number is the pattern that a valid national significant
     /// number would match. This specifies information such as its total length
     /// and leading digits.
-    pub fn national_number(&self) -> &CachedRegex {
+    pub fn national_number(&self) -> &Regex {
         &self.national_number
     }
 

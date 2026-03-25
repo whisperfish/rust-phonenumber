@@ -17,13 +17,13 @@ use crate::metadata::loader;
 use crate::Metadata;
 use fnv::FnvHashMap;
 use once_cell::sync::Lazy;
-use regex_cache::{CachedRegex, CachedRegexBuilder, RegexCache};
+use regex::{Regex, RegexBuilder};
 use std::borrow::Borrow;
 use std::fs::File;
 use std::hash::Hash;
 use std::io::{BufReader, Cursor};
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
@@ -34,7 +34,6 @@ pub static DEFAULT: Lazy<Database> =
 /// Representation of a database of metadata for phone number.
 #[derive(Clone, Debug)]
 pub struct Database {
-    cache: Arc<Mutex<RegexCache>>,
     by_id: FnvHashMap<String, Arc<super::Metadata>>,
     by_code: FnvHashMap<u16, Vec<Arc<super::Metadata>>>,
     regions: FnvHashMap<u16, Vec<String>>,
@@ -63,11 +62,8 @@ impl Database {
             }
         }
 
-        let cache = Arc::new(Mutex::new(RegexCache::new(100)));
-        let regex = |value: String| -> Result<CachedRegex, error::LoadMetadata> {
-            Ok(CachedRegexBuilder::new(cache.clone(), &value)
-                .ignore_whitespace(true)
-                .build()?)
+        let regex = |value: String| -> Result<Regex, error::LoadMetadata> {
+            Ok(RegexBuilder::new(&value).ignore_whitespace(true).build()?)
         };
 
         let descriptor =
@@ -212,16 +208,10 @@ impl Database {
         }
 
         Ok(Database {
-            cache: cache.clone(),
             by_id,
             by_code,
             regions,
         })
-    }
-
-    /// Get the regular expression cache.
-    pub fn cache(&self) -> Arc<Mutex<RegexCache>> {
-        self.cache.clone()
     }
 
     /// Get a metadata entry by country ID.
