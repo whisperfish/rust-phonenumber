@@ -154,8 +154,8 @@ pub fn country_code<'a>(
             }
 
             // If the prefix was already extracted, check it is valid.
-            if number.prefix.is_some() {
-                let prefix = number.prefix.as_ref().unwrap().parse()?;
+            if let Some(prefix_ref) = number.prefix.as_ref() {
+                let prefix = prefix_ref.parse()?;
 
                 if database.by_code(&prefix).is_none() {
                     return Err(error::Parse::InvalidCountryCode);
