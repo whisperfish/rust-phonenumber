@@ -16,8 +16,8 @@ use crate::consts;
 use crate::country;
 use crate::error;
 use crate::metadata::{Database, Metadata};
-use crate::phone_number::Type;
 use crate::validator;
+use crate::Type;
 use fnv::FnvHashMap;
 use nom::{
     character::complete::*,

@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Metadata loading and processing for phone numbers.
+
+pub mod error;
+
 mod format;
 pub use self::format::Format;
 
 mod descriptor;
 pub use self::descriptor::Descriptor;
 
-#[allow(clippy::module_inception)]
 mod metadata;
-pub use self::metadata::{Descriptors, Metadata};
+pub use self::metadata::{Descriptors, Metadata, PhoneNumberType};
 
 mod database;
 pub use self::database::{Database, DEFAULT as DATABASE};
 
-/// XML loading helpers.
-pub mod loader;
+pub use phonenumber_metadata_loader as loader;

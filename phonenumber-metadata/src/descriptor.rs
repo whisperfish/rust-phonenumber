@@ -17,12 +17,12 @@ use regex::Regex;
 /// Description of a phone number to parse.
 #[derive(Clone, Debug)]
 pub struct Descriptor {
-    pub(crate) national_number: Regex,
+    pub national_number: Regex,
 
-    pub(crate) possible_length: Vec<u16>,
-    pub(crate) possible_local_length: Vec<u16>,
+    pub possible_length: Vec<u16>,
+    pub possible_local_length: Vec<u16>,
 
-    pub(crate) example: Option<String>,
+    pub example: Option<String>,
 }
 
 impl Descriptor {

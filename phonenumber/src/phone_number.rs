@@ -75,70 +75,6 @@ pub struct PhoneNumber {
 /// phone number.
 pub struct Country<'a>(&'a PhoneNumber);
 
-/// The phone number type.
-#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
-#[serde(rename_all = "snake_case")]
-pub enum Type {
-    /// Fixed line numbers.
-    FixedLine,
-
-    /// Mobile numbers.
-    Mobile,
-
-    /// In some regions (e.g. the USA), it is impossible to distinguish between
-    /// fixed-line and mobile numbers by looking at the phone number itself.
-    FixedLineOrMobile,
-
-    /// Freephone lines.
-    TollFree,
-
-    /// Premium rate lines.
-    PremiumRate,
-
-    /// The cost of this call is shared between the caller and the recipient, and
-    /// is hence typically less than [`PremiumRate`](Self::PremiumRate) calls. See
-    /// [Shared-cost Service](http://en.wikipedia.org/wiki/Shared-cost_service)
-    /// for more information.
-    SharedCost,
-
-    /// A personal number is associated with a particular person, and may be
-    /// routed to either a [`Mobile`](Self::Mobile) or
-    /// [`FixedLine`](Self::FixedLine) number. See
-    /// [Personal Numbers](http://en.wikipedia.org/wiki/Personal_Numbers) for more
-    /// information.
-    PersonalNumber,
-
-    /// Voice over IP numbers. This includes TSoIP (Telephony Service over IP).
-    Voip,
-
-    /// A pager number.
-    Pager,
-
-    /// Used for "Universal Access Numbers" or "Company Numbers". They may be
-    /// further routed to specific offices, but allow one number to be used for a
-    /// company.
-    Uan,
-
-    /// Emergency numbers.
-    Emergency,
-
-    /// Used for "Voice Mail Access Numbers".
-    Voicemail,
-
-    /// An abbreviated number, such as short codes like "10000".
-    ShortCode,
-
-    StandardRate,
-
-    Carrier,
-
-    NoInternational,
-
-    /// A phone number is of type UNKNOWN when it does not fit any of the known
-    /// patterns for a specific region.
-    Unknown,
-}
-
 impl FromStr for PhoneNumber {
     type Err = error::Parse;
 
@@ -227,15 +163,15 @@ impl PhoneNumber {
     }
 
     /// Determine the [`Type`] of the phone number.
-    pub fn number_type(&self) -> Type {
+    pub fn number_type(&self) -> crate::Type {
         self.number_type_with(&DATABASE)
     }
 
     /// Determine the [`Type`] of the phone number with the given `Database`.
-    pub fn number_type_with(&self, database: &Database) -> Type {
+    pub fn number_type_with(&self, database: &Database) -> crate::Type {
         match self.metadata(database) {
             Some(metadata) => validator::number_type(metadata, &self.national.value().to_string()),
-            None => Type::Unknown,
+            None => crate::Type::Unknown,
         }
     }
 }

@@ -19,8 +19,9 @@ use crate::error;
 use crate::extension::Extension;
 use crate::is_viable;
 use crate::metadata::{Database, DATABASE};
-use crate::phone_number::{PhoneNumber, Type};
+use crate::phone_number::PhoneNumber;
 use crate::validator::{self, Validation};
+use crate::Type;
 use nom::{branch::alt, IResult};
 
 #[macro_use]

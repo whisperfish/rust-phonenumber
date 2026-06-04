@@ -1,0 +1,267 @@
+// Copyright (C) 2017 1aim GmbH
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+use crate::error;
+use crate::Metadata;
+use fnv::FnvHashMap;
+use once_cell::sync::Lazy;
+use phonenumber_metadata_loader as loader;
+use regex::{Regex, RegexBuilder};
+use std::borrow::Borrow;
+use std::fs::File;
+use std::hash::Hash;
+use std::io::{BufReader, Cursor};
+use std::path::Path;
+use std::sync::Arc;
+
+const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
+
+/// The Google provided metadata database, used as default.
+pub static DEFAULT: Lazy<Database> = Lazy::new(|| {
+    Database::try_from(postcard::from_bytes::<Vec<loader::Metadata>>(DATABASE).unwrap()).unwrap()
+});
+
+/// Representation of a database of metadata for phone number.
+#[derive(Clone, Debug)]
+pub struct Database {
+    by_id: FnvHashMap<String, Arc<super::Metadata>>,
+    by_code: FnvHashMap<u16, Vec<Arc<super::Metadata>>>,
+    regions: FnvHashMap<u16, Vec<String>>,
+}
+
+impl TryFrom<Vec<loader::Metadata>> for Database {
+    type Error = loader::error::MetadataLoadError;
+
+    /// Create a database from a loaded database.
+    fn try_from(meta: Vec<loader::Metadata>) -> Result<Self, loader::error::MetadataLoadError> {
+        fn tranpose<T, E>(value: Option<Result<T, E>>) -> Result<Option<T>, E> {
+            match value {
+                None => Ok(None),
+
+                Some(Ok(value)) => Ok(Some(value)),
+
+                Some(Err(err)) => Err(err),
+            }
+        }
+
+        let regex = |value: String| -> Result<Regex, loader::error::MetadataLoadError> {
+            Ok(RegexBuilder::new(&value).ignore_whitespace(true).build()?)
+        };
+
+        let descriptor =
+            |desc: loader::Descriptor| -> Result<super::Descriptor, loader::error::MetadataLoadError> {
+                desc.national_number.as_ref().unwrap();
+                desc.national_number.as_ref().unwrap();
+
+                Ok(super::Descriptor {
+                    national_number: desc
+                        .national_number
+                        .ok_or_else(|| {
+                            loader::error::MetadataLoadError::from(
+                                loader::error::MetadataParseError::MissingValue {
+                                    phase: "descriptor".into(),
+                                    name: "national_number".into(),
+                                },
+                            )
+                        })
+                        .and_then(regex)?,
+
+                    possible_length: desc.possible_length,
+                    possible_local_length: desc.possible_local_length,
+                    example: desc.example,
+                })
+            };
+
+        let format =
+            |format: loader::Format| -> Result<super::Format, loader::error::MetadataLoadError> {
+                Ok(super::Format {
+                    pattern: format
+                        .pattern
+                        .ok_or_else(|| {
+                            error::MetadataLoadError::from(
+                                error::MetadataParseError::MissingValue {
+                                    phase: "format".into(),
+                                    name: "pattern".into(),
+                                },
+                            )
+                        })
+                        .and_then(regex)?,
+
+                    format: format.format.ok_or_else(|| {
+                        error::MetadataLoadError::from(error::MetadataParseError::MissingValue {
+                            phase: "format".into(),
+                            name: "format".into(),
+                        })
+                    })?,
+
+                    leading_digits: format
+                        .leading_digits
+                        .into_iter()
+                        .map(&regex)
+                        .collect::<Result<_, _>>()?,
+
+                    national_prefix: format.national_prefix_formatting_rule,
+                    national_prefix_optional: format.national_prefix_optional_when_formatting,
+
+                    domestic_carrier: format.domestic_carrier,
+                })
+            };
+
+        let metadata =
+            |meta: loader::Metadata| -> Result<super::Metadata, loader::error::MetadataLoadError> {
+                Ok(super::Metadata {
+                    descriptors: super::Descriptors {
+                        general: descriptor(meta.general.ok_or_else(|| {
+                            loader::error::MetadataLoadError::from(
+                                loader::error::MetadataParseError::MissingValue {
+                                    phase: "metadata".into(),
+                                    name: "generalDesc".into(),
+                                },
+                            )
+                        })?)?,
+
+                        fixed_line: tranpose(meta.fixed_line.map(descriptor))?,
+                        mobile: tranpose(meta.mobile.map(descriptor))?,
+                        toll_free: tranpose(meta.toll_free.map(descriptor))?,
+                        premium_rate: tranpose(meta.premium_rate.map(descriptor))?,
+                        shared_cost: tranpose(meta.shared_cost.map(descriptor))?,
+                        personal_number: tranpose(meta.personal_number.map(descriptor))?,
+                        voip: tranpose(meta.voip.map(descriptor))?,
+                        pager: tranpose(meta.pager.map(descriptor))?,
+                        uan: tranpose(meta.uan.map(descriptor))?,
+                        emergency: tranpose(meta.emergency.map(descriptor))?,
+                        voicemail: tranpose(meta.voicemail.map(descriptor))?,
+                        short_code: tranpose(meta.short_code.map(descriptor))?,
+                        standard_rate: tranpose(meta.standard_rate.map(descriptor))?,
+                        carrier: tranpose(meta.carrier.map(descriptor))?,
+                        no_international: tranpose(meta.no_international.map(descriptor))?,
+                    },
+
+                    id: meta.id.ok_or_else(|| {
+                        error::MetadataLoadError::from(error::MetadataParseError::MissingValue {
+                            phase: "metadata".into(),
+                            name: "id".into(),
+                        })
+                    })?,
+
+                    country_code: meta.country_code.ok_or_else(|| {
+                        error::MetadataLoadError::from(error::MetadataParseError::MissingValue {
+                            phase: "metadata".into(),
+                            name: "countryCode".into(),
+                        })
+                    })?,
+
+                    international_prefix: tranpose(meta.international_prefix.map(regex))?,
+                    preferred_international_prefix: meta.preferred_international_prefix,
+                    national_prefix: meta.national_prefix,
+                    preferred_extension_prefix: meta.preferred_extension_prefix,
+                    national_prefix_for_parsing: tranpose(
+                        meta.national_prefix_for_parsing.map(regex),
+                    )?,
+                    national_prefix_transform_rule: meta.national_prefix_transform_rule,
+
+                    formats: meta
+                        .formats
+                        .into_iter()
+                        .map(&format)
+                        .collect::<Result<_, _>>()?,
+                    international_formats: meta
+                        .international_formats
+                        .into_iter()
+                        .map(&format)
+                        .collect::<Result<_, _>>()?,
+
+                    main_country_for_code: meta.main_country_for_code,
+                    leading_digits: tranpose(meta.leading_digits.map(regex))?,
+                    mobile_number_portable: meta.mobile_number_portable,
+                })
+            };
+
+        let mut by_id = FnvHashMap::default();
+        let mut by_code = FnvHashMap::default();
+        let mut regions = FnvHashMap::default();
+
+        for meta in meta {
+            let meta = Arc::new(metadata(meta)?);
+
+            by_id.insert(meta.id.clone(), meta.clone());
+
+            let by_code = by_code.entry(meta.country_code).or_insert_with(Vec::new);
+
+            let regions = regions.entry(meta.country_code).or_insert_with(Vec::new);
+
+            if meta.main_country_for_code {
+                by_code.insert(0, meta.clone());
+                regions.insert(0, meta.id.clone())
+            } else {
+                by_code.push(meta.clone());
+                regions.push(meta.id.clone());
+            }
+        }
+
+        Ok(Database {
+            by_id,
+            by_code,
+            regions,
+        })
+    }
+}
+
+impl Database {
+    /// Load a database from the given file.
+    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, loader::error::MetadataLoadError> {
+        Database::try_from(loader::load(BufReader::new(File::open(path)?))?)
+    }
+
+    /// Parse a database from the given string.
+    pub fn parse<S: AsRef<str>>(content: S) -> Result<Self, loader::error::MetadataLoadError> {
+        Database::try_from(loader::load(Cursor::new(content.as_ref()))?)
+    }
+
+    /// Get a metadata entry by country ID.
+    pub fn by_id<Q>(&self, key: &Q) -> Option<&super::Metadata>
+    where
+        Q: ?Sized + Hash + Eq,
+        String: Borrow<Q>,
+    {
+        self.by_id.get(key).map(AsRef::as_ref)
+    }
+
+    /// Get metadata entries by country code.
+    pub fn by_code<Q>(&self, key: &Q) -> Option<Vec<&super::Metadata>>
+    where
+        Q: ?Sized + Hash + Eq,
+        u16: Borrow<Q>,
+    {
+        self.by_code
+            .get(key)
+            .map(|m| m.iter().map(AsRef::as_ref).collect())
+    }
+
+    /// Get all country IDs corresponding to the given country code.
+    pub fn region<Q>(&self, code: &Q) -> Option<Vec<&str>>
+    where
+        Q: ?Sized + Hash + Eq,
+        u16: Borrow<Q>,
+    {
+        self.regions
+            .get(code)
+            .map(|m| m.iter().map(AsRef::as_ref).collect())
+    }
+
+    /// Iterator over all `Metadata` entries in this database.
+    pub fn iter(&self) -> impl Iterator<Item = &Metadata> {
+        self.by_id.values().map(AsRef::as_ref)
+    }
+}
