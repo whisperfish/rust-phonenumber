@@ -28,8 +28,9 @@ use std::sync::Arc;
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
 /// The Google provided metadata database, used as default.
-pub static DEFAULT: Lazy<Database> =
-    Lazy::new(|| Database::from(postcard::from_bytes(DATABASE).unwrap()).unwrap());
+pub static DEFAULT: Lazy<Database> = Lazy::new(|| {
+    Database::try_from(postcard::from_bytes::<Vec<loader::Metadata>>(DATABASE).unwrap()).unwrap()
+});
 
 /// Representation of a database of metadata for phone number.
 #[derive(Clone, Debug)]
@@ -39,20 +40,11 @@ pub struct Database {
     regions: FnvHashMap<u16, Vec<String>>,
 }
 
-impl Database {
-    /// Load a database from the given file.
-    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, loader::error::MetadataLoadError> {
-        Database::from(loader::load(BufReader::new(File::open(path)?))?)
-    }
-
-    /// Parse a database from the given string.
-    pub fn parse<S: AsRef<str>>(content: S) -> Result<Self, loader::error::MetadataLoadError> {
-        Database::from(loader::load(Cursor::new(content.as_ref()))?)
-    }
+impl TryFrom<Vec<loader::Metadata>> for Database {
+    type Error = loader::error::MetadataLoadError;
 
     /// Create a database from a loaded database.
-    // XXX Make this a TryFrom
-    pub fn from(meta: Vec<loader::Metadata>) -> Result<Self, loader::error::MetadataLoadError> {
+    fn try_from(meta: Vec<loader::Metadata>) -> Result<Self, loader::error::MetadataLoadError> {
         fn tranpose<T, E>(value: Option<Result<T, E>>) -> Result<Option<T>, E> {
             match value {
                 None => Ok(None),
@@ -223,6 +215,18 @@ impl Database {
             by_code,
             regions,
         })
+    }
+}
+
+impl Database {
+    /// Load a database from the given file.
+    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, loader::error::MetadataLoadError> {
+        Database::try_from(loader::load(BufReader::new(File::open(path)?))?)
+    }
+
+    /// Parse a database from the given string.
+    pub fn parse<S: AsRef<str>>(content: S) -> Result<Self, loader::error::MetadataLoadError> {
+        Database::try_from(loader::load(Cursor::new(content.as_ref()))?)
     }
 
     /// Get a metadata entry by country ID.
