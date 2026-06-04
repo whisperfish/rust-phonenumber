@@ -35,7 +35,7 @@ thiserror = "2.0"
 
 [dev-dependencies]
 anyhow = "1"
-criterion = ">=0.4, <=0.5"
+criterion = "0.8"
 doc-comment = "0.3"
 rstest = "0.26"
 rstest_reuse = "0.7"
