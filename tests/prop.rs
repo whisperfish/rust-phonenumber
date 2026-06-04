@@ -33,7 +33,7 @@ proptest! {
     #[test]
     fn parse_mixed_spaces_and_dashes(s in "\\+1[ -]650[ -]253[ -]0000") {
         let parsed = parse(None, &s).unwrap();
-        prop_assert_eq!(parsed.country().id(), phonenumber::country::US.into());
+        prop_assert_eq!(parsed.country().id().unwrap(), Some(phonenumber::country::US));
     }
 
     // Issue #82: same problem as issue #83. In this case, the prefix was parsed as "+687 11",
@@ -41,12 +41,12 @@ proptest! {
     #[test]
     fn issue82(s in "\\+687 11[ .]11[ .]11") {
         let parsed = parse(None, &s).unwrap();
-        prop_assert_eq!(parsed.country().id(), phonenumber::country::NC.into());
+        prop_assert_eq!(parsed.country().id().unwrap(), Some(phonenumber::country::NC));
     }
 
     #[test]
     fn parse_belgian_phonenumbers(s in "\\+32[0-9]{8,9}") {
         let parsed = parse(None, &s).expect("valid Belgian number");
-        prop_assert_eq!(parsed.country().id(), phonenumber::country::BE.into());
+        prop_assert_eq!(parsed.country().id().unwrap(), Some(phonenumber::country::BE));
     }
 }

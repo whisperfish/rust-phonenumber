@@ -311,7 +311,6 @@ pub fn number_type(meta: &Metadata, value: &str) -> Type {
 #[cfg(test)]
 mod test {
     use crate::country;
-    use crate::metadata::DATABASE;
     use crate::parser;
     use crate::validator;
     use rstest::*;
@@ -352,7 +351,7 @@ mod test {
         let country = country.into();
         println!("parsing {} with country {:?}", number, country);
         let parsed = parser::parse(country, number).unwrap();
-        println!("number type: {:?}", parsed.number_type(&DATABASE));
+        println!("number type: {:?}", parsed.number_type());
         println!("parsed: {:?}", parsed);
         assert!(validator::is_valid(&parsed) == valid);
     }

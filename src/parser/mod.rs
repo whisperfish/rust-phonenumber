@@ -116,7 +116,6 @@ pub fn parse_with<S: AsRef<str>>(
 #[cfg(test)]
 mod test {
     use crate::country::{self, Source};
-    use crate::metadata::DATABASE;
     use crate::national_number::NationalNumber;
     use crate::parser;
     use crate::phone_number::PhoneNumber;
@@ -163,7 +162,7 @@ mod test {
         let country = country.into();
         println!("parsing {} with country {:?}", number, country);
         let parsed = parser::parse(country, number).unwrap();
-        println!("number type: {:?}", parsed.number_type(&DATABASE));
+        println!("number type: {:?}", parsed.number_type());
         println!("parsed: {:?}", parsed);
 
         assert_eq!(reference, parsed);
