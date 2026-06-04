@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::{consts, parser::helper::*};
-use nom::{branch::*, combinator::*, multi::*, IResult};
+use nom::{branch::*, combinator::*, multi::*, IResult, Parser};
 
 pub fn phone_number(i: &str) -> IResult<&str, &str> {
     parse! { i => recognize(alt((short, long))) }

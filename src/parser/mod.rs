@@ -21,7 +21,7 @@ use crate::is_viable;
 use crate::metadata::{Database, DATABASE};
 use crate::phone_number::{PhoneNumber, Type};
 use crate::validator::{self, Validation};
-use nom::{branch::alt, IResult};
+use nom::{branch::alt, IResult, Parser};
 
 #[macro_use]
 pub mod helper;

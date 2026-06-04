@@ -24,7 +24,7 @@ use nom::{
     combinator::*,
     error::{make_error, ErrorKind},
     multi::*,
-    AsChar, IResult,
+    AsChar, IResult, Parser,
 };
 use regex::Regex;
 use std::borrow::Cow;
@@ -33,7 +33,7 @@ macro_rules! parse {
 	($input:ident => ) => ();
 
 	($input:ident => $combinator:expr) => (
-		$combinator($input)
+		$combinator.parse($input)
 	);
 
 	($input:ident => let $name:ident = $combinator:expr; $($rest:tt)*) => (
@@ -47,15 +47,15 @@ macro_rules! parse {
 	);
 
 	($input:ident => $combinator:expr) => (
-		$combinator($input)
+		$combinator.parse($input)
 	);
 
 	(@ $input:ident => let $name:ident = $combinator:expr) => (
-		let ($input, $name) = $combinator($input)?;
+		let ($input, $name) = $combinator.parse($input)?;
 	);
 
 	(@ $input:ident => $combinator:expr) => (
-		let ($input, _) = $combinator($input)?;
+		let ($input, _) = $combinator.parse($input)?;
 	);
 }
 
@@ -77,28 +77,28 @@ pub fn ieof(i: &str) -> IResult<&str, ()> {
 }
 
 pub fn punctuation(i: &str) -> IResult<&str, char> {
-    one_of("-x\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2212}\u{30FC}\u{FF0D}-\u{FF0F} \u{00A0}\u{00AD}\u{200B}\u{2060}\u{3000}()\u{FF08}\u{FF09}\u{FF3B}\u{FF3D}.[]/~\u{2053}\u{223C}\u{FF5E}")(i)
+    one_of("-x\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2212}\u{30FC}\u{FF0D}-\u{FF0F} \u{00A0}\u{00AD}\u{200B}\u{2060}\u{3000}()\u{FF08}\u{FF09}\u{FF3B}\u{FF3D}.[]/~\u{2053}\u{223C}\u{FF5E}").parse(i)
 }
 
 pub fn alpha(i: &str) -> IResult<&str, char> {
-    one_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")(i)
+    one_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ").parse(i)
 }
 
 // TODO: Extend with Unicode digits.
 pub fn digit(i: &str) -> IResult<&str, char> {
-    one_of("0123456789")(i)
+    one_of("0123456789").parse(i)
 }
 
 pub fn plus(i: &str) -> IResult<&str, char> {
-    one_of("+\u{FF0B}")(i)
+    one_of("+\u{FF0B}").parse(i)
 }
 
 pub fn star(i: &str) -> IResult<&str, char> {
-    one_of("*")(i)
+    one_of("*").parse(i)
 }
 
 pub fn ignore_plus(i: &str) -> IResult<&str, &str> {
-    recognize(many1(plus))(i)
+    recognize(many1(plus)).parse(i)
 }
 
 /// Attempts to extract a possible number from the string passed in. This

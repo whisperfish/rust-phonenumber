@@ -20,7 +20,7 @@ use nom::{
     combinator::*,
     error::{make_error, ErrorKind},
     multi::*,
-    AsChar, IResult,
+    AsChar, IResult, Parser,
 };
 
 pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
