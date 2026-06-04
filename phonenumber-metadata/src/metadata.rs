@@ -12,52 +12,114 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{
-    metadata::{Descriptor, Format},
-    phone_number::Type,
-};
+use crate::{Descriptor, Format};
 use regex::Regex;
+use serde_derive::{Deserialize, Serialize};
+
+/// The phone number type.
+#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum PhoneNumberType {
+    /// Fixed line numbers.
+    FixedLine,
+
+    /// Mobile numbers.
+    Mobile,
+
+    /// In some regions (e.g. the USA), it is impossible to distinguish between
+    /// fixed-line and mobile numbers by looking at the phone number itself.
+    FixedLineOrMobile,
+
+    /// Freephone lines.
+    TollFree,
+
+    /// Premium rate lines.
+    PremiumRate,
+
+    /// The cost of this call is shared between the caller and the recipient, and
+    /// is hence typically less than [`PremiumRate`](Self::PremiumRate) calls. See
+    /// [Shared-cost Service](http://en.wikipedia.org/wiki/Shared-cost_service)
+    /// for more information.
+    SharedCost,
+
+    /// A personal number is associated with a particular person, and may be
+    /// routed to either a [`Mobile`](Self::Mobile) or
+    /// [`FixedLine`](Self::FixedLine) number. See
+    /// [Personal Numbers](http://en.wikipedia.org/wiki/Personal_Numbers) for more
+    /// information.
+    PersonalNumber,
+
+    /// Voice over IP numbers. This includes TSoIP (Telephony Service over IP).
+    Voip,
+
+    /// A pager number.
+    Pager,
+
+    /// Used for "Universal Access Numbers" or "Company Numbers". They may be
+    /// further routed to specific offices, but allow one number to be used for a
+    /// company.
+    Uan,
+
+    /// Emergency numbers.
+    Emergency,
+
+    /// Used for "Voice Mail Access Numbers".
+    Voicemail,
+
+    /// An abbreviated number, such as short codes like "10000".
+    ShortCode,
+
+    StandardRate,
+
+    Carrier,
+
+    NoInternational,
+
+    /// A phone number is of type UNKNOWN when it does not fit any of the known
+    /// patterns for a specific region.
+    Unknown,
+}
 
 /// Phone number metadata.
 #[derive(Clone, Debug)]
 pub struct Metadata {
-    pub(crate) descriptors: Descriptors,
-    pub(crate) id: String,
-    pub(crate) country_code: u16,
+    pub descriptors: Descriptors,
+    pub id: String,
+    pub country_code: u16,
 
-    pub(crate) international_prefix: Option<Regex>,
-    pub(crate) preferred_international_prefix: Option<String>,
-    pub(crate) national_prefix: Option<String>,
-    pub(crate) preferred_extension_prefix: Option<String>,
-    pub(crate) national_prefix_for_parsing: Option<Regex>,
-    pub(crate) national_prefix_transform_rule: Option<String>,
+    pub international_prefix: Option<Regex>,
+    pub preferred_international_prefix: Option<String>,
+    pub national_prefix: Option<String>,
+    pub preferred_extension_prefix: Option<String>,
+    pub national_prefix_for_parsing: Option<Regex>,
+    pub national_prefix_transform_rule: Option<String>,
 
-    pub(crate) formats: Vec<Format>,
-    pub(crate) international_formats: Vec<Format>,
-    pub(crate) main_country_for_code: bool,
-    pub(crate) leading_digits: Option<Regex>,
-    pub(crate) mobile_number_portable: bool,
+    pub formats: Vec<Format>,
+    pub international_formats: Vec<Format>,
+    pub main_country_for_code: bool,
+    pub leading_digits: Option<Regex>,
+    pub mobile_number_portable: bool,
 }
 
 /// Descriptors for various types of phone number.
 #[derive(Clone, Debug)]
 pub struct Descriptors {
-    pub(crate) general: Descriptor,
-    pub(crate) fixed_line: Option<Descriptor>,
-    pub(crate) mobile: Option<Descriptor>,
-    pub(crate) toll_free: Option<Descriptor>,
-    pub(crate) premium_rate: Option<Descriptor>,
-    pub(crate) shared_cost: Option<Descriptor>,
-    pub(crate) personal_number: Option<Descriptor>,
-    pub(crate) voip: Option<Descriptor>,
-    pub(crate) pager: Option<Descriptor>,
-    pub(crate) uan: Option<Descriptor>,
-    pub(crate) emergency: Option<Descriptor>,
-    pub(crate) voicemail: Option<Descriptor>,
-    pub(crate) short_code: Option<Descriptor>,
-    pub(crate) standard_rate: Option<Descriptor>,
-    pub(crate) carrier: Option<Descriptor>,
-    pub(crate) no_international: Option<Descriptor>,
+    pub general: Descriptor,
+    pub fixed_line: Option<Descriptor>,
+    pub mobile: Option<Descriptor>,
+    pub toll_free: Option<Descriptor>,
+    pub premium_rate: Option<Descriptor>,
+    pub shared_cost: Option<Descriptor>,
+    pub personal_number: Option<Descriptor>,
+    pub voip: Option<Descriptor>,
+    pub pager: Option<Descriptor>,
+    pub uan: Option<Descriptor>,
+    pub emergency: Option<Descriptor>,
+    pub voicemail: Option<Descriptor>,
+    pub short_code: Option<Descriptor>,
+    pub standard_rate: Option<Descriptor>,
+    pub carrier: Option<Descriptor>,
+    pub no_international: Option<Descriptor>,
 }
 
 impl Metadata {
@@ -236,39 +298,41 @@ impl Metadata {
 
 impl Descriptors {
     /// Get the proper descriptor for the given phone number type, if any.
-    pub fn get(&self, kind: Type) -> Option<&Descriptor> {
+    pub fn get(&self, kind: PhoneNumberType) -> Option<&Descriptor> {
         match kind {
-            Type::Unknown => Some(&self.general),
+            PhoneNumberType::Unknown => Some(&self.general),
 
-            Type::FixedLine | Type::FixedLineOrMobile => self.fixed_line.as_ref(),
+            PhoneNumberType::FixedLine | PhoneNumberType::FixedLineOrMobile => {
+                self.fixed_line.as_ref()
+            }
 
-            Type::Mobile => self.mobile.as_ref(),
+            PhoneNumberType::Mobile => self.mobile.as_ref(),
 
-            Type::TollFree => self.toll_free.as_ref(),
+            PhoneNumberType::TollFree => self.toll_free.as_ref(),
 
-            Type::PremiumRate => self.premium_rate.as_ref(),
+            PhoneNumberType::PremiumRate => self.premium_rate.as_ref(),
 
-            Type::SharedCost => self.shared_cost.as_ref(),
+            PhoneNumberType::SharedCost => self.shared_cost.as_ref(),
 
-            Type::PersonalNumber => self.personal_number.as_ref(),
+            PhoneNumberType::PersonalNumber => self.personal_number.as_ref(),
 
-            Type::Voip => self.voip.as_ref(),
+            PhoneNumberType::Voip => self.voip.as_ref(),
 
-            Type::Pager => self.pager.as_ref(),
+            PhoneNumberType::Pager => self.pager.as_ref(),
 
-            Type::Uan => self.uan.as_ref(),
+            PhoneNumberType::Uan => self.uan.as_ref(),
 
-            Type::Emergency => self.emergency.as_ref(),
+            PhoneNumberType::Emergency => self.emergency.as_ref(),
 
-            Type::Voicemail => self.voicemail.as_ref(),
+            PhoneNumberType::Voicemail => self.voicemail.as_ref(),
 
-            Type::ShortCode => self.short_code.as_ref(),
+            PhoneNumberType::ShortCode => self.short_code.as_ref(),
 
-            Type::StandardRate => self.standard_rate.as_ref(),
+            PhoneNumberType::StandardRate => self.standard_rate.as_ref(),
 
-            Type::Carrier => self.carrier.as_ref(),
+            PhoneNumberType::Carrier => self.carrier.as_ref(),
 
-            Type::NoInternational => self.no_international.as_ref(),
+            PhoneNumberType::NoInternational => self.no_international.as_ref(),
         }
     }
 

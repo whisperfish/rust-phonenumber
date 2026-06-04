@@ -18,16 +18,14 @@
 use doc_comment::doctest;
 
 #[cfg(test)]
-doctest!("../README.md");
+doctest!("../../README.md");
 
 /// Errors for various parts of the crate.
 mod error;
-pub use crate::error::{Metadata as MetadataError, Parse as ParseError};
+pub use crate::error::{MetadataParseError as MetadataError, Parse as ParseError};
 
-/// Phone number metadata, containing patterns, formatting and other useful
-/// data about countries and phone numbers.
-pub mod metadata;
-pub use crate::metadata::Metadata;
+pub use metadata::PhoneNumberType as Type;
+pub use phonenumber_metadata as metadata;
 
 /// Country related types.
 pub mod country;
@@ -44,7 +42,7 @@ mod carrier;
 pub use crate::carrier::Carrier;
 
 mod phone_number;
-pub use crate::phone_number::{PhoneNumber, Type};
+pub use crate::phone_number::PhoneNumber;
 
 mod parser;
 pub use crate::parser::{parse, parse_with};

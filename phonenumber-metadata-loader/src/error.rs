@@ -14,9 +14,9 @@
 
 use thiserror::Error;
 
-/// Metadata loading errors.
+/// Metadata loading errors from XML parsing.
 #[derive(Error, Clone, Debug)]
-pub enum Metadata {
+pub enum MetadataParseError {
     /// EOF was reached before the parsing was complete.
     #[error("unexpected end of file")]
     UnexpectedEof,
@@ -27,7 +27,6 @@ pub enum Metadata {
 
     /// A required value was missing.
     #[error("{phase}: missing value: {name:?}")]
-    #[allow(unused)] // This is unused in the build script
     MissingValue { phase: String, name: String },
 
     /// An element was not handled.
@@ -47,50 +46,11 @@ pub enum Metadata {
     UnhandledEvent { phase: String, event: String },
 }
 
-/// Parsing errors.
-#[derive(Error, Clone, Debug)]
-// This module is used in build.rs, and only some public items are used there.
-#[allow(dead_code)]
-pub enum Parse {
-    /// This generally indicates the string passed in had less than 3 digits in
-    /// it.
-    #[error("not a number")]
-    #[allow(unused)] // This is unused in the build script
-    NoNumber,
-
-    /// The country code supplied did not belong to a supported country or
-    /// non-geographical entity.
-    #[error("invalid country code")]
-    #[allow(unused)] // This is unused in the build script
-    InvalidCountryCode,
-
-    /// This indicates the string started with an international dialing prefix,
-    /// but after this was stripped from the number, had less digits than any
-    /// valid phone number (including country code) could have.
-    #[error("the number is too short after IDD")]
-    #[allow(unused)] // This is unused in the build script
-    TooShortAfterIdd,
-
-    /// This indicates the string, after any country code has been stripped, had
-    /// less digits than any valid phone number could have.
-    #[error("the number is too short after the country code")]
-    #[allow(unused)] // This is unused in the build script
-    TooShortNsn,
-
-    /// This indicates the string had more digits than any valid phone number
-    /// could have.
-    #[error("the number is too long")]
-    #[allow(unused)] // This is unused in the build script
-    TooLong,
-
-    /// A integer parts of a number is malformed, normally this should be caught by the parsing regexes.
-    #[error("malformed integer part in phone number: {0}")]
-    MalformedInteger(#[from] std::num::ParseIntError),
-}
-
-/// Loading of Database) Error
+/// Loading of Database error — wraps all errors that can occur during metadata loading.
+/// **Note: This enum has NO Parse variant.** Parse errors are separate and belong to
+/// the phone number parsing logic in the main phonenumber crate.
 #[derive(Error, Debug)]
-pub enum LoadMetadata {
+pub enum MetadataLoadError {
     /// Parsing XML failed, the XML is malformed.
     #[error("Malformed Metadata XML: {0}")]
     Xml(#[from] quick_xml::Error),
@@ -99,23 +59,23 @@ pub enum LoadMetadata {
     #[error("Non UTF-8 string in Metadata XML: {0}")]
     Utf8(#[from] std::str::Utf8Error),
 
-    /// Metadata Error
+    /// Metadata parsing error (from Metadata enum).
     #[error("{0}")]
-    Metadata(#[from] Metadata),
+    ParseError(#[from] MetadataParseError),
 
-    /// Malformed integer in Metadata XML database
+    /// Malformed integer in Metadata XML database.
     #[error("Malformed integer in Metadata XML: {0}")]
     Integer(#[from] std::num::ParseIntError),
 
-    /// Malformed boolean in Metadata XML database
+    /// Malformed boolean in Metadata XML database.
     #[error("Malformed boolean in Metadata XML: {0}")]
     Bool(#[from] std::str::ParseBoolError),
 
-    /// I/O-Error while reading Metadata XML database
+    /// I/O error while reading Metadata XML database.
     #[error("I/O-Error in Metadata XML: {0}")]
     Io(#[from] std::io::Error),
 
-    /// Malformed Regex in Metadata XML database
+    /// Malformed Regex in Metadata XML database.
     #[error("Malformed Regex: {0}")]
     Regex(#[from] regex::Error),
 }

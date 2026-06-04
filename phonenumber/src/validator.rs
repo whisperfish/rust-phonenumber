@@ -17,7 +17,8 @@ use crate::country;
 use crate::metadata::{Database, Metadata, DATABASE};
 use crate::parser;
 use crate::parser::helper::Number as ParseNumber;
-use crate::phone_number::{PhoneNumber, Type};
+use crate::phone_number::PhoneNumber;
+use crate::Type;
 use either::*;
 
 /// Possible outcomes when testing if a `PhoneNumber` is possible.
