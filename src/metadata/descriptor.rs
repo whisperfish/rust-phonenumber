@@ -77,9 +77,7 @@ impl Descriptor {
             return false;
         }
 
-        self.national_number
-            .find(value)
-            .map(|m| m.start() == 0)
-            .unwrap_or(false)
+        // `national_number` is anchored, so this requires a full-string match.
+        self.national_number.is_match(value)
     }
 }
