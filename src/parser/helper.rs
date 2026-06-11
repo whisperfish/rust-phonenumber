@@ -212,10 +212,19 @@ pub fn country_code<'a>(
 /// Note that since the IDD comes from a passed default region, we can find the
 /// country code from the given default if the country source is from the IDD.
 pub fn international_prefix<'a>(idd: Option<&Regex>, mut number: Number<'a>) -> Number<'a> {
+    // Letters are only mapped to digits when the number is a vanity number,
+    // i.e. it contains at least three letters (e.g. 1-800-FLOWERS). Otherwise
+    // stray letters are dropped, matching libphonenumber's normalize().
+    let mappings: &FnvHashMap<char, char> = if consts::VALID_ALPHA_PHONE.is_match(&number.national) {
+        &consts::ALPHA_PHONE_MAPPINGS
+    } else {
+        &consts::ASCII_MAPPINGS
+    };
+
     // If there's a prefix already, i.e. RFC3966, just change the country source.
     if number.prefix.is_some() {
         number.country = country::Source::Plus;
-        return normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
+        return normalize(number, mappings);
     }
 
     // Ignore any leading PLUS characters.
@@ -227,7 +236,7 @@ pub fn international_prefix<'a>(idd: Option<&Regex>, mut number: Number<'a>) -> 
     if start != 0 {
         number.country = country::Source::Plus;
         number.national = trim(number.national, start);
-        number = normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
+        number = normalize(number, mappings);
 
         if !idd
             .and_then(|re| re.find(&number.national))
@@ -238,7 +247,7 @@ pub fn international_prefix<'a>(idd: Option<&Regex>, mut number: Number<'a>) -> 
         }
     } else {
         number.country = country::Source::Default;
-        number = normalize(number, &consts::ALPHA_PHONE_MAPPINGS);
+        number = normalize(number, mappings);
     }
 
     // Check if the IDD pattern matches.

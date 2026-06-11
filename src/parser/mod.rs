@@ -283,6 +283,19 @@ mod test {
     }
 
     #[test]
+    fn issue_100() {
+        // A number with fewer than three letters is not a vanity number, so
+        // stray letters are dropped rather than mapped to digits.
+        let parsed = parser::parse(None, "+3367a829916").unwrap();
+        assert_eq!(parsed.code().value(), 33);
+        assert_eq!(parsed.national().value(), 67829916);
+
+        // A genuine vanity number (>= 3 letters) still maps letters to digits.
+        let vanity = parser::parse(Some(country::US), "1800FLOWERS").unwrap();
+        assert_eq!(vanity.national().value(), 8003569377);
+    }
+
+    #[test]
     fn advisory_1() {
         let res = parser::parse(None, ".;phone-context=");
         assert!(res.is_err(), "{res:?}");
