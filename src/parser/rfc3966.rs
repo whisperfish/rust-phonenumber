@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use crate::parser::helper::*;
+use crate::parser::rfc3986;
 use fnv::FnvHashMap;
+use std::borrow::Cow;
 use nom::{
     bytes::complete::*,
     character::complete::*,
@@ -37,19 +39,36 @@ pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
         let params = opt(parameters);
     };
 
+    // Malformed pct-encoding makes the URI invalid; surface it as a parse
+    // failure rather than silently keeping the raw octets. `at` and the
+    // decoded slice share the input's lifetime.
+    fn decode<'a>(
+        s: &'a str,
+        at: &'a str,
+    ) -> Result<Cow<'a, str>, nom::Err<nom::error::Error<&'a str>>> {
+        rfc3986::decode(s).ok_or_else(|| nom::Err::Failure(make_error(at, ErrorKind::Tag)))
+    }
+
+    let national = decode(national, i)?;
+
+    let prefix = match prefix {
+        Some(p) => Some(decode(p, i)?),
+        None => params
+            .as_ref()
+            .and_then(|m| m.get("phone-context"))
+            .map(|&s| decode(s, i))
+            .transpose()?
+            .map(|cs| match cs {
+                Cow::Borrowed(s) => Cow::Borrowed(s.strip_prefix('+').unwrap_or(s)),
+                Cow::Owned(s) => Cow::Owned(s.strip_prefix('+').unwrap_or(&s).to_owned()),
+            }),
+    };
+
     Ok((
         i,
         Number {
-            national: (*national).into(),
-
-            prefix: prefix
-                .or_else(|| {
-                    params
-                        .as_ref()
-                        .and_then(|m| m.get("phone-context"))
-                        .map(|&s| s.strip_prefix('+').unwrap_or(s))
-                })
-                .map(|cs| cs.into()),
+            national,
+            prefix,
 
             extension: params
                 .as_ref()
@@ -100,11 +119,11 @@ fn pname(c: char) -> bool {
 }
 
 fn pchar(c: char) -> bool {
-    parameter_unreserved(c) || unreserved(c)
+    parameter_unreserved(c) || unreserved(c) || c == '%'
 }
 
 fn number(c: char) -> bool {
-    digit(c) || separator(c)
+    digit(c) || separator(c) || c == '%'
 }
 
 fn digit(c: char) -> bool {
@@ -167,6 +186,40 @@ mod test {
                 ..Default::default()
             }
         );
+    }
+
+    #[test]
+    fn pct_encoded_national_decodes() {
+        // %2D is '-'; the decoded national must match the literal form.
+        assert_eq!(
+            rfc3966::phone_number("tel:03%2D331%2D6005;phone-context=+64")
+                .unwrap()
+                .1,
+            Number {
+                national: "03-331-6005".into(),
+                prefix: Some("64".into()),
+                ..Default::default()
+            }
+        );
+    }
+
+    #[test]
+    fn pct_encoded_phone_context_decodes() {
+        assert_eq!(
+            rfc3966::phone_number("tel:03-331-6005;phone-context=%2B64")
+                .unwrap()
+                .1,
+            Number {
+                national: "03-331-6005".into(),
+                prefix: Some("64".into()),
+                ..Default::default()
+            }
+        );
+    }
+
+    #[test]
+    fn malformed_pct_encoding_is_error() {
+        assert!(rfc3966::phone_number("tel:03-331%2-6005").is_err());
     }
 
     #[test]
