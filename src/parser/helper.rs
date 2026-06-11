@@ -143,7 +143,11 @@ pub fn country_code<'a>(
         .and_then(|c| database.by_id(c.as_ref()))
         .and_then(|m| m.international_prefix.as_ref());
 
-    number = international_prefix(idd, number);
+    // Without a reference region we cannot know its international dialling
+    // prefix, so fall back to the near-universal "00" IDD.
+    let fallback = country.is_none().then(|| &*consts::DEFAULT_IDD);
+
+    number = international_prefix(idd.or(fallback), number);
 
     match number.country {
         // The country source was found from the initial PLUS or it was extract

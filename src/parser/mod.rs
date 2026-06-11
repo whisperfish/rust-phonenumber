@@ -269,6 +269,16 @@ mod test {
     }
 
     #[test]
+    fn issue_29() {
+        // A leading "00" is treated as an international dialling prefix even
+        // when no reference region is supplied.
+        let parsed = parser::parse(None, "0032474123456").unwrap();
+        assert_eq!(parsed.code().value(), 32);
+        assert_eq!(parsed.national().value(), 474123456);
+        assert_eq!(parsed.code().source(), Source::Idd);
+    }
+
+    #[test]
     fn issue_30() {
         // A fully-qualified international number must round-trip regardless of
         // the reference country: the country code came from the number, so the

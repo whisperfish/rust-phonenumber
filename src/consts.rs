@@ -47,6 +47,11 @@ pub const RFC3966_ISDN_SUBADDRESS: &str = ";isub=";
 
 pub const REGION_CODE_FOR_NON_GEO_ENTITY: &str = "001";
 
+/// Fallback international dialling prefix, used when no reference region is
+/// supplied. The overwhelming majority of countries use `00`, so a leading
+/// `00` is treated as an IDD, allowing e.g. `0032474123456` to parse as `+32`.
+pub static DEFAULT_IDD: Lazy<Regex> = Lazy::new(|| Regex::new("00").unwrap());
+
 /// Map of country calling codes that use a mobile token before the area code. One example of when
 /// this is relevant is when determining the length of the national destination code, which should
 /// be the length of the area code plus the length of the mobile token.
