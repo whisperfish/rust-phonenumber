@@ -80,16 +80,11 @@ pub fn parse_with<S: AsRef<str>>(
         }
     };
 
-    // Extract carrier and strip national prefix if present.
+    // Extract carrier and strip national prefix if present. national_number
+    // already performs viability-checked national-prefix stripping, so it must
+    // not be repeated here.
     if let Some(meta) = meta {
-        let mut potential = helper::national_number(meta, number.clone());
-
-        // Strip national prefix if present.
-        if let Some(prefix) = meta.national_prefix.as_ref() {
-            if potential.national.starts_with(prefix) {
-                potential.national = helper::trim(potential.national, prefix.len());
-            }
-        }
+        let potential = helper::national_number(meta, number.clone());
 
         if validator::length(meta, &potential, Type::Unknown) != Validation::TooShort {
             number = potential;
@@ -270,6 +265,23 @@ mod test {
     fn issue_43() {
         let res = parser::parse(None, " 2 22#:");
         assert!(res.is_err());
+    }
+
+    #[rstest]
+    #[case(country::RU, "+78005553535", 7, 8005553535)]
+    #[case(country::RU, "88005553535", 7, 8005553535)]
+    #[case(country::BY, "+375800111111", 375, 800111111)]
+    fn issue_76(
+        #[case] country: country::Id,
+        #[case] number: &'static str,
+        #[case] code: u16,
+        #[case] national: u64,
+    ) {
+        // A national number that happens to start with the trunk prefix must
+        // not have that prefix stripped when the result would be invalid.
+        let parsed = parser::parse(Some(country), number).unwrap();
+        assert_eq!(parsed.code().value(), code, "{number}");
+        assert_eq!(parsed.national().value(), national, "{number}");
     }
 
     #[test]
