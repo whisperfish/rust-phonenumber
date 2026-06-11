@@ -66,11 +66,18 @@ impl Database {
             Ok(RegexBuilder::new(&value).ignore_whitespace(true).build()?)
         };
 
+        // National number patterns describe a complete national significant
+        // number, so they must match the whole string. Anchoring prevents a
+        // shorter pattern (e.g. an 8-digit rule) from matching a prefix of a
+        // longer, invalid number.
+        let anchored_regex = |value: String| -> Result<Regex, error::LoadMetadata> {
+            Ok(RegexBuilder::new(&format!(r"\A(?:{value})\z"))
+                .ignore_whitespace(true)
+                .build()?)
+        };
+
         let descriptor =
             |desc: loader::Descriptor| -> Result<super::Descriptor, error::LoadMetadata> {
-                desc.national_number.as_ref().unwrap();
-                desc.national_number.as_ref().unwrap();
-
                 Ok(super::Descriptor {
                     national_number: desc
                         .national_number
@@ -80,7 +87,7 @@ impl Database {
                                 name: "national_number".into(),
                             })
                         })
-                        .and_then(regex)?,
+                        .and_then(anchored_regex)?,
 
                     possible_length: desc.possible_length,
                     possible_local_length: desc.possible_local_length,

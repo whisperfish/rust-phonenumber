@@ -192,12 +192,32 @@ pub fn country_code<'a>(
                 let meta = database.by_id(country.as_ref()).unwrap();
                 let code = meta.country_code.to_string();
 
-                if number.national.starts_with(&code)
-                    && (!meta.descriptors().general().is_match(&number.national)
-                        || !validator::length(meta, &number, Type::Unknown).is_possible())
-                {
-                    number.country = country::Source::Number;
-                    number.national = trim(number.national, code.len());
+                if number.national.starts_with(&code) {
+                    let general = meta.descriptors().general();
+
+                    // The candidate national number is the input with the
+                    // country code removed and its national prefix stripped, so
+                    // it is compared on equal footing with the full number.
+                    let mut candidate = number.clone();
+                    candidate.national = trim(number.national.clone(), code.len());
+                    candidate = national_number(meta, candidate);
+
+                    // Strip the default region's country code only when it
+                    // improves the result: the full number is not a valid
+                    // national number but the candidate is, or the full number
+                    // is too long. Otherwise a national number that merely
+                    // begins with the same digits as the country code (e.g. an
+                    // Italian +39 number 39xxxxxxxx) would be wrongly truncated.
+                    let strip = (!general.is_match(&number.national)
+                        && general.is_match(&candidate.national))
+                        || validator::length(meta, &number, Type::Unknown)
+                            == validator::Validation::TooLong;
+
+                    if strip {
+                        number.country = country::Source::Number;
+                        number.national = candidate.national;
+                        number.carrier = candidate.carrier;
+                    }
                 }
 
                 number.prefix = Some(code.into());
