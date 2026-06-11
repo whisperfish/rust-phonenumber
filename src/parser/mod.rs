@@ -29,6 +29,7 @@ pub mod natural;
 pub mod rfc3966;
 pub mod rfc3986;
 pub mod rfc4715;
+pub mod rfc4904;
 pub mod valid;
 
 /// Parse a phone number.
