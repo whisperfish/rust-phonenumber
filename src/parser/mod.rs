@@ -174,14 +174,18 @@ mod test {
 
     #[test]
     fn parse_2() {
+        // "64064123456" stripped of NZ's country code and trunk prefix is not a
+        // valid NZ national number, so the leading 64 must not be treated as a
+        // country code (see issue #68). The number is kept intact against the
+        // default region.
         assert_eq!(
             PhoneNumber {
                 code: country::Code {
                     value: 64,
-                    source: Source::Number,
+                    source: Source::Default,
                 },
 
-                national: NationalNumber::new(64123456, 0).unwrap(),
+                national: NationalNumber::new(64064123456, 0).unwrap(),
 
                 extension: None,
                 carrier: None,
@@ -303,6 +307,15 @@ mod test {
         // A genuine vanity number (>= 3 letters) still maps letters to digits.
         let vanity = parser::parse(Some(country::US), "1800FLOWERS").unwrap();
         assert_eq!(vanity.national().value(), 8003569377);
+    }
+
+    #[test]
+    fn issue_68() {
+        // A national number that begins with the same digits as the reference
+        // country's calling code must not have those digits stripped.
+        let parsed = parser::parse(Some(country::IT), "3912312312").unwrap();
+        assert_eq!(parsed.code().value(), 39);
+        assert_eq!(parsed.national().value(), 3912312312);
     }
 
     #[test]
