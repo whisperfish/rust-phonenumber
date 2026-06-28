@@ -17,7 +17,7 @@ use crate::country;
 use crate::error;
 use crate::extension::Extension;
 use crate::formatter;
-use crate::metadata::{Database, Metadata, DATABASE};
+use crate::metadata::{DATABASE, Database, Metadata};
 use crate::national_number::NationalNumber;
 use crate::parser;
 use crate::validator;
@@ -264,9 +264,9 @@ impl<'a> Deref for Country<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::country::{self, Id::*};
     use crate::Type;
-    use crate::{parser, Mode, PhoneNumber};
+    use crate::country::{self, Id::*};
+    use crate::{Mode, PhoneNumber, parser};
     use anyhow::Context;
     use rstest::rstest;
     use rstest_reuse::*;

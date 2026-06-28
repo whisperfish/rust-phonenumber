@@ -15,15 +15,15 @@
 use crate::parser::helper::*;
 use crate::parser::rfc3986;
 use fnv::FnvHashMap;
-use std::borrow::Cow;
 use nom::{
+    AsChar, IResult,
     bytes::complete::*,
     character::complete::*,
     combinator::*,
-    error::{make_error, ErrorKind},
+    error::{ErrorKind, make_error},
     multi::*,
-    AsChar, IResult,
 };
+use std::borrow::Cow;
 
 pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
     // Per RFC3966, spaces are not allowed as separators.

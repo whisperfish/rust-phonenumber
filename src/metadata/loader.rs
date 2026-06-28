@@ -13,9 +13,9 @@
 // limitations under the License.
 
 use crate::error;
+use quick_xml::Reader;
 use quick_xml::events::attributes::Attribute;
 use quick_xml::events::{self, Event};
-use quick_xml::Reader;
 use serde_derive::{Deserialize, Serialize};
 use std::io::BufRead;
 use std::str;
@@ -113,11 +113,11 @@ fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, error::
                 return Err(error::Metadata::MismatchedTag(
                     str::from_utf8(e.name().into_inner())?.into(),
                 )
-                .into())
+                .into());
             }
 
             Event::End(ref e) if e.name().into_inner() == b"phoneNumberMetadata" => {
-                return Ok(result)
+                return Ok(result);
             }
 
             event => {
@@ -125,7 +125,7 @@ fn metadata<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, error::
                     phase: "metadata".into(),
                     event: format!("{:?}", event),
                 }
-                .into())
+                .into());
             }
         }
     }
@@ -151,7 +151,7 @@ fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, erro
                 return Err(error::Metadata::MismatchedTag(
                     str::from_utf8(e.name().into_inner())?.into(),
                 )
-                .into())
+                .into());
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -161,7 +161,7 @@ fn territories<R: BufRead>(reader: &mut Reader<R>) -> Result<Vec<Metadata>, erro
                     phase: "territories".into(),
                     event: format!("{:?}", event),
                 }
-                .into())
+                .into());
             }
         }
     }
@@ -226,7 +226,7 @@ fn territory<R: BufRead>(
                     name: name.into(),
                     value: value.into(),
                 }
-                .into())
+                .into());
             }
         }
     }
@@ -280,7 +280,7 @@ fn territory<R: BufRead>(
                         phase: "territory".into(),
                         name: str::from_utf8(name)?.into(),
                     }
-                    .into())
+                    .into());
                 }
             },
 
@@ -290,7 +290,7 @@ fn territory<R: BufRead>(
                 return Err(error::Metadata::MismatchedTag(
                     str::from_utf8(e.name().into_inner())?.into(),
                 )
-                .into())
+                .into());
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -300,7 +300,7 @@ fn territory<R: BufRead>(
                     phase: "territory".into(),
                     event: format!("{:?}", event),
                 }
-                .into())
+                .into());
             }
         }
     }
@@ -353,7 +353,7 @@ fn descriptor<R: BufRead>(
                         phase: "descriptor".into(),
                         name: str::from_utf8(name)?.into(),
                     }
-                    .into())
+                    .into());
                 }
             },
 
@@ -376,7 +376,7 @@ fn descriptor<R: BufRead>(
                                     name: name.into(),
                                     value: value.into(),
                                 }
-                                .into())
+                                .into());
                             }
                         }
                     }
@@ -387,7 +387,7 @@ fn descriptor<R: BufRead>(
                         phase: "descriptor".into(),
                         name: str::from_utf8(name)?.into(),
                     }
-                    .into())
+                    .into());
                 }
             },
 
@@ -397,7 +397,7 @@ fn descriptor<R: BufRead>(
                 return Err(error::Metadata::MismatchedTag(
                     str::from_utf8(e.name().into_inner())?.into(),
                 )
-                .into())
+                .into());
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -407,7 +407,7 @@ fn descriptor<R: BufRead>(
                     phase: "descriptor".into(),
                     event: format!("{:?}", event),
                 }
-                .into())
+                .into());
             }
         }
     }
@@ -442,19 +442,19 @@ fn formats<R: BufRead>(
                         phase: "formats".into(),
                         name: str::from_utf8(name)?.into(),
                     }
-                    .into())
+                    .into());
                 }
             },
 
             Event::End(ref e) if e.name().into_inner() == name => {
-                return Ok((national, international))
+                return Ok((national, international));
             }
 
             Event::End(ref e) => {
                 return Err(error::Metadata::MismatchedTag(
                     str::from_utf8(e.name().into_inner())?.into(),
                 )
-                .into())
+                .into());
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -464,7 +464,7 @@ fn formats<R: BufRead>(
                     phase: "formats".into(),
                     event: format!("{:?}", event),
                 }
-                .into())
+                .into());
             }
         }
     }
@@ -503,7 +503,7 @@ fn format<R: BufRead>(
                     name: name.into(),
                     value: value.into(),
                 }
-                .into())
+                .into());
             }
         }
     }
@@ -537,7 +537,7 @@ fn format<R: BufRead>(
                         phase: "format".into(),
                         name: str::from_utf8(name)?.into(),
                     }
-                    .into())
+                    .into());
                 }
             },
 
@@ -555,7 +555,7 @@ fn format<R: BufRead>(
                 return Err(error::Metadata::MismatchedTag(
                     str::from_utf8(e.name().into_inner())?.into(),
                 )
-                .into())
+                .into());
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -565,7 +565,7 @@ fn format<R: BufRead>(
                     phase: "format".into(),
                     event: format!("{:?}", event),
                 }
-                .into())
+                .into());
             }
         }
     }
@@ -589,7 +589,7 @@ fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<(), error::
                 return Err(error::Metadata::MismatchedTag(
                     str::from_utf8(e.name().into_inner())?.into(),
                 )
-                .into())
+                .into());
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -599,7 +599,7 @@ fn ignore<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<(), error::
                     phase: "ignore".into(),
                     event: format!("{:?}", event),
                 }
-                .into())
+                .into());
             }
         }
     }
@@ -619,7 +619,7 @@ fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, error
                 return Err(error::Metadata::MismatchedTag(
                     str::from_utf8(e.name().into_inner())?.into(),
                 )
-                .into())
+                .into());
             }
 
             Event::Eof => return Err(error::Metadata::UnexpectedEof.into()),
@@ -629,7 +629,7 @@ fn text<R: BufRead>(reader: &mut Reader<R>, name: &[u8]) -> Result<String, error
                     phase: "text".into(),
                     event: format!("{:?}", event),
                 }
-                .into())
+                .into());
             }
         }
     }

@@ -8,7 +8,7 @@
 use std::sync::Arc;
 use std::thread;
 
-use phonenumber::{country, parse, Mode};
+use phonenumber::{Mode, country, parse};
 
 fn assert_send_sync<T: Send + Sync>() {}
 

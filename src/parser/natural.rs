@@ -14,8 +14,8 @@
 
 use crate::consts;
 use crate::parser::helper::*;
-use nom::error::ErrorKind;
 use nom::IResult;
+use nom::error::ErrorKind;
 
 pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
     let (_, i) = extract(i)?;

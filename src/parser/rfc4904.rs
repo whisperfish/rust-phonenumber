@@ -59,7 +59,10 @@ mod test {
     #[test]
     fn absent_when_no_tgrp() {
         assert_eq!(trunk_group("tel:+1-555-0100"), None);
-        assert_eq!(trunk_group("tel:+1-555-0100;trunk-context=example.com"), None);
+        assert_eq!(
+            trunk_group("tel:+1-555-0100;trunk-context=example.com"),
+            None
+        );
     }
 
     #[test]

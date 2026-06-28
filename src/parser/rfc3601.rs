@@ -134,15 +134,7 @@ mod test {
     fn pauses_and_waits() {
         assert_eq!(
             parse("123pPwW").unwrap().elements(),
-            &[
-                Digit('1'),
-                Digit('2'),
-                Digit('3'),
-                Pause,
-                Pause,
-                Wait,
-                Wait,
-            ]
+            &[Digit('1'), Digit('2'), Digit('3'), Pause, Pause, Wait, Wait,]
         );
     }
 
@@ -184,6 +176,9 @@ mod test {
 
     #[test]
     fn display_roundtrips_without_separators() {
-        assert_eq!(parse("1-800p555w0100").unwrap().to_string(), "1800p555w0100");
+        assert_eq!(
+            parse("1-800p555w0100").unwrap().to_string(),
+            "1800p555w0100"
+        );
     }
 }

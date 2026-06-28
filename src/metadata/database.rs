@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::Metadata;
 use crate::error;
 use crate::metadata::loader;
-use crate::Metadata;
 use fnv::FnvHashMap;
 use once_cell::sync::Lazy;
 use regex::{Regex, RegexBuilder};

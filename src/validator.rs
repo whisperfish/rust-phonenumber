@@ -14,7 +14,7 @@
 
 use crate::consts;
 use crate::country;
-use crate::metadata::{Database, Metadata, DATABASE};
+use crate::metadata::{DATABASE, Database, Metadata};
 use crate::parser;
 use crate::parser::helper::Number as ParseNumber;
 use crate::phone_number::{PhoneNumber, Type};

@@ -55,7 +55,7 @@ pub use crate::parser::{parse, parse_with};
 pub use crate::parser::{rfc3601, rfc3986, rfc4715, rfc4904};
 
 mod formatter;
-pub use crate::formatter::{format, format_with, Formatter, Mode};
+pub use crate::formatter::{Formatter, Mode, format, format_with};
 
 mod validator;
-pub use crate::validator::{is_valid, is_valid_with, is_viable, Validation};
+pub use crate::validator::{Validation, is_valid, is_valid_with, is_viable};
