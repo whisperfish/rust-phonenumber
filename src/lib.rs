@@ -50,7 +50,7 @@ mod parser;
 pub use crate::parser::{parse, parse_with};
 
 mod formatter;
-pub use crate::formatter::{format, format_with, Formatter, Mode};
+pub use crate::formatter::{Formatter, Mode, format, format_with};
 
 mod validator;
-pub use crate::validator::{is_valid, is_valid_with, is_viable, Validation};
+pub use crate::validator::{Validation, is_valid, is_valid_with, is_viable};

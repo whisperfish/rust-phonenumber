@@ -14,7 +14,7 @@
 
 use crate::{
     consts,
-    metadata::{Database, Format, Metadata, DATABASE},
+    metadata::{DATABASE, Database, Format, Metadata},
     phone_number::PhoneNumber,
 };
 use std::{borrow::Cow, fmt};

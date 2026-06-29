@@ -23,7 +23,7 @@ mod metadata;
 pub use self::metadata::{Descriptors, Metadata};
 
 mod database;
-pub use self::database::{Database, DEFAULT as DATABASE};
+pub use self::database::{DEFAULT as DATABASE, Database};
 
 /// XML loading helpers.
 pub mod loader;

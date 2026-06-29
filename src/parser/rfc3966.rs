@@ -15,12 +15,12 @@
 use crate::parser::helper::*;
 use fnv::FnvHashMap;
 use nom::{
+    AsChar, IResult,
     bytes::complete::*,
     character::complete::*,
     combinator::*,
-    error::{make_error, ErrorKind},
+    error::{ErrorKind, make_error},
     multi::*,
-    AsChar, IResult,
 };
 
 pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {

@@ -20,11 +20,11 @@ use crate::phone_number::Type;
 use crate::validator;
 use fnv::FnvHashMap;
 use nom::{
+    AsChar, IResult,
     character::complete::*,
     combinator::*,
-    error::{make_error, ErrorKind},
+    error::{ErrorKind, make_error},
     multi::*,
-    AsChar, IResult,
 };
 use regex::Regex;
 use std::borrow::Cow;
@@ -77,7 +77,9 @@ pub fn ieof(i: &str) -> IResult<&str, ()> {
 }
 
 pub fn punctuation(i: &str) -> IResult<&str, char> {
-    one_of("-x\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2212}\u{30FC}\u{FF0D}-\u{FF0F} \u{00A0}\u{00AD}\u{200B}\u{2060}\u{3000}()\u{FF08}\u{FF09}\u{FF3B}\u{FF3D}.[]/~\u{2053}\u{223C}\u{FF5E}")(i)
+    one_of(
+        "-x\u{2010}\u{2011}\u{2012}\u{2013}\u{2014}\u{2015}\u{2212}\u{30FC}\u{FF0D}-\u{FF0F} \u{00A0}\u{00AD}\u{200B}\u{2060}\u{3000}()\u{FF08}\u{FF09}\u{FF3B}\u{FF3D}.[]/~\u{2053}\u{223C}\u{FF5E}",
+    )(i)
 }
 
 pub fn alpha(i: &str) -> IResult<&str, char> {
@@ -219,7 +221,8 @@ pub fn international_prefix<'a>(idd: Option<&Regex>, mut number: Number<'a>) -> 
     // Letters are only mapped to digits when the number is a vanity number,
     // i.e. it contains at least three letters (e.g. 1-800-FLOWERS). Otherwise
     // stray letters are dropped, matching libphonenumber's normalize().
-    let mappings: &FnvHashMap<char, char> = if consts::VALID_ALPHA_PHONE.is_match(&number.national) {
+    let mappings: &FnvHashMap<char, char> = if consts::VALID_ALPHA_PHONE.is_match(&number.national)
+    {
         &consts::ALPHA_PHONE_MAPPINGS
     } else {
         &consts::ASCII_MAPPINGS
@@ -610,16 +613,18 @@ mod test {
             .unwrap()
         );
 
-        assert!(helper::country_code(
-            &DATABASE,
-            Some(country::US),
-            Number {
-                national: "0119991123456789".into(),
+        assert!(
+            helper::country_code(
+                &DATABASE,
+                Some(country::US),
+                Number {
+                    national: "0119991123456789".into(),
 
-                ..Default::default()
-            }
-        )
-        .is_err());
+                    ..Default::default()
+                }
+            )
+            .is_err()
+        );
 
         assert_eq!(
             Number {

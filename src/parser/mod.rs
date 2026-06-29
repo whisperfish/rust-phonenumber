@@ -18,10 +18,10 @@ use crate::country;
 use crate::error;
 use crate::extension::Extension;
 use crate::is_viable;
-use crate::metadata::{Database, DATABASE};
+use crate::metadata::{DATABASE, Database};
 use crate::phone_number::{PhoneNumber, Type};
 use crate::validator::{self, Validation};
-use nom::{branch::alt, IResult};
+use nom::{IResult, branch::alt};
 
 #[macro_use]
 pub mod helper;
@@ -64,7 +64,9 @@ pub fn parse_with<S: AsRef<str>>(
     // (a leading `+`, IDD, or an extracted code), the metadata must come from
     // that code, otherwise we strip the wrong national prefix.
     use either::{Left, Right};
-    let meta = if let Some(country) = &country && number.country == country::Source::Default {
+    let meta = if let Some(country) = &country
+        && number.country == country::Source::Default
+    {
         database.by_id(country.as_ref())
     } else {
         let code = country::Code {
