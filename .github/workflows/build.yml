@@ -35,7 +35,7 @@ jobs:
           - toolchain: "nightly"
             coverage: true
             tests: true
-          - toolchain: "1.85.0"
+          - toolchain: "1.88.0"
             coverage: false
             tests: false
     steps:
