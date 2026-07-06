@@ -49,6 +49,11 @@ pub use crate::phone_number::{PhoneNumber, Type};
 mod parser;
 pub use crate::parser::{parse, parse_with};
 
+/// Parsers for the auxiliary `tel:` URI / dial-string notations layered on top
+/// of RFC 3966: RFC 3986 percent-encoding, RFC 4715 ISDN sub-addresses,
+/// RFC 4904 trunk groups, and RFC 3601 dial sequences.
+pub use crate::parser::{rfc3601, rfc3986, rfc4715, rfc4904};
+
 mod formatter;
 pub use crate::formatter::{Formatter, Mode, format, format_with};
 

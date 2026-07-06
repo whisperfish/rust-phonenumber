@@ -327,14 +327,14 @@ mod test {
     #[case(None, "+979 123456789", true)]
     #[case(None, "+64 21387835", true)]
     #[case(None, "+1 2530000", false)]
-    // #[case(None, "+39 023661830000", false)]
+    #[case(None, "+39 023661830000", false)]
     #[case(None, "+44 791234567", false)]
     #[case(None, "+49 1234", false)]
     #[case(None, "+64 3316005", false)]
     #[case(None, "+3923 2366", false)]
     #[case(None, "+800 123456789", false)]
     // Case for https://github.com/whisperfish/rust-phonenumber/issues/31
-    // #[case(None, "+97233142764978", false)]
+    #[case(None, "+97233142764978", false)]
     fn phone_numbers(
         #[case] country: impl Into<Option<country::Id>>,
         #[case] number: &'static str,

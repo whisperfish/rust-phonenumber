@@ -26,7 +26,11 @@ use nom::{IResult, branch::alt};
 #[macro_use]
 pub mod helper;
 pub mod natural;
+pub mod rfc3601;
 pub mod rfc3966;
+pub mod rfc3986;
+pub mod rfc4715;
+pub mod rfc4904;
 pub mod valid;
 
 /// Parse a phone number.
@@ -82,16 +86,11 @@ pub fn parse_with<S: AsRef<str>>(
         }
     };
 
-    // Extract carrier and strip national prefix if present.
+    // Extract carrier and strip national prefix if present. national_number
+    // already performs viability-checked national-prefix stripping, so it must
+    // not be repeated here.
     if let Some(meta) = meta {
-        let mut potential = helper::national_number(meta, number.clone());
-
-        // Strip national prefix if present.
-        if let Some(prefix) = meta.national_prefix.as_ref() {
-            if potential.national.starts_with(prefix) {
-                potential.national = helper::trim(potential.national, prefix.len());
-            }
-        }
+        let potential = helper::national_number(meta, number.clone());
 
         if validator::length(meta, &potential, Type::Unknown) != Validation::TooShort {
             number = potential;
@@ -176,14 +175,18 @@ mod test {
 
     #[test]
     fn parse_2() {
+        // "64064123456" stripped of NZ's country code and trunk prefix is not a
+        // valid NZ national number, so the leading 64 must not be treated as a
+        // country code (see issue #68). The number is kept intact against the
+        // default region.
         assert_eq!(
             PhoneNumber {
                 code: country::Code {
                     value: 64,
-                    source: Source::Number,
+                    source: Source::Default,
                 },
 
-                national: NationalNumber::new(64123456, 0).unwrap(),
+                national: NationalNumber::new(64064123456, 0).unwrap(),
 
                 extension: None,
                 carrier: None,
@@ -270,6 +273,23 @@ mod test {
         assert!(res.is_err());
     }
 
+    #[rstest]
+    #[case(country::RU, "+78005553535", 7, 8005553535)]
+    #[case(country::RU, "88005553535", 7, 8005553535)]
+    #[case(country::BY, "+375800111111", 375, 800111111)]
+    fn issue_76(
+        #[case] country: country::Id,
+        #[case] number: &'static str,
+        #[case] code: u16,
+        #[case] national: u64,
+    ) {
+        // A national number that happens to start with the trunk prefix must
+        // not have that prefix stripped when the result would be invalid.
+        let parsed = parser::parse(Some(country), number).unwrap();
+        assert_eq!(parsed.code().value(), code, "{number}");
+        assert_eq!(parsed.national().value(), national, "{number}");
+    }
+
     #[test]
     fn issue_29() {
         // A leading "00" is treated as an international dialling prefix even
@@ -305,6 +325,15 @@ mod test {
         // A genuine vanity number (>= 3 letters) still maps letters to digits.
         let vanity = parser::parse(Some(country::US), "1800FLOWERS").unwrap();
         assert_eq!(vanity.national().value(), 8003569377);
+    }
+
+    #[test]
+    fn issue_68() {
+        // A national number that begins with the same digits as the reference
+        // country's calling code must not have those digits stripped.
+        let parsed = parser::parse(Some(country::IT), "3912312312").unwrap();
+        assert_eq!(parsed.code().value(), 39);
+        assert_eq!(parsed.national().value(), 3912312312);
     }
 
     #[test]

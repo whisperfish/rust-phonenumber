@@ -194,12 +194,32 @@ pub fn country_code<'a>(
                 let meta = database.by_id(country.as_ref()).unwrap();
                 let code = meta.country_code.to_string();
 
-                if number.national.starts_with(&code)
-                    && (!meta.descriptors().general().is_match(&number.national)
-                        || !validator::length(meta, &number, Type::Unknown).is_possible())
-                {
-                    number.country = country::Source::Number;
-                    number.national = trim(number.national, code.len());
+                if number.national.starts_with(&code) {
+                    let general = meta.descriptors().general();
+
+                    // The candidate national number is the input with the
+                    // country code removed and its national prefix stripped, so
+                    // it is compared on equal footing with the full number.
+                    let mut candidate = number.clone();
+                    candidate.national = trim(number.national.clone(), code.len());
+                    candidate = national_number(meta, candidate);
+
+                    // Strip the default region's country code only when it
+                    // improves the result: the full number is not a valid
+                    // national number but the candidate is, or the full number
+                    // is too long. Otherwise a national number that merely
+                    // begins with the same digits as the country code (e.g. an
+                    // Italian +39 number 39xxxxxxxx) would be wrongly truncated.
+                    let strip = (!general.is_match(&number.national)
+                        && general.is_match(&candidate.national))
+                        || validator::length(meta, &number, Type::Unknown)
+                            == validator::Validation::TooLong;
+
+                    if strip {
+                        number.country = country::Source::Number;
+                        number.national = candidate.national;
+                        number.carrier = candidate.carrier;
+                    }
                 }
 
                 number.prefix = Some(code.into());
@@ -285,8 +305,21 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
         re
     } else {
         if let Some(prefix) = meta.national_prefix.as_ref() {
-            if number.national.starts_with(prefix) {
-                number.national = trim(number.national, prefix.len());
+            if number.national.starts_with(prefix.as_str()) {
+                // Only strip the national prefix if doing so keeps the number a
+                // viable national number. Otherwise a leading digit that merely
+                // coincides with the trunk prefix (e.g. the `8` of a Russian
+                // `800` number) would be wrongly removed.
+                let original_viable = meta.descriptors.general.is_match(&number.national);
+                let stripped_viable = meta
+                    .descriptors
+                    .general
+                    .is_match(&number.national[prefix.len()..]);
+
+                if !original_viable || stripped_viable {
+                    let len = prefix.len();
+                    number.national = trim(number.national, len);
+                }
             }
         }
 
@@ -305,7 +338,8 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
     }
 
     let viable = meta.descriptors.general.is_match(&number.national);
-    let groups = parsing.captures_len();
+    // Number of capturing groups, excluding the implicit whole-match group.
+    let groups = parsing.captures_len() - 1;
 
     let (first, last) = parsing
         .captures(&number.national)
@@ -318,11 +352,17 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
         .unwrap();
 
     if transform.is_none() || last.is_none() {
-        if viable && !meta.descriptors.general.is_match(&number.national[start..]) {
+        // Only strip if the number is not viable as-is, or remains viable once
+        // the matched national prefix is removed. Checking the remainder
+        // (`end..`) rather than the whole number prevents stripping a leading
+        // digit that merely coincides with the trunk prefix.
+        if viable && !meta.descriptors.general.is_match(&number.national[end..]) {
             return number;
         }
 
-        number.carrier = last.filter(|_| groups > 0).map(Into::into);
+        if groups > 0 && last.is_some() {
+            number.carrier = first.map(Into::into);
+        }
 
         number.national = trim(number.national, end);
     } else if let Some(transform) = transform {
@@ -332,7 +372,10 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
             return number;
         }
 
-        number.carrier = Some(first.unwrap().into());
+        if groups > 1 {
+            number.carrier = first.map(Into::into);
+        }
+
         number.national = transformed.into();
     }
 
