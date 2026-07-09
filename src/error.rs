@@ -58,11 +58,15 @@ pub enum Parse {
     #[allow(unused)] // This is unused in the build script
     NoNumber,
 
-    /// The country code supplied did not belong to a supported country or
-    /// non-geographical entity.
+    /// The country code supplied is not correct.
     #[error("invalid country code")]
     #[allow(unused)] // This is unused in the build script
     InvalidCountryCode,
+
+    /// The network code supplied is not correct
+    #[error("invalid network code")]
+    #[allow(unused)] // This is unused in the build script
+    InvalidNetworkCode,
 
     /// This indicates the string started with an international dialing prefix,
     /// but after this was stripped from the number, had less digits than any
