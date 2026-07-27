@@ -16,7 +16,6 @@ use crate::Metadata;
 use crate::error;
 use crate::metadata::loader;
 use fnv::FnvHashMap;
-use once_cell::sync::Lazy;
 use regex::{Regex, RegexBuilder};
 use std::borrow::Borrow;
 use std::fs::File;
@@ -24,12 +23,13 @@ use std::hash::Hash;
 use std::io::{BufReader, Cursor};
 use std::path::Path;
 use std::sync::Arc;
+use std::sync::LazyLock;
 
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
 /// The Google provided metadata database, used as default.
-pub static DEFAULT: Lazy<Database> =
-    Lazy::new(|| Database::from(postcard::from_bytes(DATABASE).unwrap()).unwrap());
+pub static DEFAULT: LazyLock<Database> =
+    LazyLock::new(|| Database::from(postcard::from_bytes(DATABASE).unwrap()).unwrap());
 
 /// Representation of a database of metadata for phone number.
 #[derive(Clone, Debug)]
