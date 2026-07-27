@@ -15,8 +15,8 @@
 #![allow(unused)]
 
 use fnv::{FnvHashMap, FnvHashSet};
-use once_cell::sync::Lazy;
 use regex::{Regex, RegexBuilder};
+use std::sync::LazyLock;
 
 /// The minimum length of the National Significant Number.
 pub const MIN_LENGTH_FOR_NSN: usize = 2;
@@ -50,12 +50,12 @@ pub const REGION_CODE_FOR_NON_GEO_ENTITY: &str = "001";
 /// Fallback international dialling prefix, used when no reference region is
 /// supplied. The overwhelming majority of countries use `00`, so a leading
 /// `00` is treated as an IDD, allowing e.g. `0032474123456` to parse as `+32`.
-pub static DEFAULT_IDD: Lazy<Regex> = Lazy::new(|| Regex::new("00").unwrap());
+pub static DEFAULT_IDD: LazyLock<Regex> = LazyLock::new(|| Regex::new("00").unwrap());
 
 /// Map of country calling codes that use a mobile token before the area code. One example of when
 /// this is relevant is when determining the length of the national destination code, which should
 /// be the length of the area code plus the length of the mobile token.
-pub static MOBILE_TOKEN_MAPPINGS: Lazy<FnvHashMap<u16, &'static str>> = Lazy::new(|| {
+pub static MOBILE_TOKEN_MAPPINGS: LazyLock<FnvHashMap<u16, &'static str>> = LazyLock::new(|| {
     let mut map = FnvHashMap::default();
     map.insert(52, "1");
     map.insert(54, "9");
@@ -67,8 +67,8 @@ pub static MOBILE_TOKEN_MAPPINGS: Lazy<FnvHashMap<u16, &'static str>> = Lazy::ne
 /// example, in China mobile numbers start with a carrier indicator, and
 /// beyond that are geographically assigned: this carrier indicator is not
 /// considered to be an area code.
-pub static GEO_MOBILE_COUNTRIES_WITHOUT_MOBILE_AREA_CODES: Lazy<FnvHashSet<u16>> =
-    Lazy::new(|| {
+pub static GEO_MOBILE_COUNTRIES_WITHOUT_MOBILE_AREA_CODES: LazyLock<FnvHashSet<u16>> =
+    LazyLock::new(|| {
         let mut set = FnvHashSet::default();
         set.insert(86); // China
         set
@@ -81,7 +81,7 @@ pub static GEO_MOBILE_COUNTRIES_WITHOUT_MOBILE_AREA_CODES: Lazy<FnvHashSet<u16>>
 /// mobile numbers, are not listed here, since we consider
 /// FIXED_LINE_OR_MOBILE to be a possibly geographically-related type anyway
 /// (like FIXED_LINE).
-pub static GEO_MOBILE_COUNTRIES: Lazy<FnvHashSet<u16>> = Lazy::new(|| {
+pub static GEO_MOBILE_COUNTRIES: LazyLock<FnvHashSet<u16>> = LazyLock::new(|| {
     let mut set = FnvHashSet::default();
     set.insert(52); // Mexico
     set.insert(54); // Argentina
@@ -92,7 +92,7 @@ pub static GEO_MOBILE_COUNTRIES: Lazy<FnvHashSet<u16>> = Lazy::new(|| {
 });
 
 /// Helper ASCII mappings.
-pub static ASCII_MAPPINGS: Lazy<FnvHashMap<char, char>> = Lazy::new(|| {
+pub static ASCII_MAPPINGS: LazyLock<FnvHashMap<char, char>> = LazyLock::new(|| {
     let mut map = FnvHashMap::default();
     map.insert('0', '0');
     map.insert('1', '1');
@@ -111,7 +111,7 @@ pub static ASCII_MAPPINGS: Lazy<FnvHashMap<char, char>> = Lazy::new(|| {
 /// means any of the characters in this map must not be removed from a number
 /// when dialling, otherwise the call will not reach the intended
 /// destination.
-pub static DIALLABLE_CHAR_MAPPINGS: Lazy<FnvHashMap<char, char>> = Lazy::new(|| {
+pub static DIALLABLE_CHAR_MAPPINGS: LazyLock<FnvHashMap<char, char>> = LazyLock::new(|| {
     let mut map = FnvHashMap::default();
     map.extend(ASCII_MAPPINGS.iter());
     map.insert(PLUS_SIGN, PLUS_SIGN);
@@ -121,7 +121,7 @@ pub static DIALLABLE_CHAR_MAPPINGS: Lazy<FnvHashMap<char, char>> = Lazy::new(|| 
 });
 
 /// Only upper-case variants of alpha characters are stored.
-pub static ALPHA_MAPPINGS: Lazy<FnvHashMap<char, char>> = Lazy::new(|| {
+pub static ALPHA_MAPPINGS: LazyLock<FnvHashMap<char, char>> = LazyLock::new(|| {
     let mut map = FnvHashMap::default();
     map.insert('A', '2');
     map.insert('B', '2');
@@ -181,7 +181,7 @@ pub static ALPHA_MAPPINGS: Lazy<FnvHashMap<char, char>> = Lazy::new(|| {
 });
 
 /// For performance reasons, amalgamate both into one map.
-pub static ALPHA_PHONE_MAPPINGS: Lazy<FnvHashMap<char, char>> = Lazy::new(|| {
+pub static ALPHA_PHONE_MAPPINGS: LazyLock<FnvHashMap<char, char>> = LazyLock::new(|| {
     let mut map = FnvHashMap::default();
     map.extend(ASCII_MAPPINGS.iter());
     map.extend(ALPHA_MAPPINGS.iter());
@@ -191,35 +191,36 @@ pub static ALPHA_PHONE_MAPPINGS: Lazy<FnvHashMap<char, char>> = Lazy::new(|| {
 /// Separate map of all symbols that we wish to retain when formatting alpha
 /// numbers. This includes digits, ASCII letters and number grouping symbols
 /// such as "-" and " ".
-pub static ALL_PLUS_NUMBER_GROUPING_SYMBOLS: Lazy<FnvHashMap<char, char>> = Lazy::new(|| {
-    let mut map = FnvHashMap::default();
+pub static ALL_PLUS_NUMBER_GROUPING_SYMBOLS: LazyLock<FnvHashMap<char, char>> =
+    LazyLock::new(|| {
+        let mut map = FnvHashMap::default();
 
-    for &c in ALPHA_MAPPINGS.keys() {
-        map.insert(c, c);
-        map.insert(c.to_lowercase().next().unwrap(), c);
-    }
+        for &c in ALPHA_MAPPINGS.keys() {
+            map.insert(c, c);
+            map.insert(c.to_lowercase().next().unwrap(), c);
+        }
 
-    map.extend(ASCII_MAPPINGS.iter());
+        map.extend(ASCII_MAPPINGS.iter());
 
-    map.insert('-', '-');
-    map.insert('\u{FF0D}', '-');
-    map.insert('\u{2010}', '-');
-    map.insert('\u{2011}', '-');
-    map.insert('\u{2012}', '-');
-    map.insert('\u{2013}', '-');
-    map.insert('\u{2014}', '-');
-    map.insert('\u{2015}', '-');
-    map.insert('\u{2212}', '-');
-    map.insert('/', '/');
-    map.insert('\u{FF0F}', '/');
-    map.insert(' ', ' ');
-    map.insert('\u{3000}', ' ');
-    map.insert('\u{2060}', ' ');
-    map.insert('.', '.');
-    map.insert('\u{FF0E}', '.');
+        map.insert('-', '-');
+        map.insert('\u{FF0D}', '-');
+        map.insert('\u{2010}', '-');
+        map.insert('\u{2011}', '-');
+        map.insert('\u{2012}', '-');
+        map.insert('\u{2013}', '-');
+        map.insert('\u{2014}', '-');
+        map.insert('\u{2015}', '-');
+        map.insert('\u{2212}', '-');
+        map.insert('/', '/');
+        map.insert('\u{FF0F}', '/');
+        map.insert(' ', ' ');
+        map.insert('\u{3000}', ' ');
+        map.insert('\u{2060}', ' ');
+        map.insert('.', '.');
+        map.insert('\u{FF0E}', '.');
 
-    map
-});
+        map
+    });
 
 /// Pattern that makes it easy to distinguish whether a region has a unique
 /// international dialing prefix or not. If a region has a unique
@@ -229,8 +230,8 @@ pub static ALL_PLUS_NUMBER_GROUPING_SYMBOLS: Lazy<FnvHashMap<char, char>> = Lazy
 /// a regex string that always contains character(s) other than ASCII digits.
 ///
 /// Note this regex also includes tilde, which signals waiting for the tone.
-pub static UNIQUE_INTERNATIONAL_PREFIX: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"[\d]+(?:[~\x{2053}\x{223C}\x{FF5E}][\d]+)?").unwrap());
+pub static UNIQUE_INTERNATIONAL_PREFIX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"[\d]+(?:[~\x{2053}\x{223C}\x{FF5E}][\d]+)?").unwrap());
 
 /// Regular expression of acceptable punctuation found in phone numbers. This
 /// excludes punctuation found as a leading character only.
@@ -249,7 +250,7 @@ pub const PLUS_CHARS: &str = r"\+\x{FF0B}";
 
 /// We accept alpha characters in phone numbers, ASCII only, upper and lower
 /// case.
-pub static VALID_ALPHA: Lazy<String> = Lazy::new(|| {
+pub static VALID_ALPHA: LazyLock<String> = LazyLock::new(|| {
     let mut string = String::new();
     let clean = Regex::new(r"[, \[\]]").unwrap();
     let alpha = ALPHA_MAPPINGS.keys().collect::<String>();
@@ -260,14 +261,14 @@ pub static VALID_ALPHA: Lazy<String> = Lazy::new(|| {
     string
 });
 
-pub static PLUS_CHARS_PATTERN: Lazy<Regex> =
-    Lazy::new(|| Regex::new(&format!("[{}]+", PLUS_CHARS)).unwrap());
+pub static PLUS_CHARS_PATTERN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!("[{}]+", PLUS_CHARS)).unwrap());
 
-pub static SEPARATOR_PATTERN: Lazy<Regex> =
-    Lazy::new(|| Regex::new(&format!("[{}]+", VALID_PUNCTUATION)).unwrap());
+pub static SEPARATOR_PATTERN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!("[{}]+", VALID_PUNCTUATION)).unwrap());
 
-pub static CAPTURING_DIGIT: Lazy<Regex> =
-    Lazy::new(|| Regex::new(&format!("({})", DIGITS)).unwrap());
+pub static CAPTURING_DIGIT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!("({})", DIGITS)).unwrap());
 
 /// Regular expression of acceptable characters that may start a phone number
 /// for the purposes of parsing. This allows us to strip away meaningless
@@ -277,8 +278,8 @@ pub static CAPTURING_DIGIT: Lazy<Regex> =
 /// number. It also does not include other punctuation, as this will be
 /// stripped later during parsing and is of no information value when parsing
 /// a number.
-pub static VALID_START_CHAR: Lazy<Regex> =
-    Lazy::new(|| Regex::new(&format!("[{}{}]", PLUS_CHARS, DIGITS)).unwrap());
+pub static VALID_START_CHAR: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!("[{}{}]", PLUS_CHARS, DIGITS)).unwrap());
 
 /// Regular expression of characters typically used to start a second phone
 /// number for the purposes of parsing. This allows us to strip off parts of
@@ -287,20 +288,21 @@ pub static VALID_START_CHAR: Lazy<Regex> =
 /// actually two phone numbers, (530) 583-6985 x302 and (530) 583-6985 x2303.
 /// We remove the second extension so that the first number is parsed
 /// correctly.
-pub static SECOND_NUMBER_START: Lazy<Regex> = Lazy::new(|| Regex::new(r"[\\/] *x").unwrap());
+pub static SECOND_NUMBER_START: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"[\\/] *x").unwrap());
 
 /// Regular expression of trailing characters that we want to remove. We
 /// remove all characters that are not alpha or numerical characters. The
 /// hash character is retained here, as it may signify the previous block was
 /// an extension.
-pub static UNWANTED_END_CHARS: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"[[\P{N}&&\P{L}]&&[^#]]+$").unwrap());
+pub static UNWANTED_END_CHARS: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"[[\P{N}&&\P{L}]&&[^#]]+$").unwrap());
 
 /// We use this pattern to check if the phone number has at least three
 /// letters in it - if so, then we treat it as a number where some
 /// phone-number digits are represented by letters.
-pub static VALID_ALPHA_PHONE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?:.*?[A-Za-z]){3}.*").unwrap());
+pub static VALID_ALPHA_PHONE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?:.*?[A-Za-z]){3}.*").unwrap());
 
 /// Default extension prefix to use when formatting. This will be put in
 /// front of any extension component of the number, after the main national
@@ -312,7 +314,8 @@ pub const DEFAULT_EXTN_PREFIX: &str = " ext. ";
 
 /// Pattern to capture digits used in an extension. Places a maximum length
 /// of "7" for an extension.
-pub static CAPTURING_EXTN_DIGITS: Lazy<String> = Lazy::new(|| format!("({}{{0,7}})", DIGITS));
+pub static CAPTURING_EXTN_DIGITS: LazyLock<String> =
+    LazyLock::new(|| format!("({}{{0,7}})", DIGITS));
 
 /// Regexp of all possible ways to write extensions, for use when parsing.
 /// This will be run as a case-insensitive regexp match. Wide character
@@ -321,7 +324,7 @@ pub static CAPTURING_EXTN_DIGITS: Lazy<String> = Lazy::new(|| format!("({}{{0,7}
 /// For parsing, we are slightly more lenient in our interpretation than for
 /// matching. Here we allow "comma" and "semicolon" as possible extension
 /// indicators. When matching, these are hardly ever used to indicate this.
-pub static EXTN_PATTERNS_FOR_PARSING: Lazy<String> = Lazy::new(|| {
+pub static EXTN_PATTERNS_FOR_PARSING: LazyLock<String> = LazyLock::new(|| {
     format!(
         r"{rfc3966_extn_prefix}{capturing_extn_digits}|[ \x{{00A0}}\t,]*(?:e?xt(?:ensi(?:o\x{{0301}}?|\x{{00F3}}))?n?|\x{{FF45}}?\x{{FF58}}\x{{FF54}}\x{{FF4E}}?|[{symbols}]|int|anexo|\x{{FF49}}\x{{FF4E}}\x{{FF54}})[:\.\x{{FF0E}}]?[ \x{{00A0}}\t,-]*{capturing_extn_digits}#?|[- ]+({digits}{{1,5}})#",
         rfc3966_extn_prefix = RFC3966_EXTN_PREFIX,
@@ -336,7 +339,7 @@ pub static EXTN_PATTERNS_FOR_PARSING: Lazy<String> = Lazy::new(|| {
 /// versions are also provided after each ASCII version.
 ///
 /// One-character symbols that can be used to indicate an extension.
-pub static EXTN_PATTERNS_FOR_MATCHING: Lazy<String> = Lazy::new(|| {
+pub static EXTN_PATTERNS_FOR_MATCHING: LazyLock<String> = LazyLock::new(|| {
     format!(
         r"{rfc3966_extn_prefix}{capturing_extn_digits}|[ \x{{00A0}}\t,]*(?:e?xt(?:ensi(?:o\x{{0301}}?|\x{{00F3}}))?n?|\x{{FF45}}?\x{{FF58}}\x{{FF54}}\x{{FF4E}}?|[{symbols}]|int|anexo|\x{{FF49}}\x{{FF4E}}\x{{FF54}})[:\.\x{{FF0E}}]?[ \x{{00A0}}\t,-]*{capturing_extn_digits}#?|[- ]+({digits}{{1,5}})#",
         rfc3966_extn_prefix = RFC3966_EXTN_PREFIX,
@@ -348,7 +351,7 @@ pub static EXTN_PATTERNS_FOR_MATCHING: Lazy<String> = Lazy::new(|| {
 
 /// Regexp of all known extension prefixes used by different regions followed
 /// by 1 or more valid digits, for use when parsing.
-pub static EXTN_PATTERN: Lazy<Regex> = Lazy::new(|| {
+pub static EXTN_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
     RegexBuilder::new(&format!(r"(?:{})$", *EXTN_PATTERNS_FOR_PARSING))
         .case_insensitive(true)
         .build()
@@ -358,21 +361,21 @@ pub static EXTN_PATTERN: Lazy<Regex> = Lazy::new(|| {
 /// We append optionally the extension pattern to the end here, as a valid
 /// phone number may have an extension prefix appended, followed by 1 or more
 /// digits.
-pub static VALID_PHONE_NUMBER: Lazy<Regex> = Lazy::new(|| {
+pub static VALID_PHONE_NUMBER: LazyLock<Regex> = LazyLock::new(|| {
     RegexBuilder::new(&format!(r"(?:{})?", *EXTN_PATTERNS_FOR_PARSING))
         .case_insensitive(true)
         .build()
         .unwrap()
 });
 
-pub static NON_DIGITS: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\D+)").unwrap());
+pub static NON_DIGITS: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(\D+)").unwrap());
 
 /// The FIRST_GROUP_PATTERN was originally set to $1 but there are some
 /// countries for which the first group is not used in the national pattern
 /// (e.g. Argentina) so the $1 group does not match correctly.  Therefore, we
 /// use \d, so that the first group actually used in the pattern will be
 /// matched.
-pub static FIRST_GROUP: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\$\d)").unwrap());
+pub static FIRST_GROUP: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(\$\d)").unwrap());
 
 pub const NP: &str = "$NP";
 pub const FG: &str = "$FG";
@@ -382,4 +385,5 @@ pub const CC: &str = "$CC";
 /// rule has the first group only, i.e., does not start with the national
 /// prefix. Note that the pattern explicitly allows for unbalanced
 /// parentheses.
-pub static FIRST_GROUP_ONLY_PREFIX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\(?\$1\)?").unwrap());
+pub static FIRST_GROUP_ONLY_PREFIX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\(?\$1\)?").unwrap());
