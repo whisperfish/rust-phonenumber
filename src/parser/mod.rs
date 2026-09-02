@@ -59,20 +59,27 @@ pub fn parse_with<S: AsRef<str>>(
 
     // If no country was supplied, try to determine the metadata from the number.
     // We need to determine the country to be able to classify the national prefix if present.
-    let meta = if let Some(country) = &country {
-        database.by_id(country.as_ref())
-    } else {
-        let code = country::Code {
-            value: number.prefix.clone().map(|p| p.parse()).unwrap_or(Ok(0))?,
-            source: number.country,
-        };
+    // Only trust the supplied reference country when the country code did not
+    // come from the number itself. If the number carried its own country code
+    // (a leading `+`, IDD, or an extracted code), the metadata must come from
+    // that code, otherwise we strip the wrong national prefix.
+    use either::{Left, Right};
+    let meta = match &country {
+        Some(country) if number.country == country::Source::Default => {
+            database.by_id(country.as_ref())
+        }
+        _ => {
+            let code = country::Code {
+                value: number.prefix.clone().map(|p| p.parse()).unwrap_or(Ok(0))?,
+                source: number.country,
+            };
 
-        use either::{Left, Right};
-        let without_zeros = number.national.trim_start_matches('0');
-        match validator::source_for(database, code.value(), without_zeros) {
-            Some(Left(region)) => database.by_id(region.as_ref()),
-            Some(Right(code)) => database.by_code(&code).and_then(|m| m.into_iter().next()),
-            None => None,
+            let without_zeros = number.national.trim_start_matches('0');
+            match validator::source_for(database, code.value(), without_zeros) {
+                Some(Left(region)) => database.by_id(region.as_ref()),
+                Some(Right(code)) => database.by_code(&code).and_then(|m| m.into_iter().next()),
+                None => None,
+            }
         }
     };
 
@@ -263,6 +270,20 @@ mod test {
     fn issue_43() {
         let res = parser::parse(None, " 2 22#:");
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn issue_30() {
+        // A fully-qualified international number must round-trip regardless of
+        // the reference country: the country code came from the number, so the
+        // reference country's national prefix must not be stripped.
+        let parsed = parser::parse(Some(country::US), "+33142764978").unwrap();
+        assert_eq!(parsed.code().value(), 33);
+        assert_eq!(parsed.national().value(), 142764978);
+        assert_eq!(
+            parser::parse(Some(country::US), "+33142764978").unwrap(),
+            parser::parse(Some(country::FR), "+33142764978").unwrap()
+        );
     }
 
     #[test]
