@@ -29,7 +29,20 @@ pub mod natural;
 pub mod rfc3966;
 pub mod valid;
 
-/// Parse a phone number.
+/// Parse a [`PhoneNumber`] from a string.
+///
+/// The region `country` is used as a hint to parse numbers in national
+/// notation; `None` only supports international notation and IDD-escaped
+/// numbers, falling back to `00` as the international dialling prefix.
+///
+/// # Errors
+///
+/// Returns a [`ParseError`](crate::ParseError) when the input contains no
+/// number at all ([`error::Parse::NoNumber`]), the number is not viable
+/// ([`error::Parse::MalformedInteger`]), the country code cannot be
+/// determined ([`error::Parse::InvalidCountryCode`]), or the resulting
+/// number is too short or too long for any region ([`error::Parse::TooShortNsn`],
+/// [`error::Parse::TooShortAfterIdd`], [`error::Parse::TooLong`]).
 pub fn parse<S: AsRef<str>>(
     country: Option<country::Id>,
     string: S,
@@ -37,7 +50,14 @@ pub fn parse<S: AsRef<str>>(
     parse_with(&DATABASE, country, string)
 }
 
-/// Parse a phone number using a specific `Database`.
+/// Parse a [`PhoneNumber`] from a string with the given metadata
+/// `database`, see [`parse`] for details.
+///
+/// # Errors
+///
+/// See [`parse`]. In addition, a region supplied as `country` may be
+/// missing from `database`; then [`error::Parse::InvalidCountryCode`] is
+/// returned instead of the metadata being looked up elsewhere.
 pub fn parse_with<S: AsRef<str>>(
     database: &Database,
     country: Option<country::Id>,
@@ -87,10 +107,10 @@ pub fn parse_with<S: AsRef<str>>(
         let mut potential = helper::national_number(meta, number.clone());
 
         // Strip national prefix if present.
-        if let Some(prefix) = meta.national_prefix.as_ref() {
-            if potential.national.starts_with(prefix) {
-                potential.national = helper::trim(potential.national, prefix.len());
-            }
+        if let Some(prefix) = meta.national_prefix.as_ref()
+            && potential.national.starts_with(prefix)
+        {
+            potential.national = helper::trim(potential.national, prefix.len());
         }
 
         if validator::length(meta, &potential, Type::Unknown) != Validation::TooShort {

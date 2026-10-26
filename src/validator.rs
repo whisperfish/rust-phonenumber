@@ -105,6 +105,8 @@ pub fn is_valid_with(database: &Database, number: &PhoneNumber) -> bool {
         .unwrap_or(false)
 }
 
+/// Check the length of the national significant number against the
+/// `possible_length` descriptors for the given `Type`.
 pub fn length(meta: &Metadata, number: &ParseNumber<'_>, kind: Type) -> Validation {
     let desc = if let Some(desc) = meta.descriptors().get(kind) {
         desc
@@ -124,7 +126,9 @@ pub fn length(meta: &Metadata, number: &ParseNumber<'_>, kind: Type) -> Validati
         return Validation::InvalidLength;
     }
 
+    // `possible` is non-empty here, checked above.
     let minimum = possible[0];
+    let maximum = possible[possible.len() - 1];
 
     if local.contains(&length) {
         Validation::IsPossibleLocalOnly
@@ -132,7 +136,7 @@ pub fn length(meta: &Metadata, number: &ParseNumber<'_>, kind: Type) -> Validati
         Validation::IsPossible
     } else if length < minimum {
         Validation::TooShort
-    } else if length > *possible.last().unwrap() {
+    } else if length > maximum {
         Validation::TooLong
     } else if possible.contains(&length) {
         Validation::IsPossible
@@ -160,16 +164,26 @@ pub fn source_for(
     }
 
     for region in regions {
-        let meta = database.by_id(region).unwrap();
+        let Some(meta) = database.by_id(region) else {
+            continue;
+        };
 
-        if let Some(pattern) = meta.leading_digits.as_ref() {
-            if let Some(index) = pattern.find(national) {
-                if index.start() == 0 {
-                    return Some(Left(region.parse().unwrap()));
-                }
-            }
-        } else if number_type(meta, national) != Type::Unknown {
-            return Some(Left(region.parse().unwrap()));
+        let found = if let Some(pattern) = meta.leading_digits.as_ref() {
+            pattern
+                .find(national)
+                .is_some_and(|index| index.start() == 0)
+        } else {
+            number_type(meta, national) != Type::Unknown
+        };
+
+        if !found {
+            continue;
+        }
+
+        // Region strings that do not parse as a `country::Id` mean
+        // inconsistent metadata.
+        if let Ok(id) = region.parse() {
+            return Some(Left(id));
         }
     }
 

@@ -25,6 +25,10 @@ serde_derive = "1.0"
 strum = { version = ">=0.24, <=0.27", features = ["derive"] }
 thiserror = "2.0"
 
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+
 [build-dependencies]
 postcard = { version = "1.1", features = ["use-std"] }
 quick-xml = ">=0.28, <=0.41"

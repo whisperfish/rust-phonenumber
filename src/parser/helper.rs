@@ -177,7 +177,9 @@ pub fn country_code<'a>(
 
                 // Try to find the first available country code.
                 for len in 1..consts::MAX_LENGTH_FOR_COUNTRY_CODE + 1 {
-                    let code = number.national[..len].parse().unwrap();
+                    let Ok(code) = number.national.get(..len).unwrap_or_default().parse() else {
+                        continue;
+                    };
 
                     if database.by_code(&code).is_some() {
                         number.national = trim(number.national, len);
@@ -191,7 +193,11 @@ pub fn country_code<'a>(
 
         country::Source::Default => {
             if let Some(country) = country {
-                let meta = database.by_id(country.as_ref()).unwrap();
+                // The supplied region may be absent from a custom
+                // `Database`.
+                let Some(meta) = database.by_id(country.as_ref()) else {
+                    return Err(error::Parse::InvalidCountryCode);
+                };
                 let code = meta.country_code.to_string();
 
                 if number.national.starts_with(&code)
@@ -284,25 +290,20 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
     let parsing = if let Some(re) = meta.national_prefix_for_parsing.as_ref() {
         re
     } else {
-        if let Some(prefix) = meta.national_prefix.as_ref() {
-            if number.national.starts_with(prefix) {
-                number.national = trim(number.national, prefix.len());
-            }
+        if let Some(prefix) = meta.national_prefix.as_ref()
+            && number.national.starts_with(prefix)
+        {
+            number.national = trim(number.national, prefix.len());
         }
 
         return number;
     };
 
-    let index = parsing.find(&number.national).map(|m| (m.start(), m.end()));
-
-    if index.is_none() {
+    let Some(matched) = parsing.find(&number.national).filter(|m| m.start() == 0) else {
         return number;
-    }
+    };
 
-    let (start, end) = index.unwrap();
-    if start != 0 {
-        return number;
-    }
+    let (start, end) = (matched.start(), matched.end());
 
     let viable = meta.descriptors.general.is_match(&number.national);
     let groups = parsing.captures_len();
@@ -315,7 +316,8 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
                 c.get(c.len() - 1).map(|m| m.as_str().to_owned()),
             )
         })
-        .unwrap();
+        // Recapturing a match on the same input cannot fail.
+        .unwrap_or((None, None));
 
     if transform.is_none() || last.is_none() {
         if viable && !meta.descriptors.general.is_match(&number.national[start..]) {
@@ -332,7 +334,11 @@ pub fn national_number<'a>(meta: &Metadata, mut number: Number<'a>) -> Number<'a
             return number;
         }
 
-        number.carrier = Some(first.unwrap().into());
+        // The first capture group carries the national prefix; a pattern
+        // without a capture group contributes no carrier.
+        if let Some(first) = first {
+            number.carrier = Some(first.into());
+        }
         number.national = transformed.into();
     }
 

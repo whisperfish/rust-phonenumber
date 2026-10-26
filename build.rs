@@ -9,6 +9,9 @@ mod loader;
 #[path = "src/error.rs"]
 mod error;
 
+// A failing build script aborts the build, so expect() is the error
+// reporting mechanism.
+#[allow(clippy::expect_used)]
 fn main() {
     let pnm_path = "assets/PhoneNumberMetadata.xml";
     let metadata = loader::load(BufReader::new(
@@ -17,8 +20,10 @@ fn main() {
     .expect("failed to load metadata");
     println!("cargo:rerun-if-changed={pnm_path}");
 
+    let out_dir = env::var("OUT_DIR").expect("cargo always sets OUT_DIR");
+
     let mut out = BufWriter::new(
-        File::create(Path::new(&env::var("OUT_DIR").unwrap()).join("database.bin"))
+        File::create(Path::new(&out_dir).join("database.bin"))
             .expect("could not create database file"),
     );
 

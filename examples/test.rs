@@ -2,17 +2,24 @@ use std::env;
 
 use phonenumber::Mode;
 
-fn main() {
+fn main() -> Result<(), String> {
     let mut args = env::args().skip(1).collect::<Vec<_>>();
 
-    if args.is_empty() {
-        panic!("not enough arguments");
-    }
+    let (country, number_string) = match (args.pop(), args.pop()) {
+        (Some(number), None) => (None, number),
+        (Some(number), Some(country)) => {
+            let country: phonenumber::country::Id = country
+                .parse()
+                .map_err(|e| format!("invalid country code: {e}"))?;
 
-    let number = args.pop().unwrap();
-    let country = args.pop().map(|c| c.parse().unwrap());
+            (Some(country), number)
+        }
+        _ => return Err("usage: test [country] <number>".to_owned()),
+    };
 
-    let number = phonenumber::parse(country, number).unwrap();
+    let number =
+        phonenumber::parse(country, number_string).map_err(|e| format!("could not parse: {e}"))?;
+
     let valid = phonenumber::is_valid(&number);
 
     if valid {
@@ -28,4 +35,6 @@ fn main() {
     } else {
         println!("\x1b[31m{:#?}\x1b[0m", number);
     }
+
+    Ok(())
 }

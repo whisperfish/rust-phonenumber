@@ -206,27 +206,18 @@ impl<'n, 'd, 'f> fmt::Display for Formatter<'n, 'd, 'f> {
 }
 
 fn formatter<'a>(number: &str, formats: &'a [Format]) -> Option<&'a Format> {
-    for format in formats {
-        let leading = format.leading_digits();
+    formats.iter().find(|format| {
+        // An empty leading-digit pattern matches every number.
+        let Some(leading) = format.leading_digits().last() else {
+            return true;
+        };
 
-        if leading.is_empty()
-            || leading
-                .last()
-                .unwrap()
+        leading.find(number).is_some_and(|m| m.start() == 0)
+            && format
+                .pattern()
                 .find(number)
-                .map(|m| m.start() == 0)
-                .unwrap_or(false)
-                && format
-                    .pattern()
-                    .find(number)
-                    .map(|m| m.start() == 0 && m.end() == number.len())
-                    .unwrap_or(false)
-        {
-            return Some(format);
-        }
-    }
-
-    None
+                .is_some_and(|m| m.start() == 0 && m.end() == number.len())
+    })
 }
 
 fn replace(
@@ -236,27 +227,30 @@ fn replace(
     transform: Option<&str>,
     carrier: Option<&str>,
 ) -> String {
-    formatter
-        .pattern()
-        .replace(
-            national,
-            &*if let Some(transform) = transform {
-                let first = consts::FIRST_GROUP
-                    .captures(formatter.format())
-                    .unwrap()
-                    .get(1)
-                    .unwrap()
-                    .as_str();
+    let replacement: Cow<'_, str> = if let Some(transform) = transform {
+        match consts::FIRST_GROUP
+            .captures(formatter.format())
+            .and_then(|c| c.get(1))
+        {
+            // A format template without a `$1` placeholder keeps no transform.
+            None => Cow::Borrowed(formatter.format()),
+            Some(first) => {
+                let first = first.as_str();
                 let format = transform.replace(consts::NP, meta.national_prefix().unwrap_or(""));
                 let format = format.replace(consts::FG, &format!("${}", first));
                 let format = format.replace(consts::CC, carrier.unwrap_or(""));
 
                 consts::FIRST_GROUP.replace(formatter.format(), &*format)
-            } else {
-                Cow::Borrowed(formatter.format())
-            },
-        )
-        .into()
+            }
+        }
+    } else {
+        Cow::Borrowed(formatter.format())
+    };
+
+    formatter
+        .pattern()
+        .replace(national, &*replacement)
+        .into_owned()
 }
 
 #[cfg(test)]

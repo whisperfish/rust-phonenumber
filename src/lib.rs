@@ -14,6 +14,17 @@
 
 #![recursion_limit = "1024"]
 
+//! Parsing, formatting and validation of international phone numbers.
+//!
+//! See [`parse`] to parse, [formatter::format] to format and
+//! [is_valid] to validate a [`PhoneNumber`].
+//!
+//! # Error handling
+//!
+//! All fallible API returns a `Result`; user input never causes a panic.
+//! Parsing failures are reported as [`ParseError`], metadata loading
+//! failures as [`MetadataError`] and [`LoadMetadata`].
+
 #[cfg(test)]
 use doc_comment::doctest;
 
@@ -22,7 +33,7 @@ doctest!("../README.md");
 
 /// Errors for various parts of the crate.
 mod error;
-pub use crate::error::{Metadata as MetadataError, Parse as ParseError};
+pub use crate::error::{LoadMetadata, Metadata as MetadataError, Parse as ParseError};
 
 /// Phone number metadata, containing patterns, formatting and other useful
 /// data about countries and phone numbers.

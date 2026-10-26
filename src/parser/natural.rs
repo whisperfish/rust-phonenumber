@@ -21,26 +21,20 @@ pub fn phone_number(i: &str) -> IResult<&str, Number<'_>> {
     let (_, i) = extract(i)?;
     let extension = consts::EXTN_PATTERN.captures(i);
 
-    if let Some(c) = extension.as_ref() {
-        if c.get(0).is_none() || c.get(2).is_none() {
-            return Err(nom::Err::Failure(nom::error::Error::new(i, ErrorKind::Eof)));
-        }
-    }
+    let (national, extension) = match extension {
+        Some(c) => match (c.get(0), c.get(2)) {
+            (Some(full), Some(ext)) => (&i[..full.start()], Some(ext.as_str().into())),
+            // A malformed extension is a hard error.
+            _ => return Err(nom::Err::Failure(nom::error::Error::new(i, ErrorKind::Eof))),
+        },
+        None => (i, None),
+    };
 
     Ok((
         "",
         Number {
-            national: extension
-                .as_ref()
-                .map(|c| &i[..c.get(0).unwrap().start()])
-                .unwrap_or(i)
-                .into(),
-
-            extension: extension
-                .as_ref()
-                .map(|c| c.get(2).unwrap().as_str())
-                .map(Into::into),
-
+            national: national.into(),
+            extension,
             ..Default::default()
         },
     ))

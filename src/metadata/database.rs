@@ -28,8 +28,15 @@ use std::sync::Arc;
 const DATABASE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/database.bin"));
 
 /// The Google provided metadata database, used as default.
-pub static DEFAULT: Lazy<Database> =
-    Lazy::new(|| Database::from(postcard::from_bytes(DATABASE).unwrap()).unwrap());
+///
+/// The serialized metadata is embedded by the build script.
+#[allow(clippy::expect_used)]
+pub static DEFAULT: Lazy<Database> = Lazy::new(|| {
+    let meta =
+        postcard::from_bytes(DATABASE).expect("the embedded metadata database is well-formed");
+
+    Database::from(meta).expect("the embedded metadata database is well-formed")
+});
 
 /// Representation of a database of metadata for phone number.
 #[derive(Clone, Debug)]
@@ -68,9 +75,6 @@ impl Database {
 
         let descriptor =
             |desc: loader::Descriptor| -> Result<super::Descriptor, error::LoadMetadata> {
-                desc.national_number.as_ref().unwrap();
-                desc.national_number.as_ref().unwrap();
-
                 Ok(super::Descriptor {
                     national_number: desc
                         .national_number
